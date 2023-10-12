@@ -1,0 +1,43 @@
+﻿@page "/administration/categories/new/"
+
+<h4>Neue Kategorie hinzufügen</h4>
+
+<EditForm OnSubmit="SaveNewCategory" Model="_newCategory">
+     <div class="row">
+        <div class="mb-3 col-3">
+            <label for="bezeichnung" class="form-label">Kategorie</label>
+            <input type="text" @bind-value=_newCategory.Bezeichnung id="bezeichnung" class="form-control" />
+        </div>
+
+        <div class="mb-3 col-3">
+            <label for="farbe" class="form-label">Farbe</label>
+            <input type="color" @bind-value=_newCategory.RGB_A id="farbe" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="btn-group col-3" role="group">
+            <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
+            <button type="submit" class="btn btn-outline-primary">Speichern</button>
+        </div>
+    </div>
+</EditForm>
+
+
+@code {
+    private Category _newCategory = new Category { Bezeichnung = string.Empty };
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+    }
+
+    private async Task SaveNewCategory()
+    {
+        using var repository = DbFactory.CreateDbContext();
+        await repository.Categories.AddAsync(_newCategory);
+        await repository.SaveChangesAsync();
+
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+    }
+}

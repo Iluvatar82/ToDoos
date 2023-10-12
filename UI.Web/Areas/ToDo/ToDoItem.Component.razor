@@ -1,0 +1,160 @@
+﻿@using System.Diagnostics;
+@using global::ToDo.Data.Entities;
+<div class="row bg-opacity-25 @(Model.Done.HasValue ? "bg-success" : string.Empty)" @attributes=@GetBackgroundColor()>
+    <div class="d-flex col-8">
+        <div class="d-flex-min" @attributes=@GetMarginLeft()>
+            <div class="px-2 @(Model.Done.HasValue ? "" : "animateToSuccess") p-0">
+                @if (Model.Done.HasValue)
+                {
+                    <span class="oi oi-check text-success" aria-hidden="true"></span>
+                }
+                else
+                {
+                    <span class="oi oi-check text-secondary opacity-25" aria-hidden="true" @onclick="() => MarkDone()"></span>
+                }
+            </div>
+        </div>
+
+        <div class="col" @onclick=@(() => BezeichnungEditEnabled = true)>
+            @if(!BezeichnungEditEnabled)
+            {
+                <span>@Model.Bezeichnung</span>
+            }
+            else
+            {
+                <input type="text" @bind-value="Model.Bezeichnung" id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleBezeichnungChange(); }) @onblur=@(() => HandleBezeichnungChange()) />
+            }
+        </div>
+    </div>
+
+    <div class="col">
+        @if (Model.Category != null)
+        {
+            <div class="d-flex">
+                <span class="me-2">@Model.Category.Bezeichnung</span>
+                <input type="color" value="@Model.Category.RGB_A" disabled class="w-100" />
+            </div>
+        }
+    </div>
+
+    <div class="col">
+        @Model.Deadline?.ToShortDateString()@(Model.Deadline?.TimeOfDay.TotalSeconds > 0 ? $" - {Model.Deadline!.Value.ToShortTimeString()}" : string.Empty)
+    </div>
+
+    <div class="removeTodo d-flex-min">
+        <span class="oi oi-x text-secondary opacity-25" aria-hidden="true" @onclick="() => Remove()"></span>
+    </div>
+</div>
+
+@if (newSubModel != null)
+{
+    <ToDoNew Model=newSubModel Level=@(Level + 1) OnChange=@((value) => HandleNewChange(value))></ToDoNew>
+}
+
+<div class="row addChildRow" @attributes=@GetMarginLeft() @onclick=@(() => CreateNew())>
+    <div class="col text-center p-0 position-relative">
+        <span class="oi oi-plus" aria-hidden="true"></span>
+    </div>
+</div>
+
+
+@if (Model.Children?.Any() == true)
+{
+    foreach(var child in Model.Children)
+    {
+        <ToDoItem_Component Model=child Level=@(Level + 1) OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
+    }
+}
+
+
+@code {
+    [Parameter]
+    public ToDoItem Model { get; set; } = new ToDoItem();
+
+    [Parameter]
+    public int Level { get; set; }
+
+    [Parameter]
+    public EventCallback<ToDoItem> OnRemove { get; set; }
+
+    private ToDoItem? newSubModel { get; set; } = null;
+    private bool BezeichnungEditEnabled { get; set; } = false;
+
+    private void CreateNew()
+    {
+        newSubModel = new ToDoItem
+            {
+                ParentId = Model.Id,
+                CategoryId = Model.CategoryId
+            };
+    }
+
+    private async Task MarkDone()
+    {
+        using var repository = DbFactory.CreateDbContext();
+
+        Model.Done = DateTime.Now;
+        repository.Update(Model);
+        await repository.SaveChangesAsync();
+    }
+
+    private async Task HandleBezeichnungChange()
+    {
+        using var repository = DbFactory.CreateDbContext();
+
+        repository.Update(Model);
+        await repository.SaveChangesAsync();
+
+        BezeichnungEditEnabled = false;
+    }
+
+    private async Task Remove()
+    {
+        using var repository = DbFactory.CreateDbContext();
+
+        repository.Remove(Model);
+        await repository.SaveChangesAsync();
+
+        StateHasChanged();
+        await OnRemove.InvokeAsync(Model);
+    }
+
+    private async Task HandleRemove(ToDoItem todoItem)
+    {
+        Model.Children.Remove(todoItem);
+
+        StateHasChanged();
+        await OnRemove.InvokeAsync(todoItem);
+    }
+
+    private void HandleNewChange(ToDoItem? item)
+    {
+        newSubModel = null;
+        if (item != null)
+            Model.Children.Add(item);
+
+        StateHasChanged();
+    }
+
+    private Dictionary<string, object>? GetBackgroundColor()
+    {
+        if (Model.CategoryId == null || Model.Done.HasValue)
+            return null;
+
+        return new Dictionary<string, object>
+        {
+            { "style", $"background: {Model.Category!.RGB_A}" }
+        };
+    }
+
+    private Dictionary<string, object>? GetMarginLeft()
+    {
+        if (Model.CategoryId == null || Model.Done.HasValue)
+            return null;
+
+        return new Dictionary<string, object>
+        {
+            { "style", $"margin-left: {Level * 32}px" }
+        };
+    }
+}

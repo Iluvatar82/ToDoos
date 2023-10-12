@@ -1,0 +1,16 @@
+﻿@using System.Net.Http
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.EntityFrameworkCore;
+@using Microsoft.JSInterop
+@using global::ToDo.Data;
+@using global::ToDo.Data.Entities;
+@using UI.Web
+@using UI.Web.Shared
+
+@inject IDbContextFactory<ToDoDBContext> DbFactory
+@inject NavigationManager NavigationManager

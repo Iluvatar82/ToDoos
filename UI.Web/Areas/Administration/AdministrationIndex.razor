@@ -1,0 +1,21 @@
+﻿@page "/administration/"
+@using UI.Web.Areas.Administration.Categories
+
+<h4>Administration</h4>
+
+<div class="border border-1 m-3 p-3">
+    <Categories></Categories>
+</div>
+
+<div class="row m-3">
+    <div class="btn-group col-3 mt-3" role="group">
+        <button @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
+    </div>
+</div>
+
+@code {
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo(NavigationManager.BaseUri);
+    }
+}

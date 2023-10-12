@@ -1,0 +1,60 @@
+﻿@page "/administration/categories/"
+
+<h4>Kategorien</h4>
+
+@if (_categories.Any())
+{
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Bezeichnung</th>
+                <th scope="col">Farbe</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var category in _categories)
+            {
+                <tr class="align-middle">
+                    <td>@category.Bezeichnung</td>
+                    <td class="p-0">
+                        <input type="color" @bind-value=category.RGB_A class="w-100" @onblur=@(() => UpdateColor(category, category.RGB_A)) />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="form-label">Es gibt noch keine Kategorie</div>
+}
+
+<div class="row">
+    <div class="btn-group col-3" role="group">
+        <button @onclick="NavigateToNew" class="btn btn-outline-primary">Hinzufügen</button>
+    </div>
+</div>
+
+@code {
+    IEnumerable<Category> _categories = new List<Category>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var repository = DbFactory.CreateDbContext();
+        _categories = await repository.Categories.ToListAsync();
+    }
+
+    private async Task UpdateColor(Category category, string color)
+    {
+        using var repository = await DbFactory.CreateDbContextAsync();
+        category.RGB_A = color;
+        repository.Update(category);
+        await repository.SaveChangesAsync();
+    }
+
+    private void NavigateToNew()
+    {
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/categories/new");
+    }
+}

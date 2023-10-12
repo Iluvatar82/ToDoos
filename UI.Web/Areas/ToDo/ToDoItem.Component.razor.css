@@ -1,0 +1,33 @@
+﻿
+.animateToSuccess span:hover {
+	transition: color, opacity .2s ease;
+	opacity: 1.0 !important;
+	color: rgb(25, 135, 84) !important;
+}
+
+.addChildRow {
+	transition: all .2s ease;
+	font-size: 0;
+	height: 0;
+	border-bottom: transparent 6px solid;
+	border-top: 1px #ddd solid;
+}
+
+.addChildRow:hover {
+	font-size: 12px;
+	height: 18px;
+}
+
+.addChildRow > div {
+	background: #ddd;
+	top: -.5em;
+}
+
+.d-flex-min {
+	flex: 0 1 0%;
+}
+
+.removeTodo span:hover {
+	transition: opacity .1s ease;
+	opacity: 1.0 !important;
+}

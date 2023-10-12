@@ -1,0 +1,102 @@
+﻿@using global::ToDo.Data.Entities;
+<EditForm Model=Model OnSubmit=@(() => SaveNewToDo())>
+    <div class="row bg-opacity-25">
+        <div class="d-flex col-8" @attributes=@GetMarginLeft()>
+            <div class="col">
+                <input type="text" @bind-value="Model.Bezeichnung" id="bezeichnung" class="form-control" />
+            </div>
+        </div>
+
+        <div class="col">
+            <select @bind:get="Model.CategoryId?.ToString()" @bind:set="(value) => Model.CategoryId = Guid.Parse(value)" id="category" class="form-control">
+                <option value="" @attributes=@SetSelected(Model.CategoryId, null)>Bitte auswählen...</option>
+                @foreach (var category in _categories ?? Enumerable.Empty<Category>())
+                {
+                    <option value="@category.Id" @attributes=@SetSelected(Model.CategoryId, category.Id)>@category.Bezeichnung</option>
+                }
+            </select>
+        </div>
+
+        <div class="col">
+            <div class="d-flex">
+                <input type="date" @bind-value=date id="deadline" class="form-control col me-3" />
+                <input type="time" @bind-value=timeOfDay class="form-control col" />
+            </div>
+        </div>
+    </div>
+
+    <div class="row pb-3">
+        <div class="btn-group col-3" @attributes=@GetMarginLeft() role="group">
+            <button type="button" @onclick=@Abort class="btn btn-outline-secondary">Abbrechen</button>
+            <button type="submit" class="btn btn-outline-primary">Speichern</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public ToDoItem Model { get; set; } = new ToDoItem();
+
+    [Parameter]
+    public int Level { get; set; }
+
+    [Parameter]
+    public EventCallback<ToDoItem?> OnChange { get; set; }
+
+    public IEnumerable<Category> _categories { get; set; } = new List<Category>();
+
+    private DateTime? timeOfDay { get; set; }
+    private DateTime? date { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var repository = DbFactory.CreateDbContext();
+        _categories = await repository.Categories.ToListAsync();
+    }
+
+    private Dictionary<string, object>? SetSelected(Guid? categoryId, Guid? currentId)
+    {
+        if (!categoryId.Equals(currentId))
+            return null;
+
+        return new Dictionary<string, object>
+        {
+            { "selected", "selected" }
+        };
+    }
+
+    private async Task Abort()
+    {
+        await OnChange.InvokeAsync(null);
+    }
+
+    private Dictionary<string, object>? GetMarginLeft()
+    {
+        if (Model.CategoryId == null || Model.Done.HasValue)
+            return null;
+
+        return new Dictionary<string, object>
+        {
+            { "style", $"margin-left: {Level * 32}px" }
+        };
+    }
+
+    private async Task SaveNewToDo()
+    {
+        if (date != default)
+            Model.Deadline = date;
+
+        if (timeOfDay != default)
+            Model.Deadline = date == default
+                                ? timeOfDay
+                                : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
+
+        using var repository = DbFactory.CreateDbContext();
+
+        await repository.ToDoItems.AddAsync(Model);
+        await repository.SaveChangesAsync();
+
+        Model = (await repository.ToDoItems.Where(todo => todo.Id == Model.Id).Include(todo => todo.Category).Include(todo => todo.Parent).OrderBy(todo => todo.Order).ThenBy(todo => todo.Deadline).ToListAsync()).First();
+        await OnChange.InvokeAsync(Model);
+    }
+}
