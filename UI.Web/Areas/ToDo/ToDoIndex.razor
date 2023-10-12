@@ -19,7 +19,9 @@
 
     @foreach (var item in _myToDos)
     {
-        <ToDoItem_Component Model=item Level=0 OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
+        <div class="todo-card">
+            <ToDoItem_Component Model=item Level=0 OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
+        </div>
     }
 }
 

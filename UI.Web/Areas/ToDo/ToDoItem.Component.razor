@@ -1,6 +1,7 @@
 ﻿@using System.Diagnostics;
 @using global::ToDo.Data.Entities;
-<div class="row bg-opacity-25 @(Model.Done.HasValue ? "bg-success" : string.Empty)" @attributes=@GetBackgroundColor()>
+
+<div class="row bg-opacity-25@(Model.Done.HasValue ? " bg-success" : string.Empty)" @attributes=@GetRowAttributes()>
     <div class="d-flex col-8">
         <div class="d-flex-min" @attributes=@GetMarginLeft()>
             <div class="px-2 @(Model.Done.HasValue ? "" : "animateToSuccess") p-0">
@@ -37,8 +38,18 @@
         }
     </div>
 
-    <div class="col">
-        @Model.Deadline?.ToShortDateString()@(Model.Deadline?.TimeOfDay.TotalSeconds > 0 ? $" - {Model.Deadline!.Value.ToShortTimeString()}" : string.Empty)
+    <div class="col" @onclick=@(() => DeadlineEditEnabled = true)>
+        @if (!DeadlineEditEnabled)
+        {
+            @Model.Deadline?.ToShortDateString()@(Model.Deadline?.TimeOfDay.TotalSeconds > 0 ? $" - {Model.Deadline!.Value.ToShortTimeString()}" : string.Empty)
+        }
+        else
+        {
+            <div class="d-flex">
+                <input type="date" @bind-value=date class="form-control col me-3" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleDeadlineChange(); }) @onblur=@(() => HandleDeadlineChange()) />
+                <input type="time" @bind-value=timeOfDay class="form-control col" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleDeadlineChange(); }) @onblur=@(() => HandleDeadlineChange()) />
+            </div>
+        }
     </div>
 
     <div class="removeTodo d-flex-min">
@@ -51,16 +62,18 @@
     <ToDoNew Model=newSubModel Level=@(Level + 1) OnChange=@((value) => HandleNewChange(value))></ToDoNew>
 }
 
-<div class="row addChildRow" @attributes=@GetMarginLeft() @onclick=@(() => CreateNew())>
-    <div class="col text-center p-0 position-relative">
+<div class="row addChildRow" @onclick=@(() => CreateNew())>
+    <div class="d-flex-min px-0" @attributes=@GetLeftWidth()>
+    </div>
+
+    <div class="col text-center text-white p-0 position-relative" @attributes=@GetCheckWidthMargin()>
         <span class="oi oi-plus" aria-hidden="true"></span>
     </div>
 </div>
 
-
 @if (Model.Children?.Any() == true)
 {
-    foreach(var child in Model.Children)
+    foreach (var child in Model.Children)
     {
         <ToDoItem_Component Model=child Level=@(Level + 1) OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
     }
@@ -78,7 +91,19 @@
     public EventCallback<ToDoItem> OnRemove { get; set; }
 
     private ToDoItem? newSubModel { get; set; } = null;
+
     private bool BezeichnungEditEnabled { get; set; } = false;
+    private bool DeadlineEditEnabled { get; set; } = false;
+    private DateTime? date { get; set; }
+    private DateTime? timeOfDay { get; set; }
+
+    protected override void OnInitialized()
+    {
+        date = Model.Deadline?.Date;
+        timeOfDay = Model.Deadline;
+
+        base.OnInitialized();
+    }
 
     private void CreateNew()
     {
@@ -106,6 +131,24 @@
         await repository.SaveChangesAsync();
 
         BezeichnungEditEnabled = false;
+    }
+
+    private async Task HandleDeadlineChange()
+    {
+        if (date != default)
+            Model.Deadline = date;
+
+        if (timeOfDay != default)
+            Model.Deadline = date == default
+                                ? timeOfDay
+                                : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
+
+        using var repository = DbFactory.CreateDbContext();
+
+        repository.Update(Model);
+        await repository.SaveChangesAsync();
+
+        DeadlineEditEnabled = false;
     }
 
     private async Task Remove()
@@ -136,25 +179,39 @@
         StateHasChanged();
     }
 
-    private Dictionary<string, object>? GetBackgroundColor()
+    private Dictionary<string, object>? GetRowAttributes()
     {
         if (Model.CategoryId == null || Model.Done.HasValue)
             return null;
 
+        var styleString = $"background: {Model.Category!.RGB_A};";
         return new Dictionary<string, object>
         {
-            { "style", $"background: {Model.Category!.RGB_A}" }
+            { "style", styleString }
         };
     }
 
     private Dictionary<string, object>? GetMarginLeft()
     {
-        if (Model.CategoryId == null || Model.Done.HasValue)
-            return null;
-
         return new Dictionary<string, object>
         {
-            { "style", $"margin-left: {Level * 32}px" }
+            { "style", $"margin-left: {Level * 32}px;" }
+        };
+    }
+
+    private Dictionary<string, object>? GetCheckWidthMargin()
+    {
+        return new Dictionary<string, object>
+        {
+            { "style", $"margin-left: 44px;" }
+        };
+    }
+
+    private Dictionary<string, object>? GetLeftWidth()
+    {
+        return new Dictionary<string, object>
+        {
+            { "style", $"min-width: {Level * 32}px;" }
         };
     }
 }
