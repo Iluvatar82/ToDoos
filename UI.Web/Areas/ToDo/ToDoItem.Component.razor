@@ -7,11 +7,11 @@
             <div class="px-2 @(Model.Done.HasValue ? "" : "animateToSuccess") p-0">
                 @if (Model.Done.HasValue)
                 {
-                    <span class="oi oi-check text-success" aria-hidden="true"></span>
+                    <span class="oi oi-check text-success" aria-hidden="true" @onclick="() => SwapDone()"></span>
                 }
                 else
                 {
-                    <span class="oi oi-check text-secondary opacity-25" aria-hidden="true" @onclick="() => MarkDone()"></span>
+                    <span class="oi oi-check text-secondary opacity-25" aria-hidden="true" @onclick="() => SwapDone()"></span>
                 }
             </div>
         </div>
@@ -114,11 +114,15 @@
             };
     }
 
-    private async Task MarkDone()
+    private async Task SwapDone()
     {
         using var repository = DbFactory.CreateDbContext();
 
-        Model.Done = DateTime.Now;
+        if (Model.Done == null)
+            Model.Done = DateTime.Now;
+        else
+            Model.Done = null;
+
         repository.Update(Model);
         await repository.SaveChangesAsync();
     }

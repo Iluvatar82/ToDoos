@@ -1,19 +1,18 @@
-﻿@using global::ToDo.Data.Entities;
+﻿@using System.Security.Claims;
+@using global::ToDo.Data.Entities;
 
 <AuthorizeView>
-    <Authorizing>
-        Identifizieren...
-    </Authorizing>
     <NotAuthorized>
         <h4>Bitte einloggen!</h4>
         <div>
-            @{
-                var conextVar = context;
-            }
             <a href=@(NavigationManager.BaseUri + "Identity/Account/Login")>Login Page</a>
         </div>
     </NotAuthorized>
     <Authorized >
+        @{
+            _currentUser = context.User;
+        }
+
         <h4>Meine ToDo's</h4>
 
         @if (_myToDos.Any())
@@ -56,9 +55,15 @@
 @code {
     private ToDoItem? newSubModel = null;
     private List<ToDoItem> _myToDos = new List<ToDoItem>();
+    private ClaimsPrincipal _currentUser { get; set; } = new ClaimsPrincipal();
 
     protected override async Task OnInitializedAsync()
     {
+        //_currentUser.Claims.Type "nameidentifier"
+        //http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier
+        //Value:      5332a925-641b-4946-9ab3-c8597b9f7b9f
+        // Id aus DB: 5332a925-641b-4946-9ab3-c8597b9f7b9f
+
         using var repository = DbFactory.CreateDbContext();
 
         _myToDos = (await repository.ToDoItems.Include(todo => todo.Category).OrderBy(todo => todo.Order).ThenBy(todo => todo.Deadline).ToListAsync()).Where(todo => todo.Parent == null).ToList();
