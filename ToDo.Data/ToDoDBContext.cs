@@ -11,7 +11,7 @@ namespace ToDo.Data
 
         public ToDoDBContext(DbContextOptions options) : base(options)
         {
-            //Database.Migrate();
+            Database.Migrate();
         }
     }
 }

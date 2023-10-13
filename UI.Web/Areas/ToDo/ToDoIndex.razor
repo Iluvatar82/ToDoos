@@ -1,60 +1,64 @@
 ﻿@using global::ToDo.Data.Entities;
 
-@if (_authState?.User.Identity?.IsAuthenticated != true)
-{
-    <h4>Bitte einloggen!</h4>
-    <div>
-        <a href=@(NavigationManager.BaseUri + "Identity/Account/Login")>Login Page</a>
-    </div>
-    return;
-}
-
-<h4>Meine ToDo's</h4>
-
-@if (_myToDos.Any())
-{
-    <div class="row p-1 mb-3 fw-bold">
-        <div class="col-8">
-            Bezeichnung
+<AuthorizeView>
+    <Authorizing>
+        Identifizieren...
+    </Authorizing>
+    <NotAuthorized>
+        <h4>Bitte einloggen!</h4>
+        <div>
+            @{
+                var conextVar = context;
+            }
+            <a href=@(NavigationManager.BaseUri + "Identity/Account/Login")>Login Page</a>
         </div>
+    </NotAuthorized>
+    <Authorized >
+        <h4>Meine ToDo's</h4>
 
-        <div class="col">
-            Kategorie
+        @if (_myToDos.Any())
+        {
+            <div class="row p-1 mb-3 fw-bold">
+                <div class="col-8">
+                    Bezeichnung
+                </div>
+
+                <div class="col">
+                    Kategorie
+                </div>
+
+                <div class="col">
+                    Deadline
+                </div>
+            </div>
+
+            @foreach (var item in _myToDos)
+            {
+                <div class="todo-card">
+                    <ToDoItem_Component Model=item Level=0 OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
+                </div>
+            }
+        }
+
+        @if (newSubModel != null)
+        {
+            <ToDoNew Model=newSubModel OnChange=@((value) => HandleNewChange(value))></ToDoNew>
+        }
+
+        <div class="row">
+            <div class="btn-group col-3" role="group">
+                <button @onclick="@(() => CreateNew())" class="btn btn-outline-primary">Hinzufügen</button>
+            </div>
         </div>
-
-        <div class="col">
-            Deadline
-        </div>
-    </div>
-
-    @foreach (var item in _myToDos)
-    {
-        <div class="todo-card">
-            <ToDoItem_Component Model=item Level=0 OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
-        </div>
-    }
-}
-
-@if (newSubModel != null)
-{
-    <ToDoNew Model=newSubModel OnChange=@((value) => HandleNewChange(value))></ToDoNew>
-}
-
-<div class="row">
-    <div class="btn-group col-3" role="group">
-        <button @onclick="@(() => CreateNew())" class="btn btn-outline-primary">Hinzufügen</button>
-    </div>
-</div>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     private ToDoItem? newSubModel = null;
     private List<ToDoItem> _myToDos = new List<ToDoItem>();
-    private AuthenticationState? _authState;
 
     protected override async Task OnInitializedAsync()
     {
-        _authState = await AuthProvider.GetAuthenticationStateAsync();
-
         using var repository = DbFactory.CreateDbContext();
 
         _myToDos = (await repository.ToDoItems.Include(todo => todo.Category).OrderBy(todo => todo.Order).ThenBy(todo => todo.Deadline).ToListAsync()).Where(todo => todo.Parent == null).ToList();
