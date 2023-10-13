@@ -88,6 +88,9 @@
     public int Level { get; set; }
 
     [Parameter]
+    public Guid UserId { get; set; }
+
+    [Parameter]
     public EventCallback<ToDoItem> OnRemove { get; set; }
 
     private ToDoItem? newSubModel { get; set; } = null;
@@ -112,6 +115,13 @@
                 ParentId = Model.Id,
                 CategoryId = Model.CategoryId
             };
+
+        newSubModel.UserAssignments = new List<UserToDoAssignment> {
+            new UserToDoAssignment {
+                ToDoItemId = newSubModel.Id,
+                UserId = UserId
+            }
+        };
     }
 
     private async Task SwapDone()

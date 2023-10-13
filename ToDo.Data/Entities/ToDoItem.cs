@@ -28,6 +28,9 @@ namespace ToDo.Data.Entities
         [InverseProperty(nameof(Parent))]
         public List<ToDoItem> Children { get; set; }
 
+        [InverseProperty(nameof(UserToDoAssignment.Item))]
+        public List<UserToDoAssignment> UserAssignments { get; set; }
+
         public DateTime? Deadline { get; set; }
 
         public DateTime? Done { get; set; }
@@ -37,6 +40,7 @@ namespace ToDo.Data.Entities
         {
             Bezeichnung = string.Empty;
             Children = new List<ToDoItem>();
+            UserAssignments = new List<UserToDoAssignment>();
         }
 
 

@@ -9,10 +9,6 @@
         </div>
     </NotAuthorized>
     <Authorized >
-        @{
-            _currentUser = context.User;
-        }
-
         <h4>Meine ToDo's</h4>
 
         @if (_myToDos.Any())
@@ -34,7 +30,7 @@
             @foreach (var item in _myToDos)
             {
                 <div class="todo-card">
-                    <ToDoItem_Component Model=item Level=0 OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
+                    <ToDoItem_Component Model=item Level=0 UserId=_currentUserId!.Value OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
                 </div>
             }
         }
@@ -55,18 +51,25 @@
 @code {
     private ToDoItem? newSubModel = null;
     private List<ToDoItem> _myToDos = new List<ToDoItem>();
-    private ClaimsPrincipal _currentUser { get; set; } = new ClaimsPrincipal();
+    private ClaimsPrincipal? _currentUser { get; set; }
+    private Guid? _currentUserId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        //_currentUser.Claims.Type "nameidentifier"
-        //http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier
-        //Value:      5332a925-641b-4946-9ab3-c8597b9f7b9f
-        // Id aus DB: 5332a925-641b-4946-9ab3-c8597b9f7b9f
+        var _currentUser = (await AuthenticationProvider.GetAuthenticationStateAsync()).User;
+        if (_currentUser?.Claims.Any() != true)
+            return;
+
+        _currentUserId = Guid.Parse(_currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
 
         using var repository = DbFactory.CreateDbContext();
-
-        _myToDos = (await repository.ToDoItems.Include(todo => todo.Category).OrderBy(todo => todo.Order).ThenBy(todo => todo.Deadline).ToListAsync()).Where(todo => todo.Parent == null).ToList();
+        _myToDos = (await repository.ToDoItems
+            .Include(todo => todo.Category)
+            .Include(todo => todo.UserAssignments)
+            .Where(todo => todo.UserAssignments.Any(ua => ua.UserId == _currentUserId))
+                .OrderBy(todo => todo.Order)
+                .ThenBy(todo => todo.Deadline).ToListAsync())
+                    .Where(todo => todo.Parent == null).ToList();
     }
 
     private void CreateNew()
@@ -76,6 +79,13 @@
                 Parent = null,
                 CategoryId = null
             };
+
+        newSubModel.UserAssignments = new List<UserToDoAssignment> {
+            new UserToDoAssignment {
+                ToDoItemId = newSubModel.Id,
+                UserId = _currentUserId!.Value
+            }
+        };
     }
 
     private void HandleNewChange(ToDoItem? item)
