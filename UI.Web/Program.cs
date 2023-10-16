@@ -1,3 +1,4 @@
+using Framework.Repositories;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,10 @@ namespace UI.Web
             builder.Services.AddServerSideBlazor();
 
             builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+
+            builder.Services.AddTransient<CategoryRepository>();
+            builder.Services.AddTransient<ItemRepository>();
+            builder.Services.AddTransient<UserRepository>();
 
             var app = builder.Build();
 

@@ -126,24 +126,17 @@
 
     private async Task SwapDone()
     {
-        using var repository = DbFactory.CreateDbContext();
-
         if (Model.Done == null)
             Model.Done = DateTime.Now;
         else
             Model.Done = null;
 
-        repository.Update(Model);
-        await repository.SaveChangesAsync();
+        await ItemRepository.UpdateAndSaveAsync(Model);
     }
 
     private async Task HandleBezeichnungChange()
     {
-        using var repository = DbFactory.CreateDbContext();
-
-        repository.Update(Model);
-        await repository.SaveChangesAsync();
-
+        await ItemRepository.UpdateAndSaveAsync(Model);
         BezeichnungEditEnabled = false;
     }
 
@@ -157,21 +150,16 @@
                                 ? timeOfDay
                                 : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
 
-        using var repository = DbFactory.CreateDbContext();
 
-        repository.Update(Model);
-        await repository.SaveChangesAsync();
+        await ItemRepository.UpdateAndSaveAsync(Model);
 
         DeadlineEditEnabled = false;
     }
 
     private async Task Remove()
     {
-        using var repository = DbFactory.CreateDbContext();
-
         Model.IsActive = false;
-        repository.Update(Model);
-        await repository.SaveChangesAsync();
+        await ItemRepository.UpdateAndSaveAsync(Model);
 
         StateHasChanged();
         await OnRemove.InvokeAsync(Model);

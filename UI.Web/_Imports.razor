@@ -1,4 +1,5 @@
 ﻿@using System.Net.Http
+@using Framework.Repositories;
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
@@ -12,6 +13,10 @@
 @using UI.Web
 @using UI.Web.Shared
 
+
 @inject AuthenticationStateProvider AuthenticationProvider;
-@inject IDbContextFactory<ToDoDBContext> DbFactory
 @inject NavigationManager NavigationManager
+
+@inject CategoryRepository CategoryRepository;
+@inject ItemRepository ItemRepository;
+@inject UserRepository UserRepository;

@@ -34,10 +34,7 @@
 
     private async Task SaveNewCategory()
     {
-        using var repository = DbFactory.CreateDbContext();
-        await repository.Categories.AddAsync(_newCategory);
-        await repository.SaveChangesAsync();
-
+        await CategoryRepository.AddAndSaveAsync(_newCategory);
         NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
     }
 }

@@ -1,5 +1,6 @@
 ﻿@using System.Security.Claims;
 @using global::ToDo.Data.Entities;
+@page "/list/{UserId:guid}"
 
 <AuthorizeView>
     <NotAuthorized>
@@ -11,7 +12,17 @@
     <Authorized >
         <h4>Meine ToDo's</h4>
 
-        @if (_myToDos.Any())
+        <div class="row">
+            <div class="col-auto">
+                <InputCheckbox id="showInactiveControl" @bind-Value=@showInactive class="d-inline-block" @onclick="@(() => SwitchActiveInactiveView())"></InputCheckbox>
+            </div>
+
+            <div class="col">
+                <label for="showInactiveControl" class="d-inline-block">Zeige bereits gelöschte / entfernte Einträge</label>
+            </div>
+        </div>
+
+        @if (myToDos.Any())
         {
             <div class="row p-1 mb-3 fw-bold">
                 <div class="col-8">
@@ -27,11 +38,11 @@
                 </div>
             </div>
 
-            @foreach (var item in _myToDos)
+            @foreach (var item in myToDos)
             {
                 <div class="todo-card">
                     <div class="todo-card-inner">
-                        <ToDoItem_Component Model=item Level=0 UserId=_currentUserId!.Value OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
+                        <ToDoItem_Component Model=item Level=0 UserId=UserId OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
                     </div>
                 </div>
             }
@@ -52,25 +63,41 @@
 
 @code {
     private ToDoItem? newSubModel = null;
-    private List<ToDoItem> _myToDos = new List<ToDoItem>();
-    private ClaimsPrincipal? _currentUser { get; set; }
-    private Guid? _currentUserId { get; set; }
+    private List<ToDoItem> myToDos = new List<ToDoItem>();
+    private bool showInactive { get; set; }
+
+    [Parameter]
+    public Guid UserId { get; set; }
+
 
     protected override async Task OnInitializedAsync()
     {
-        var _currentUser = (await AuthenticationProvider.GetAuthenticationStateAsync()).User;
-        if (_currentUser?.Claims.Any() != true)
-            return;
+        if (UserId == Guid.Empty)
+        {
+            var _currentUser = (await AuthenticationProvider.GetAuthenticationStateAsync()).User;
+            if (_currentUser?.Claims.Any() != true)
+                return;
 
-        _currentUserId = Guid.Parse(_currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
+            UserId = Guid.Parse(_currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
+        }
 
-        using var repository = DbFactory.CreateDbContext();
-        _myToDos = (await repository.ToDoItems
-            .Include(item => item.Category)
-            .Include(item => item.UserAssignments)
-            .Where(item => item.UserAssignments.Any(ua => ua.UserId == _currentUserId) && item.IsActive)
-                .OrderBy(item => item.Order)
-                .ThenBy(item => item.Deadline).ToListAsync())
+        await RetrieveItems();
+    }
+
+    private async Task SwitchActiveInactiveView()
+    {
+        showInactive = !showInactive;
+
+        await RetrieveItems();
+
+        StateHasChanged();
+    }
+
+    private async Task RetrieveItems()
+    {
+        myToDos = (await ItemRepository.GetAllItemsCompleteAsync(UserId, !showInactive))
+            .OrderBy(item => item.Order)
+                    .ThenBy(item => item.Deadline)
                     .Where(item => item.Parent == null).ToList();
     }
 
@@ -85,7 +112,7 @@
         newSubModel.UserAssignments = new List<UserToDoAssignment> {
             new UserToDoAssignment {
                 ToDoItemId = newSubModel.Id,
-                UserId = _currentUserId!.Value
+                UserId = UserId
             }
         };
     }
@@ -94,14 +121,14 @@
     {
         newSubModel = null;
         if (item != null)
-            _myToDos.Add(item);
+            myToDos.Add(item);
 
         StateHasChanged();
     }
 
     private void HandleRemove(ToDoItem todoItem)
     {
-        _myToDos.Remove(todoItem);
+        myToDos.Remove(todoItem);
         StateHasChanged();
     }
 }

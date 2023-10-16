@@ -51,8 +51,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        using var repository = DbFactory.CreateDbContext();
-        _categories = await repository.Categories.ToListAsync();
+        _categories = await CategoryRepository.GetAllCategoriesAsync();
     }
 
     private Dictionary<string, object>? SetSelected(Guid? categoryId, Guid? currentId)
@@ -92,12 +91,10 @@
                                 ? timeOfDay
                                 : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
 
-        using var repository = DbFactory.CreateDbContext();
 
-        await repository.ToDoItems.AddAsync(Model);
-        await repository.SaveChangesAsync();
+        await ItemRepository.AddAndSaveAsync(Model);
+        Model = await ItemRepository.GetItemCompleteAsync(Model.Id);
 
-        Model = (await repository.ToDoItems.Where(todo => todo.Id == Model.Id).Include(todo => todo.Category).Include(todo => todo.Parent).Include(todo => todo.UserAssignments).OrderBy(todo => todo.Order).ThenBy(todo => todo.Deadline).ToListAsync()).First();
         await OnChange.InvokeAsync(Model);
     }
 }

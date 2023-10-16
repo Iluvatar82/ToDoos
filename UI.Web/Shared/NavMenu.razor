@@ -23,40 +23,34 @@
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href=@NavigationManager.BaseUri Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> ToDo's
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" @onclick="()=>expandAllLists = !expandAllLists">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Alle Listen
+                <span class="oi oi-home" aria-hidden="true"></span> Meine Listen
             </NavLink>
 
-            @if (expandAllLists)
+            @foreach (var subList in allLists)
             {
-                @foreach (var subList in allLists)
-                {
-                    <NavLink class="expand-menu" href=@subList.Url>
-                        <span>@subList.Name</span>
-                    </NavLink>
-                }
+                <NavLink class="nav-item nav-link nav-sub-item" href=@(NavigationManager.BaseUri + @subList.Url)>
+                    <span class="oi oi-@subList.ListType ms-3" aria-hidden="true"></span> @subList.Name
+                </NavLink>
             }
         </div>
+
     </nav>
 </div>
 
 @code {
     private bool collapseNavMenu = true;
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-    private bool expandAllLists = false;
-    private List<(string Name, string Url)> allLists { get; set; } = new List<(string Name, string Url)>();
+    private List<(string Name, string ListType, string Url)> allLists { get; set; } = new List<(string Name, string ListType, string Url)>();
 
     protected override async Task OnInitializedAsync()
     {
-        allLists = new List<(string Name, string Url)>
-        {
-            ("Meine ToDo's", "/todos/")
-        };
+        var _currentUser = (await AuthenticationProvider.GetAuthenticationStateAsync()).User;
+        if (_currentUser?.Claims.Any() != true)
+            return;
+
+        var userId = Guid.Parse(_currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
+
+        allLists = await UserRepository.GetAllListsAsync(userId);
     }
 
     private void ToggleNavMenu()
