@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ToDo.Data", "..\ToDo.Data\T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ToDo.Data.Test", "..\ToDo.Data.Test\ToDo.Data.Test.csproj", "{7F4ED600-5484-492C-85F2-329FFB48447C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework", "..\Framework\Framework.csproj", "{600E365D-008E-419B-A188-5696FA8D77CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Framework", "..\Framework\Framework.csproj", "{600E365D-008E-419B-A188-5696FA8D77CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

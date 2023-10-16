@@ -1,0 +1,86 @@
+﻿<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display: @ModalDisplay">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="close btn btn-outline-secondary" data-dismiss="modal" aria-label="Close" @onclick=@(() => Close())>
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @Body
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal" @onclick=@(() => Close())>Abbrechen</button>
+                <button type="submit" class="btn btn-outline-primary" @onclick=@(() => Accept()) @ref=@AcceptReference @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Escape") Close(); })>Weiter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (ShowBackdrop)
+{
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    public RenderFragment Title { get; set; }
+    public RenderFragment Body { get; set; }
+    public bool ShowBackdrop = false;
+
+    public Func<Task>? AcceptActionAsync { get; set; }
+    public Action? AcceptAction { get; set; }
+
+    private string ModalDisplay = "none;";
+    private string ModalClass = "";
+    private ElementReference AcceptReference;
+
+
+    public Modal() => Initialize();
+
+
+    protected override async Task OnAfterRenderAsync(bool isFirst)
+    {
+        if (!string.IsNullOrWhiteSpace(ModalClass))
+            await AcceptReference.FocusAsync();
+    }
+
+
+    public void Show()
+    {
+        ModalDisplay = "block;";
+        ModalClass = "show";
+        ShowBackdrop = true;
+
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        ModalDisplay = "none";
+        ModalClass = "";
+        ShowBackdrop = false;
+
+        StateHasChanged();
+    }
+
+    public async Task Accept()
+    {
+        if (AcceptActionAsync != null)
+            await AcceptActionAsync();
+        else if (AcceptAction != null)
+            AcceptAction();
+
+        Close();
+
+        StateHasChanged();
+    }
+
+    public void Initialize()
+    {
+        Title = @<h5>Warnung!</h5>;
+        Body = @<p>Warnungsmeldung!</p>;
+        AcceptActionAsync = null;
+        AcceptAction = null;
+    }
+}

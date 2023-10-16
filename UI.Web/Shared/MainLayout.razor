@@ -17,7 +17,9 @@
         <article class="content px-4">
             <ErrorBoundaryWithOutput @ref=@myBoundary>
                 <ChildContent>
-                    @Body
+                    <CascadingValue Value="@PageModal">
+                        @Body
+                    </CascadingValue>
                 </ChildContent>
                 <ErrorContent>
                     <div class="blazor-error-boundary">
@@ -42,11 +44,16 @@
                 </ErrorContent>
             </ErrorBoundaryWithOutput>
         </article>
+
+        <Modal @ref=PageModal></Modal>
     </main>
 </div>
 
 @code{
     private ErrorBoundaryWithOutput? myBoundary;
+
+    [CascadingParameter]
+    public Modal PageModal { get; set; } = new Modal();
 
     private List<(string Content, int Indentation)>? myErrorLines
     {

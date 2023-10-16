@@ -1,4 +1,5 @@
 ﻿@using System.Diagnostics;
+@using Core.Validation;
 @using global::ToDo.Data.Entities;
 
 <div class="row bg-opacity-25@(Model.Done.HasValue ? " bg-success" : string.Empty)" @attributes=@GetRowAttributes()>
@@ -82,8 +83,10 @@
     }
 }
 
-
 @code {
+    [CascadingParameter]
+    public Modal? PageModal { get; set; }
+
     [Parameter]
     public ToDoItem Model { get; set; } = new ToDoItem();
 
@@ -160,13 +163,36 @@
         DeadlineEditEnabled = false;
     }
 
-    private async Task SwapActive()
+    private async Task SwapActive(bool force = false)
     {
-        Model.IsActive = !Model.IsActive;
+        if (Model.Children?.Any() == true && !force)
+        {
+            PageModal.NotNull();
+
+            PageModal!.Title = @<h5>Achtung!</h5>;
+            PageModal.Body =@<p>Das Item "@(Model.Bezeichnung)" besitzt Unter-Items. Möchten Sie alle Items @(Model.IsActive ? "inaktiv" : "aktiv") setzen?</p>;
+            PageModal.AcceptActionAsync = async () => await SwapActive(true);
+
+            PageModal.Show();
+            return;
+        }
+        else if (force == true)
+            SetActiveStateForAll(Model, !Model.IsActive);
+        else
+            Model.IsActive = !Model.IsActive;
+
         await ItemRepository.UpdateAndSaveAsync(Model);
 
         StateHasChanged();
         await OnRemove.InvokeAsync(Model);
+    }
+
+    private void SetActiveStateForAll(ToDoItem item, bool isActive)
+    {
+        foreach (var childItem in item.Children ?? Enumerable.Empty<ToDoItem>())
+            SetActiveStateForAll(childItem, isActive);
+
+        item.IsActive = isActive;
     }
 
     private async Task HandleRemove(ToDoItem todoItem)
