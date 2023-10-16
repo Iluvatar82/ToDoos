@@ -1,0 +1,59 @@
+﻿@page "/administration/roles/"
+@using System.Security.Claims;
+@using Microsoft.AspNetCore.Identity;
+
+@attribute [Authorize(Roles = "Administrator")]
+
+<h4>Rollenverwaltung</h4>
+
+@if (allRoles.Any())
+{
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Rolle</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var role in allRoles)
+            {
+                <tr class="align-middle" @ondblclick=@(() => NavigateToEdit(role.Id))>
+                    <td>
+                        <span class="col">@role.Name</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="form-label">Es gibt noch keine Kategorie</div>
+}
+
+<div class="row">
+    <div class="btn-group col-3" role="group">
+        <button @onclick="NavigateToNew" class="btn btn-outline-primary">Hinzufügen</button>
+    </div>
+</div>
+
+@code {
+    private List<IdentityRole> allRoles { get; set; } = new List<IdentityRole>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        allRoles = await IdentityRepository.GetAllRoles();
+    }
+
+    private void NavigateToEdit(string id)
+    {
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/roles/edit/" + id);
+    }
+
+    private void NavigateToNew()
+    {
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/roles/new");
+    }
+}

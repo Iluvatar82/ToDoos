@@ -1,0 +1,140 @@
+﻿@page "/administration/roles/new/"
+@page "/administration/roles/edit/{Id}"
+@using Core.Validation;
+@using Microsoft.AspNetCore.Identity;
+@using System.Collections;
+@attribute [Authorize(Roles = "Administrator")]
+
+@if(string.IsNullOrWhiteSpace(Id))
+{
+    <h4>Neue Rolle hinzufügen</h4>
+}
+else
+{
+    <h4>Rolle bearbeiten und User hinzufügen</h4>
+}
+
+<EditForm OnSubmit=@(() =>string.IsNullOrWhiteSpace(Id) ? SaveNewRole() : ToAddUserByEmailAddress()) Model="_displayRole">
+    <div class="row">
+        <div class="mb-3 col-3">
+            <label for="roleId" class="form-label fw-bold">Identifikation</label>
+            @if (string.IsNullOrWhiteSpace(Id))
+            {
+                <input type="text" @bind-value=_displayRole.Id id="roleId" class="form-control" />
+            }
+            else
+            {
+                <div>@_displayRole.Id</div>
+            }
+        </div>
+
+        <div class="mb-3 col-3">
+            <label for="bezeichnung" class="form-label fw-bold">Rollenbezeichnung</label>
+            @if (string.IsNullOrWhiteSpace(Id))
+            {
+                <input type="text" @bind-value=_displayRole.Name id="bezeichnung" class="form-control" />
+            }
+            else
+            {
+                <div>@_displayRole.Name</div>
+            }
+        </div>
+    </div>
+
+    @if(_usersInRole?.Any() == true)
+    {
+        <div class="border border-1 m-3">
+            @foreach (var user in _usersInRole)
+            {
+                <div class="row px-3 py-2">
+                    <div class="col">
+                        @user.UserName
+                    </div>
+
+                    <div class="col">
+                        @user.Email
+                    </div>
+                </div>
+            }
+
+            <div class="row px-3 py-2">
+                <div class="col">
+                    <input type="text" @bind-value=@newUserEmailAddress class="form-control" />
+                </div>
+
+                <div class="col">
+                    <button @onclick=@(() => ToAddUserByEmailAddress()) class="btn btn-outline-primary">User hinzufügen</button>
+                </div>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Id))
+    {
+        <div class="border border-1 m-3">
+            <div class="row px-3 py-2">
+                <div class="col-auto">
+                    <input type="text" @bind-value=@newUserEmailAddress class="form-control" />
+                </div>
+
+                <div class="col-auto">
+                    <button @onclick=@(() => ToAddUserByEmailAddress()) class="btn btn-outline-primary">User hinzufügen</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        <div class="btn-group col-3" role="group">
+            <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
+            @if (string.IsNullOrWhiteSpace(Id))
+            {
+                <button type="submit" class="btn btn-outline-primary">Speichern</button>
+            }
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private IdentityRole _displayRole { get; set; } = new IdentityRole() { Id = string.Empty };
+    private List<IdentityUser>? _usersInRole = new List<IdentityUser>();
+    private string? newUserEmailAddress{ get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(Id))
+        {
+            _displayRole = await IdentityRepository.GetRoleCompleteAsync(Id) ?? new IdentityRole() { Id = string.Empty };
+            _usersInRole = await IdentityRepository.GetUsersWithRoleAsync(Id);
+        }
+    }
+
+    private async Task ToAddUserByEmailAddress()
+    {
+        newUserEmailAddress.NotNullOrEmpty();
+
+        var user = await IdentityRepository.GetUserByEmailAsync(newUserEmailAddress!);
+        if (user != null)
+            await IdentityRepository.ApplyRoleToUser(_displayRole.Id, user.Id);
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+    }
+
+    private async Task SaveNewRole()
+    {
+        _displayRole.NotNull();
+        _displayRole.Id.NotNullOrEmpty();
+        _displayRole.Name.NotNullOrEmpty();
+
+        _displayRole.NormalizedName = _displayRole.Name;
+
+        await IdentityRepository.AddAndSaveAsync(_displayRole);
+
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+    }
+}

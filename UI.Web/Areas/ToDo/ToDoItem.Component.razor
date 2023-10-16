@@ -16,7 +16,7 @@
             </div>
         </div>
 
-        <div class="col" @onclick=@(() => BezeichnungEditEnabled = true)>
+        <div class="col" @onclick=@(() => BezeichnungEditEnabled = Model.IsActive)>
             @if(!BezeichnungEditEnabled)
             {
                 <span>@Model.Bezeichnung</span>
@@ -38,7 +38,7 @@
         }
     </div>
 
-    <div class="col" @onclick=@(() => DeadlineEditEnabled = true)>
+    <div class="col" @onclick=@(() => DeadlineEditEnabled = Model.IsActive)>
         @if (!DeadlineEditEnabled)
         {
             @Model.Deadline?.ToShortDateString()@(Model.Deadline?.TimeOfDay.TotalSeconds > 0 ? $" - {Model.Deadline!.Value.ToShortTimeString()}" : string.Empty)
@@ -53,23 +53,26 @@
     </div>
 
     <div class="removeTodo d-flex-min">
-        <span class="oi oi-x text-secondary opacity-25" aria-hidden="true" @onclick="() => Remove()"></span>
+        <span class="oi oi-x text-secondary opacity-25" aria-hidden="true" @onclick="() => SwapActive()"></span>
     </div>
 </div>
 
-@if (newSubModel != null)
+@if (Model.IsActive)
 {
-    <ToDoNew Model=newSubModel Level=@(Level + 1) OnChange=@((value) => HandleNewChange(value))></ToDoNew>
+    @if (newSubModel != null)
+    {
+        <ToDoNew Model=newSubModel Level=@(Level + 1) OnChange=@((value) => HandleNewChange(value))></ToDoNew>
+    }
+
+    <div class="row addChildRow" @onclick=@(() => CreateNew())>
+        <div class="d-flex-min px-0" @attributes=@GetLeftWidth()>
+        </div>
+
+        <div class="col text-center text-white p-0 position-relative" @attributes=@GetCheckWidthMargin()>
+            <span class="oi oi-plus" aria-hidden="true"></span>
+        </div>
+    </div>
 }
-
-<div class="row addChildRow" @onclick=@(() => CreateNew())>
-    <div class="d-flex-min px-0" @attributes=@GetLeftWidth()>
-    </div>
-
-    <div class="col text-center text-white p-0 position-relative" @attributes=@GetCheckWidthMargin()>
-        <span class="oi oi-plus" aria-hidden="true"></span>
-    </div>
-</div>
 
 @if (Model.Children?.Any() == true)
 {
@@ -99,6 +102,7 @@
     private bool DeadlineEditEnabled { get; set; } = false;
     private DateTime? date { get; set; }
     private DateTime? timeOfDay { get; set; }
+
 
     protected override void OnInitialized()
     {
@@ -156,9 +160,9 @@
         DeadlineEditEnabled = false;
     }
 
-    private async Task Remove()
+    private async Task SwapActive()
     {
-        Model.IsActive = false;
+        Model.IsActive = !Model.IsActive;
         await ItemRepository.UpdateAndSaveAsync(Model);
 
         StateHasChanged();

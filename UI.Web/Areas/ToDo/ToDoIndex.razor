@@ -12,13 +12,12 @@
     <Authorized >
         <h4>Meine ToDo's</h4>
 
-        <div class="row">
-            <div class="col-auto">
-                <InputCheckbox id="showInactiveControl" @bind-Value=@showInactive class="d-inline-block" @onclick="@(() => SwitchActiveInactiveView())"></InputCheckbox>
-            </div>
-
-            <div class="col">
-                <label for="showInactiveControl" class="d-inline-block">Zeige bereits gelöschte / entfernte Einträge</label>
+        <div class="row mb-3">
+            <div class="col p-3 border border-1 bg-light">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="showInactiveControl"  @onchange=@SwitchActiveInactiveView>
+                    <label class="form-check-label" for="showInactiveControl">Zeige bereits gelöschte/entfernte ToDo's</label>
+                </div>
             </div>
         </div>
 
@@ -53,11 +52,14 @@
             <ToDoNew Model=newSubModel OnChange=@((value) => HandleNewChange(value))></ToDoNew>
         }
 
-        <div class="row">
-            <div class="btn-group col-3" role="group">
+        @if (!showInactive)
+        {
+            <div class="row">
+                <div class="btn-group col-3" role="group">
                 <button @onclick="@(() => CreateNew())" class="btn btn-outline-primary">Hinzufügen</button>
             </div>
         </div>
+        }
     </Authorized>
 </AuthorizeView>
 

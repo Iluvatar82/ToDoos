@@ -1,4 +1,5 @@
 ﻿@page "/administration/categories/"
+@attribute [Authorize(Roles = "Administrator")]
 
 <h4>Kategorien</h4>
 
@@ -15,8 +16,18 @@
         <tbody>
             @foreach (var category in allCategories)
             {
+                var currentIndex = allCategories.IndexOf(category);
                 <tr class="align-middle">
-                    <td>@category.Bezeichnung</td>
+                    <td @onclick=@(() => BezeichnungEditEnabled = currentIndex)>
+                        @if (BezeichnungEditEnabled != currentIndex)
+                        {
+                            <span class="col">@category.Bezeichnung</span>
+                        }
+                        else
+                        {
+                            <input type="text" @bind-value="category.Bezeichnung" id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleBezeichnungChange(category); }) @onblur=@(() => HandleBezeichnungChange(category)) />
+                        }
+                    </td>
                     <td class="p-0">
                         <input type="color" @bind-value=category.RGB_A class="w-100" @onblur=@(() => UpdateColor(category, category.RGB_A)) />
                     </td>
@@ -37,7 +48,9 @@ else
 </div>
 
 @code {
-    public IEnumerable<Category> allCategories { get; set; } = new List<Category>();
+    private List<Category> allCategories { get; set; } = new List<Category>();
+    private int BezeichnungEditEnabled { get; set; } = -1;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,6 +61,12 @@ else
     {
         category.RGB_A = color;
         await CategoryRepository.UpdateAndSaveAsync(category);
+    }
+
+    private async Task HandleBezeichnungChange(Category changedCategory)
+    {
+        await ItemRepository.UpdateAndSaveAsync(changedCategory);
+        BezeichnungEditEnabled = -1;
     }
 
     private void NavigateToNew()

@@ -23,6 +23,11 @@
 	flex: 0 1 0%;
 }
 
+.removeTodo {
+	padding-top: 2px;
+	padding-right: 16px;
+}
+
 .removeTodo span:hover {
 	transition: opacity .1s ease;
 	opacity: 1.0 !important;

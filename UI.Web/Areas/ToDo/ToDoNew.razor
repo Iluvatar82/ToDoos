@@ -9,7 +9,7 @@
         </div>
 
         <div class="col">
-            <select @bind:get="Model.CategoryId?.ToString()" @bind:set="(value) => Model.CategoryId = Guid.Parse(value)" id="category" class="form-control">
+            <select @bind:get=@(Model.CategoryId?.ToString()) @bind:set=@((value) => SetCategoryId(value)) id="category" class="form-control">
                 <option value="" @attributes=@SetSelected(Model.CategoryId, null)>Bitte auswählen...</option>
                 @foreach (var category in _categories ?? Enumerable.Empty<Category>())
                 {
@@ -54,6 +54,14 @@
         _categories = await CategoryRepository.GetAllCategoriesAsync();
     }
 
+    private void SetCategoryId(string value)
+    {
+        if (Guid.TryParse(value, out var catId))
+            Model.CategoryId = catId;
+        else
+            Model.CategoryId = null;
+    }
+
     private Dictionary<string, object>? SetSelected(Guid? categoryId, Guid? currentId)
     {
         if (!categoryId.Equals(currentId))
@@ -93,7 +101,7 @@
 
 
         await ItemRepository.AddAndSaveAsync(Model);
-        Model = await ItemRepository.GetItemCompleteAsync(Model.Id);
+        Model = await ItemRepository.GetItemCompleteAsync(Model.Id) ?? new ToDoItem();
 
         await OnChange.InvokeAsync(Model);
     }

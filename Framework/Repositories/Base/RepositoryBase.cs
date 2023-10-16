@@ -7,13 +7,15 @@ namespace Framework.Repositories.Base
     {
         protected IDbContextFactory<TContext> dbContextFactory { get; set; }
 
-        protected RepositoryBase(IDbContextFactory<TContext> dbContextFactory)
+        protected RepositoryBase(IDbContextFactory<TContext> contextFactory)
         {
-            this.dbContextFactory = dbContextFactory;
+            dbContextFactory = contextFactory;
         }
 
         public async Task UpdateAndSaveAsync<T>(T item) where T : class
         {
+            dbContextFactory.NotNull();
+
             using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
             dbContext.NotNull();
@@ -24,6 +26,8 @@ namespace Framework.Repositories.Base
 
         public async Task AddAndSaveAsync<T>(T item) where T : class
         {
+            dbContextFactory.NotNull();
+
             using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
             dbContext.NotNull();

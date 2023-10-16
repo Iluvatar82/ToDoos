@@ -1,10 +1,16 @@
 ﻿@page "/administration/"
 @using UI.Web.Areas.Administration.Categories
+@using UI.Web.Areas.Administration.Roles
+@attribute [Authorize(Roles = "Administrator")]
 
 <h4>Administration</h4>
 
 <div class="border border-1 m-3 p-3">
     <Categories></Categories>
+</div>
+
+<div class="border border-1 m-3 p-3">
+    <Roles></Roles>
 </div>
 
 <div class="row m-3">
