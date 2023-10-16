@@ -2,7 +2,7 @@
 
 <h4>Kategorien</h4>
 
-@if (Categories.Any())
+@if (allCategories.Any())
 {
     <table class="table table-bordered table-hover">
         <thead>
@@ -13,7 +13,7 @@
         </thead>
 
         <tbody>
-            @foreach (var category in Categories)
+            @foreach (var category in allCategories)
             {
                 <tr class="align-middle">
                     <td>@category.Bezeichnung</td>
@@ -37,11 +37,11 @@ else
 </div>
 
 @code {
-    public IEnumerable<Category> Categories { get; set; } = new List<Category>();
+    public IEnumerable<Category> allCategories { get; set; } = new List<Category>();
 
     protected override async Task OnInitializedAsync()
     {
-        Categories = await CategoryRepository.GetAllCategoriesAsync();
+        allCategories = await CategoryRepository.GetAllCategoriesAsync();
     }
 
     private async Task UpdateColor(Category category, string color)
