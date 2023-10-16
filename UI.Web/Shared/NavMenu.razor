@@ -2,7 +2,7 @@
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">UI.Web</a>
+        <a class="navbar-brand" href="">Awesome ToDo's'</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -26,12 +26,38 @@
                 <span class="oi oi-home" aria-hidden="true"></span> ToDo's
             </NavLink>
         </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" @onclick="()=>expandAllLists = !expandAllLists">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Alle Listen
+            </NavLink>
+
+            @if (expandAllLists)
+            {
+                @foreach (var subList in allLists)
+                {
+                    <NavLink class="expand-menu" href=@subList.Url>
+                        <span>@subList.Name</span>
+                    </NavLink>
+                }
+            }
+        </div>
     </nav>
 </div>
 
 @code {
     private bool collapseNavMenu = true;
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private bool expandAllLists = false;
+    private List<(string Name, string Url)> allLists { get; set; } = new List<(string Name, string Url)>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        allLists = new List<(string Name, string Url)>
+        {
+            ("Meine ToDo's", "/todos/")
+        };
+    }
 
     private void ToggleNavMenu()
     {

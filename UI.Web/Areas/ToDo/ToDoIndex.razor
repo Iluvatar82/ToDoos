@@ -30,7 +30,9 @@
             @foreach (var item in _myToDos)
             {
                 <div class="todo-card">
-                    <ToDoItem_Component Model=item Level=0 UserId=_currentUserId!.Value OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
+                    <div class="todo-card-inner">
+                        <ToDoItem_Component Model=item Level=0 UserId=_currentUserId!.Value OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
+                    </div>
                 </div>
             }
         }
@@ -64,12 +66,12 @@
 
         using var repository = DbFactory.CreateDbContext();
         _myToDos = (await repository.ToDoItems
-            .Include(todo => todo.Category)
-            .Include(todo => todo.UserAssignments)
-            .Where(todo => todo.UserAssignments.Any(ua => ua.UserId == _currentUserId))
-                .OrderBy(todo => todo.Order)
-                .ThenBy(todo => todo.Deadline).ToListAsync())
-                    .Where(todo => todo.Parent == null).ToList();
+            .Include(item => item.Category)
+            .Include(item => item.UserAssignments)
+            .Where(item => item.UserAssignments.Any(ua => ua.UserId == _currentUserId) && item.IsActive)
+                .OrderBy(item => item.Order)
+                .ThenBy(item => item.Deadline).ToListAsync())
+                    .Where(item => item.Parent == null).ToList();
     }
 
     private void CreateNew()

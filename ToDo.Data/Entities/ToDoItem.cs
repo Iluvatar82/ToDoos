@@ -35,9 +35,12 @@ namespace ToDo.Data.Entities
 
         public DateTime? Done { get; set; }
 
+        public bool IsActive {  get; set; }
+
 
         public ToDoItem()
         {
+            IsActive = true;
             Bezeichnung = string.Empty;
             Children = new List<ToDoItem>();
             UserAssignments = new List<UserToDoAssignment>();

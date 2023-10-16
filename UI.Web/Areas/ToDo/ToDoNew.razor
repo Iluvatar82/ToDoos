@@ -97,7 +97,7 @@
         await repository.ToDoItems.AddAsync(Model);
         await repository.SaveChangesAsync();
 
-        Model = (await repository.ToDoItems.Where(todo => todo.Id == Model.Id).Include(todo => todo.Category).Include(todo => todo.Parent).OrderBy(todo => todo.Order).ThenBy(todo => todo.Deadline).ToListAsync()).First();
+        Model = (await repository.ToDoItems.Where(todo => todo.Id == Model.Id).Include(todo => todo.Category).Include(todo => todo.Parent).Include(todo => todo.UserAssignments).OrderBy(todo => todo.Order).ThenBy(todo => todo.Deadline).ToListAsync()).First();
         await OnChange.InvokeAsync(Model);
     }
 }

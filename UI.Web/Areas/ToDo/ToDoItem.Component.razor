@@ -75,7 +75,7 @@
 {
     foreach (var child in Model.Children)
     {
-        <ToDoItem_Component Model=child Level=@(Level + 1) OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
+        <ToDoItem_Component Model=child Level=@(Level + 1) UserId=UserId OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
     }
 }
 
@@ -169,7 +169,8 @@
     {
         using var repository = DbFactory.CreateDbContext();
 
-        repository.Remove(Model);
+        Model.IsActive = false;
+        repository.Update(Model);
         await repository.SaveChangesAsync();
 
         StateHasChanged();
