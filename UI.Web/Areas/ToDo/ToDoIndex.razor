@@ -99,8 +99,8 @@
     {
         myToDos = (await ItemRepository.GetAllItemsCompleteAsync(UserId, !showInactive))
             .OrderBy(item => item.Order)
-                    .ThenBy(item => item.Deadline)
-                    .Where(item => item.Parent == null).ToList();
+                .ThenByDescending(item => item.Deadline)
+                .Where(item => item.Parent == null).ToList();
     }
 
     private void CreateNew()

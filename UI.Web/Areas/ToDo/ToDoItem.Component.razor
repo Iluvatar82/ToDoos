@@ -77,7 +77,7 @@
 
 @if (Model.Children?.Any() == true)
 {
-    foreach (var child in Model.Children)
+    foreach (var child in Model.Children.OrderBy(item => item.Order).ThenByDescending(item => item.Deadline))
     {
         <ToDoItem_Component Model=child Level=@(Level + 1) UserId=UserId OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
     }
