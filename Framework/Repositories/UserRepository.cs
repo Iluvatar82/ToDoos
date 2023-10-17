@@ -9,7 +9,8 @@
                 ("Meine ToDo's", "person"/*people*/, "list/" + userId.ToString())
             };
 
-            return result;
+            //Future: return result;
+            return await Task.FromResult(result);
         }
     }
 }
