@@ -1,10 +1,13 @@
 ﻿@using global::ToDo.Data.Entities;
 
-<EditForm Model=Model OnSubmit=@(() => SaveNewToDo())>
+<EditForm Model=Model OnSubmit=@((context) => SaveNewToDo(context))>
+    <DataAnnotationsValidator />
+
     <div class="row bg-opacity-25">
         <div class="d-flex col-8" @attributes=@GetMarginLeft()>
             <div class="col">
-                <input type="text" @bind-value="Model.Bezeichnung" id="bezeichnung" class="form-control" />
+                <input type="text" @bind-value=Model.Bezeichnung id="bezeichnung" class="form-control" />
+                <ValidationMessage For=@(() => Model.Bezeichnung) />
             </div>
         </div>
 
@@ -80,7 +83,7 @@
 
     private Dictionary<string, object>? GetMarginLeft()
     {
-        if (Model.CategoryId == null || Model.Done.HasValue)
+        if (Model.CategoryId == null)
             return null;
 
         return new Dictionary<string, object>
@@ -89,20 +92,23 @@
         };
     }
 
-    private async Task SaveNewToDo()
+    private async Task SaveNewToDo(EditContext context)
     {
-        if (date != default)
-            Model.Deadline = date;
+        var valid = context.Validate();
+        if (valid)
+        {
+            if (date != default)
+                Model.Deadline = date;
 
-        if (timeOfDay != default)
-            Model.Deadline = date == default
-                                ? timeOfDay
-                                : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
+            if (timeOfDay != default)
+                Model.Deadline = date == default
+                                    ? timeOfDay
+                                    : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
 
+            await ItemRepository.AddAndSaveAsync(Model);
+            Model = await ItemRepository.GetItemCompleteAsync(Model.Id) ?? new ToDoItem();
 
-        await ItemRepository.AddAndSaveAsync(Model);
-        Model = await ItemRepository.GetItemCompleteAsync(Model.Id) ?? new ToDoItem();
-
-        await OnChange.InvokeAsync(Model);
+            await OnChange.InvokeAsync(Model);
+        }
     }
 }

@@ -1,3 +1,7 @@
 ﻿.modal-backdrop.show {
 	opacity: .75;
 }
+
+.modal-xxl {
+	max-width: 75%;
+}

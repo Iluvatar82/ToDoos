@@ -1,4 +1,5 @@
-﻿@using UI.Web.Exception;
+﻿@using Core.Validation;
+@using UI.Web.Exception;
 @inherits LayoutComponentBase
 
 <PageTitle>UI.Web</PageTitle>
@@ -23,23 +24,37 @@
                 </ChildContent>
                 <ErrorContent>
                     <div class="blazor-error-boundary">
-                        @foreach (var line in myErrorLines ?? Enumerable.Empty<(string Content, int Indentation)>())
-                        {
-                            <div class="d-block">
-                                @for (var i = 0; i < line.Indentation; i++)
-                                {
-                                    <span class="d-inline-block">&nbsp;</span>
-                                }
+                    @{
+                        PageModal.NotNull();
 
-                                <span class="d-inline-block">@line.Content</span>
+                        PageModal!.Title = @<h4>Achtung Fehler!</h4>;
+                        PageModal.Body =@<div class="row align-items-center">
+                            <div class="col-1 text-center">
+                                <span class="oi oi-warning text-danger fs-2" aria-hidden="true"></span>
                             </div>
-                        }
 
-                        <div class="row">
-                            <div class="btn-group col-3" role="group">
-                                <button type="button" @onclick=@(() => @NavigationManager.NavigateTo(NavigationManager.Uri, true)) class="btn btn-light">Seite neu laden</button>
+                            <div class="col-11 text-start">
+                                @foreach (var line in myErrorLines ?? Enumerable.Empty<(string Content, int Indentation)>())
+                                    {
+                                        <div class="d-block">
+                                            @for (var i = 0; i < line.Indentation; i++)
+                                            {
+                                                <span class="d-inline-block">&emsp;</span>
+                                            }
+
+                                            <span class="d-inline-block">@line.Content</span>
+                                        </div>
+                                    }
+                                </div>
                             </div>
-                        </div>
+                        ;
+
+                        PageModal.AcceptActionAsync = async () => @NavigationManager.NavigateTo(NavigationManager.Uri, true);
+                        PageModal.AbortVisible = false;
+                        PageModal.ModalClasses = "modal-xxl";
+
+                        PageModal.Show();
+                    }
                     </div>
                 </ErrorContent>
             </ErrorBoundaryWithOutput>

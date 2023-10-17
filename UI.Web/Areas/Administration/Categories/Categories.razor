@@ -1,4 +1,5 @@
 ﻿@page "/administration/categories/"
+@using System.ComponentModel.DataAnnotations;
 @attribute [Authorize(Roles = "Administrator")]
 
 <h4>Kategorien</h4>
@@ -25,7 +26,12 @@
                         }
                         else
                         {
-                            <input type="text" @bind-value="category.Bezeichnung" id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleBezeichnungChange(category); }) @onblur=@(() => HandleBezeichnungChange(category)) />
+                            <EditForm Model=@category>
+                                <DataAnnotationsValidator />
+
+                                <input type="text" @bind-value=category.Bezeichnung id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleBezeichnungChange(context, category); }) @onblur=@(() => HandleBezeichnungChange(context, category)) />
+                                <ValidationMessage For=@(() => category.Bezeichnung) />
+                            </EditForm>
                         }
                     </td>
                     <td class="p-0">
@@ -63,10 +69,14 @@ else
         await CategoryRepository.UpdateAndSaveAsync(category);
     }
 
-    private async Task HandleBezeichnungChange(Category changedCategory)
+    private async Task HandleBezeichnungChange(EditContext context, Category changedCategory)
     {
-        await ItemRepository.UpdateAndSaveAsync(changedCategory);
-        BezeichnungEditEnabled = -1;
+        var valid = context.Validate();
+        if (valid)
+        {
+            await ItemRepository.UpdateAndSaveAsync(changedCategory);
+            BezeichnungEditEnabled = -1;
+        }
     }
 
     private void NavigateToNew()

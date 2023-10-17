@@ -24,7 +24,12 @@
             }
             else
             {
-                <input type="text" @bind-value="Model.Bezeichnung" id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleBezeichnungChange(); }) @onblur=@(() => HandleBezeichnungChange()) />
+                <EditForm Model=@Model>
+                    <DataAnnotationsValidator />
+
+                    <input type="text" @bind-value=@Model.Bezeichnung id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleBezeichnungChange(context); }) @onblur=@(() => HandleBezeichnungChange(context)) />
+                    <ValidationMessage For=@(() => Model.Bezeichnung) />
+                </EditForm>
             }
         </div>
     </div>
@@ -141,10 +146,14 @@
         await ItemRepository.UpdateAndSaveAsync(Model);
     }
 
-    private async Task HandleBezeichnungChange()
+    private async Task HandleBezeichnungChange(EditContext context)
     {
-        await ItemRepository.UpdateAndSaveAsync(Model);
-        BezeichnungEditEnabled = false;
+        var valid = context.Validate();
+        if (valid)
+        {
+            await ItemRepository.UpdateAndSaveAsync(Model);
+            BezeichnungEditEnabled = false;
+        }
     }
 
     private async Task HandleDeadlineChange()

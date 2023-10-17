@@ -1,11 +1,13 @@
 ﻿@page "/administration/roles/new/"
 @page "/administration/roles/edit/{Id}"
+
 @using Core.Validation;
 @using Microsoft.AspNetCore.Identity;
 @using System.Collections;
+@using System.ComponentModel.DataAnnotations;
 @attribute [Authorize(Roles = "Administrator")]
 
-@if(string.IsNullOrWhiteSpace(Id))
+@if (IsNewPage)
 {
     <h4>Neue Rolle hinzufügen</h4>
 }
@@ -14,37 +16,43 @@ else
     <h4>Rolle bearbeiten und User hinzufügen</h4>
 }
 
-<EditForm OnSubmit=@(() =>string.IsNullOrWhiteSpace(Id) ? SaveNewRole() : ToAddUserByEmailAddress()) Model="_displayRole">
+<EditForm OnSubmit=@((context) => IsNewPage ? SaveNewRole(context) : ToAddUserByEmailAddress(context)) Model=@(IsNewPage ? displayRole : displayEmail)>
+    <DataAnnotationsValidator />
+
     <div class="row">
         <div class="mb-3 col-3">
             <label for="roleId" class="form-label fw-bold">Identifikation</label>
-            @if (string.IsNullOrWhiteSpace(Id))
+            @if (IsNewPage)
             {
-                <input type="text" @bind-value=_displayRole.Id id="roleId" class="form-control" />
+                <input type="text" @bind-value=displayRole.Id id="roleId" class="form-control" placeholder="Id" />
+                <ValidationMessage For=@(() => displayRole.Id) />
             }
             else
             {
-                <div>@_displayRole.Id</div>
+                <div>@displayRole.Id</div>
             }
         </div>
 
         <div class="mb-3 col-3">
             <label for="bezeichnung" class="form-label fw-bold">Rollenbezeichnung</label>
-            @if (string.IsNullOrWhiteSpace(Id))
+            @if (IsNewPage)
             {
-                <input type="text" @bind-value=_displayRole.Name id="bezeichnung" class="form-control" />
+                <input type="text" @bind-value=displayRole.Rolle id="bezeichnung" class="form-control" placeholder="Rolle" />
+                <ValidationMessage For=@(() => displayRole.Rolle) />
             }
             else
             {
-                <div>@_displayRole.Name</div>
+                <div>@displayRole.Rolle</div>
             }
         </div>
     </div>
 
-    @if(_usersInRole?.Any() == true)
+    @if (!IsNewPage)
     {
         <div class="border border-1 m-3">
-            @foreach (var user in _usersInRole)
+        @if (usersInRole?.Any() == true)
+        {
+            @foreach (var user in usersInRole)
             {
                 <div class="row px-3 py-2">
                     <div class="col">
@@ -56,28 +64,16 @@ else
                     </div>
                 </div>
             }
+        }
 
             <div class="row px-3 py-2">
                 <div class="col">
-                    <input type="text" @bind-value=@newUserEmailAddress class="form-control" />
+                    <input type="text" @bind-value=@displayEmail.Email class="form-control" />
+                    <ValidationMessage For=@(() => displayEmail.Email) />
                 </div>
 
                 <div class="col">
-                    <button @onclick=@(() => ToAddUserByEmailAddress()) class="btn btn-outline-primary">User hinzufügen</button>
-                </div>
-            </div>
-        </div>
-    }
-    else if (!string.IsNullOrWhiteSpace(Id))
-    {
-        <div class="border border-1 m-3">
-            <div class="row px-3 py-2">
-                <div class="col-auto">
-                    <input type="text" @bind-value=@newUserEmailAddress class="form-control" />
-                </div>
-
-                <div class="col-auto">
-                    <button @onclick=@(() => ToAddUserByEmailAddress()) class="btn btn-outline-primary">User hinzufügen</button>
+                    <button type="submit" class="btn btn-outline-primary">User hinzufügen</button>
                 </div>
             </div>
         </div>
@@ -86,7 +82,7 @@ else
     <div class="row">
         <div class="btn-group col-3" role="group">
             <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
-            @if (string.IsNullOrWhiteSpace(Id))
+            @if (IsNewPage)
             {
                 <button type="submit" class="btn btn-outline-primary">Speichern</button>
             }
@@ -97,27 +93,39 @@ else
 @code {
     [Parameter]
     public string? Id { get; set; }
+    private bool IsNewPage => string.IsNullOrWhiteSpace(Id);
 
-    private IdentityRole _displayRole { get; set; } = new IdentityRole() { Id = string.Empty };
-    private List<IdentityUser>? _usersInRole = new List<IdentityUser>();
-    private string? newUserEmailAddress{ get; set; }
+    private IdentityRoleDto displayRole { get; set; } = new IdentityRoleDto() { Id = string.Empty };
+    private EmailDto displayEmail { get; set; } = new EmailDto();
+
+
+    private List<IdentityUser>? usersInRole = new List<IdentityUser>();
 
     protected override async Task OnInitializedAsync()
     {
-        if (!string.IsNullOrWhiteSpace(Id))
+        if (!IsNewPage)
         {
-            _displayRole = await IdentityRepository.GetRoleCompleteAsync(Id) ?? new IdentityRole() { Id = string.Empty };
-            _usersInRole = await IdentityRepository.GetUsersWithRoleAsync(Id);
+            var dbRole = await IdentityRepository.GetRoleCompleteAsync(Id!);
+            
+            dbRole.NotNull();
+
+            displayRole = IdentityRoleDto.ToIdentityRoleDto(dbRole!);
+            usersInRole = await IdentityRepository.GetUsersWithRoleAsync(Id!);
         }
     }
 
-    private async Task ToAddUserByEmailAddress()
+    private async Task ToAddUserByEmailAddress(EditContext context)
     {
-        newUserEmailAddress.NotNullOrEmpty();
+        var valid = context.Validate();
+        if (valid)
+        {
+            displayEmail.NotNullOrEmpty();
+            displayEmail.Email.NotNullOrEmpty();
 
-        var user = await IdentityRepository.GetUserByEmailAsync(newUserEmailAddress!);
-        if (user != null)
-            await IdentityRepository.ApplyRoleToUser(_displayRole.Id, user.Id);
+            var user = await IdentityRepository.GetUserByEmailAsync(displayEmail.Email!);
+            if (user != null)
+                await IdentityRepository.ApplyRoleToUser(displayRole.Id, user.Id);
+        }
     }
 
     private void NavigateBack()
@@ -125,16 +133,18 @@ else
         NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
     }
 
-    private async Task SaveNewRole()
+    private async Task SaveNewRole(EditContext context)
     {
-        _displayRole.NotNull();
-        _displayRole.Id.NotNullOrEmpty();
-        _displayRole.Name.NotNullOrEmpty();
+        var valid = context.Validate();
+        if (valid)
+        {
+            displayRole.NotNull();
+            displayRole.Id.NotNullOrEmpty();
+            displayRole.Rolle.NotNullOrEmpty();
 
-        _displayRole.NormalizedName = _displayRole.Name;
+            await IdentityRepository.AddAndSaveAsync(IdentityRoleDto.ToIdentityRole(displayRole));
 
-        await IdentityRepository.AddAndSaveAsync(_displayRole);
-
-        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+        }
     }
 }

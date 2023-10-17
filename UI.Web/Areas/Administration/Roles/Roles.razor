@@ -20,7 +20,7 @@
             {
                 <tr class="align-middle" @ondblclick=@(() => NavigateToEdit(role.Id))>
                     <td>
-                        <span class="col">@role.Name</span>
+                        <span class="col">@role.Rolle</span>
                     </td>
                 </tr>
             }
@@ -39,12 +39,12 @@ else
 </div>
 
 @code {
-    private List<IdentityRole> allRoles { get; set; } = new List<IdentityRole>();
+    private List<IdentityRoleDto> allRoles { get; set; } = new List<IdentityRoleDto>();
 
 
     protected override async Task OnInitializedAsync()
     {
-        allRoles = await IdentityRepository.GetAllRoles();
+        allRoles = (await IdentityRepository.GetAllRoles()).Select(IdentityRoleDto.ToIdentityRoleDto).ToList();
     }
 
     private void NavigateToEdit(string id)

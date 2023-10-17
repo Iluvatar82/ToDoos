@@ -1,18 +1,23 @@
 ﻿@page "/administration/categories/new/"
+@using System.ComponentModel.DataAnnotations;
 @attribute [Authorize(Roles = "Administrator")]
 
 <h4>Neue Kategorie hinzufügen</h4>
 
-<EditForm OnSubmit="SaveNewCategory" Model="_newCategory">
-     <div class="row">
+<EditForm OnSubmit=@SaveNewCategory Model=@_newCategory>
+    <DataAnnotationsValidator />
+    
+    <div class="row">
         <div class="mb-3 col-3">
-            <label for="bezeichnung" class="form-label">Kategorie</label>
-            <input type="text" @bind-value=_newCategory.Bezeichnung id="bezeichnung" class="form-control" />
+            <label for="bezeichnung" class="form-label">Bezeichnung</label>
+            <input type="text" @bind-value=_newCategory.Bezeichnung id="bezeichnung" class="form-control" placeholder="Bezeichnung" />
+            <ValidationMessage For=@(() => _newCategory.Bezeichnung) />
         </div>
 
         <div class="mb-3 col-3">
             <label for="farbe" class="form-label">Farbe</label>
             <input type="color" @bind-value=_newCategory.RGB_A id="farbe" class="form-control" />
+            <ValidationMessage For=@(() => _newCategory.RGB_A) />
         </div>
     </div>
 
@@ -33,9 +38,13 @@
         NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
     }
 
-    private async Task SaveNewCategory()
+    private async Task SaveNewCategory(EditContext context)
     {
-        await CategoryRepository.AddAndSaveAsync(_newCategory);
-        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+        var valid = context.Validate();
+        if (valid)
+        {
+            await CategoryRepository.AddAndSaveAsync(_newCategory);
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+        }
     }
 }
