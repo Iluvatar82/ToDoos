@@ -45,7 +45,7 @@
 
             <div class="col @(isUserList ? "opacity-25" : "fw-bold")">
                 <select class="form-select" @bind=@selectedUserGroupId disabled=@isUserList>
-                    <option value="" selected>Gruppe auswählen...</option>
+                    <option value="">Gruppe auswählen...</option>
                     @foreach (var userGroup in userGroups)
                     {
                         <option value="@userGroup.GroupId">@userGroup.Name</option>
@@ -90,7 +90,7 @@
 
             list.GroupId = selectedUserGroupId;
 
-            GetUsersInGroup();
+            InvokeAsync(async () => await GetUsersInGroup());
         }
     }
 
@@ -105,6 +105,8 @@
         userGroups = await UserRepository.GetAllGroupsAsync(UserId);
         list = (await ListRepository.GetAsync<ToDoList>(ListId))!;
         isUserList = list.IsUserList;
+        if (!isUserList)
+            selectedUserGroupId = list.GroupId;
     }
 
     private void SwitchUserGroupList()

@@ -1,6 +1,8 @@
 ﻿@page "/list/{ListId:guid}"
 @using System.Security.Claims;
 @using Core.Validation;
+@using Microsoft.AspNetCore.SignalR.Client;
+@using UI.Web.Hubs;
 
 <AuthorizeView>
     <NotAuthorized>
@@ -23,6 +25,20 @@
                 </div>
             </div>
         </div>
+
+        <div class="row">
+            <div class="btn-group col-3" role="group">
+                <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
+                <button @onclick="@(() => CreateNew())" class="btn btn-outline-primary" disabled=@showInactive>Hinzufügen</button>
+            </div>
+        </div>
+
+        @if (newSubModel != null)
+        {
+            <div class="row mt-2">
+                <ToDoNew Model=newSubModel OnChange=@((value) => HandleNewChange(value))></ToDoNew>
+            </div>
+        }
 
         @if (myToDos.Any())
         {
@@ -49,18 +65,6 @@
                 </div>
             }
         }
-
-        @if (newSubModel != null)
-        {
-            <ToDoNew Model=newSubModel OnChange=@((value) => HandleNewChange(value))></ToDoNew>
-        }
-
-        <div class="row">
-            <div class="btn-group col-3" role="group">
-                <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
-                <button @onclick="@(() => CreateNew())" class="btn btn-outline-primary" disabled=@showInactive>Hinzufügen</button>
-            </div>
-        </div>
     </Authorized>
 </AuthorizeView>
 
@@ -73,8 +77,18 @@
     [Parameter]
     public Guid ListId { get; set; }
 
+    [CascadingParameter]
+    public HubConnection? ListHubConnection { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
+        ListHubConnection?.On<string>("UpdateList", (username) =>
+        {
+            Console.WriteLine($"{username} changed this List!. Updating...");
+            InvokeAsync(async () => await RetrieveItems());
+            InvokeAsync(StateHasChanged);
+        });
+
         if (ListId == Guid.Empty)
         {
             var _currentUser = (await AuthenticationProvider.GetAuthenticationStateAsync()).User;
@@ -85,6 +99,8 @@
         }
 
         listInformation = await UserRepository.GetListInformationAsync(ListId);
+        if (!listInformation.IsUserList && ListHubConnection != null)
+            await ListHubConnection.SendAsync("JoinedGroupList", ListId);
     }
 
     protected override async Task OnParametersSetAsync()
@@ -157,7 +173,7 @@
         return result.ToList();
     }
 
-    private void HandleNewChange(ToDoItem? item)
+    private async Task HandleNewChange(ToDoItem? item)
     {
         newSubModel = null;
         if (item != null)
@@ -171,6 +187,8 @@
         }
 
         StateHasChanged();
+
+        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId);
     }
 
     private void NavigateBack()
@@ -178,9 +196,11 @@
         NavigationManager.NavigateTo(NavigationManager.BaseUri);
     }
 
-    private void HandleRemove(ToDoItem todoItem)
+    private async Task HandleRemove(ToDoItem todoItem)
     {
         myToDos.Remove(todoItem);
         StateHasChanged();
+
+        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId);
     }
 }

@@ -1,10 +1,10 @@
 ﻿@using System.Diagnostics;
 @using Core.Validation;
 
-<div class="row bg-opacity-25 justify-content-end @(Model.Done.HasValue ? " bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25 text-opacity-25" : null)" @attributes=@GetRowAttributes()>
+<div class="row py-2 bg-opacity-25 justify-content-end @(Model.Done.HasValue ? " bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25 text-opacity-25" : null)" @attributes=@GetRowAttributes()>
     <div class="d-flex col-10 col-md-8 col-sm-6">
         <div class="d-flex-min" @attributes=@GetMarginLeft()>
-            <div class="px-2 @((Model.Done.HasValue || Hidden || !Model.IsActive) ? "" : "animateToSuccess") p-0">
+            <div class="px-2 @((Model.Done.HasValue || Hidden || !Model.IsActive) ? "" : "markToDoDone") p-0">
                 @if (Model.Done.HasValue)
                 {
                     <span class="oi oi-check text-success" aria-hidden="true" @onclick="() => SwapDone()"></span>

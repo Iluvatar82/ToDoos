@@ -21,4 +21,5 @@ table tr td:last-child {
 .todo-card-inner {
 	overflow: hidden;
 	border-radius: 2px;
+	position: relative;
 }

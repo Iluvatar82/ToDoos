@@ -1,5 +1,18 @@
-﻿.animateToSuccess span:hover {
-	transition: color, opacity .2s ease;
+﻿.todo-card-inner .row {
+	position: relative;
+}
+
+.todo-card-inner .row:not(.addChildRow) {
+	margin-top: -6px;
+	margin-bottom: -6px;
+}
+
+.markToDoDone > span.oi {
+	top: 3px;
+}
+
+.markToDoDone > span:hover {
+	transition: all, opacity .2s ease;
 	opacity: 1.0 !important;
 	color: rgb(25, 135, 84) !important;
 }
@@ -7,12 +20,15 @@
 .addChildRow {
 	transition: all .2s ease;
 	font-size: 2px;
-	height: 2px;
+	height: 14px;
+	padding: 6px;
+	padding: 6px;
+	z-index: 1;
 }
 
 .addChildRow:hover {
 	font-size: 12px;
-	height: 18px;
+	height: 30px;
 }
 
 .addChildRow > div:not(:first-child) {
@@ -28,7 +44,11 @@
 	padding-right: 16px;
 }
 
-.removeTodo span:hover {
+.removeTodo > span.oi {
+	top: -1px;
+}
+
+.removeTodo > span:hover {
 	transition: opacity .1s ease;
 	opacity: 1.0 !important;
 }

@@ -16,9 +16,11 @@ namespace ToDo.Data.ToDoData.Entities
         public string Name { get; set; }
 
         [Required]
+        [ForeignKey("Group")]
         public Guid GroupId { get; set; }
 
         [Required]
+        [ForeignKey("User")]
         public Guid UserId { get; set; }
 
 

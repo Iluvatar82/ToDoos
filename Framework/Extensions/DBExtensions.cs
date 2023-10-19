@@ -9,8 +9,7 @@ namespace Framework.Extensions
         {
             return itemSet
                 .Include(entity => entity.Category)
-                .Include(entity => entity.Parent)
-                .Include(entity => entity.List);
+                .Include(entity => entity.Parent);
         }
     }
 }

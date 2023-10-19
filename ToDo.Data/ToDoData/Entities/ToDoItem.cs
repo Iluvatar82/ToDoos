@@ -29,9 +29,8 @@ namespace ToDo.Data.ToDoData.Entities
         [InverseProperty(nameof(Parent))]
         public List<ToDoItem> Children { get; set; }
 
-        [ForeignKey(nameof(List))]
+        [ForeignKey("List")]
         public Guid ListId { get; set; }
-        public ToDoList List { get; set; }
 
         public DateTime? Deadline { get; set; }
 
@@ -62,7 +61,6 @@ namespace ToDo.Data.ToDoData.Entities
             Bezeichnung = string.Empty;
             Children = new List<ToDoItem>();
             VisuallyDeactivated = false;
-            List = new ToDoList();
         }
 
 

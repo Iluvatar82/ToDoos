@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ToDo.Data.Identity;
 using ToDo.Data.ToDoData;
 using UI.Web.Areas.Identity;
+using UI.Web.Hubs;
 
 namespace UI.Web
 {
@@ -61,6 +62,7 @@ namespace UI.Web
 
             app.MapControllers();
             app.MapBlazorHub();
+            app.MapHub<GroupListUpdateHub>(GroupListUpdateHub.HubUrl);
             app.MapFallbackToPage("/_Host");
 
             app.Run();

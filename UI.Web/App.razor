@@ -1,18 +1,36 @@
-﻿<CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(App).Assembly">
-        <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" >
-                <NotAuthorized>
-                    <p>Sie sind nicht authorisiert, auf diese Seite zuzugreifen!</p>
-                </NotAuthorized>
-            </AuthorizeRouteView>
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-        </Found>
-        <NotFound>
-            <PageTitle>Not found</PageTitle>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <p role="alert">Sorry, there's nothing at this address.</p>
-            </LayoutView>
-        </NotFound>
-    </Router>
-</CascadingAuthenticationState>
+﻿@using Microsoft.AspNetCore.SignalR.Client;
+
+<CascadingValue Value="ListHubConnection">
+    <CascadingAuthenticationState>
+        <Router AppAssembly="@typeof(App).Assembly">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" >
+                    <NotAuthorized>
+                        <p>Sie sind nicht authorisiert, auf diese Seite zuzugreifen!</p>
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            </Found>
+            <NotFound>
+                <PageTitle>Not found</PageTitle>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <p role="alert">Sorry, there's nothing at this address.</p>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </CascadingAuthenticationState>
+</CascadingValue>
+
+@code {
+    [CascadingParameter]
+    public HubConnection? ListHubConnection { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListHubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.BaseUri + "hubs/updatelist")
+            .Build();
+
+        await ListHubConnection.StartAsync();
+    }
+}
