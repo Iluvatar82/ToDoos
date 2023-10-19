@@ -30,14 +30,17 @@
                 <EditForm OnSubmit=@SaveNewGroup Model=@newGroup>
                     <DataAnnotationsValidator />
 
-                    <div class="row">
-                        <div class="mb-3 col-3">
-                            <label for="name" class="form-label">Gruppen Name</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col mx-2 px-2">
+                            <label for="name" class="form-label fw-bold mb-0 float-end">Gruppen Name</label>
+                        </div>
+
+                        <div class="col mx-2 px-2">
                             <input type="text" @bind-value=newGroup.Name id="name" class="form-control" placeholder="Name" />
                             <ValidationMessage For=@(() => newGroup.Name) />
                         </div>
 
-                        <div class="btn-group col-3" role="group">
+                        <div class="col mx-2 px-2" role="group">
                             <button type="submit" class="btn btn-outline-primary">Gruppe speichern</button>
                         </div>
                     </div>
