@@ -18,7 +18,7 @@
                                 </div>
                             </NavLink>
 
-                            <span id="removeListButton" class="oi oi-x text-secondary align-self-center me-2" aria-hidden="true" @onclick=@(async () => await RemoveGroup(@groupEntry))></span>
+                            <span id="removeGroupButton" class="oi oi-x text-secondary align-self-center me-2" aria-hidden="true" @onclick=@(async () => await RemoveGroup(@groupEntry))></span>
                         </div>
                     </div>
                 </td>
@@ -27,16 +27,21 @@
 
         <tr>
             <td>
-                <div>
-                    <div class="d-flex justify-content-between">
-                        <NavLink class="nav-link" href=@(NavigationManager.BaseUri + "group/new")>
-                            <div>
-                                <span class="oi oi-plus text-black" aria-hidden="true"></span>
-                                <span class="text-black ms-2"><em>Neue Gruppe anlegen</em></span>
-                            </div>
-                        </NavLink>
+                <EditForm OnSubmit=@SaveNewGroup Model=@newGroup>
+                    <DataAnnotationsValidator />
+
+                    <div class="row">
+                        <div class="mb-3 col-3">
+                            <label for="name" class="form-label">Gruppen Name</label>
+                            <input type="text" @bind-value=newGroup.Name id="name" class="form-control" placeholder="Name" />
+                            <ValidationMessage For=@(() => newGroup.Name) />
+                        </div>
+
+                        <div class="btn-group col-3" role="group">
+                            <button type="submit" class="btn btn-outline-primary">Gruppe speichern</button>
+                        </div>
                     </div>
-                </div>
+                </EditForm>
             </td>
         </tr>
     </tbody>
@@ -44,9 +49,10 @@
 
 @code {
     private List<UserGroup> myGroups { get; set; } = new List<UserGroup>();
+    private UserGroup newGroup = new UserGroup { GroupId = Guid.NewGuid() };
 
     [CascadingParameter]
-    public Modal PageModal { get; set; }
+    public Modal? PageModal { get; set; }
 
     [CascadingParameter]
     public Guid UserId { get; set; } = Guid.Empty;
@@ -54,6 +60,22 @@
     protected override async Task OnInitializedAsync()
     {
         myGroups = await UserRepository.GetAllGroupsAsync(UserId);
+    }
+
+    private async Task SaveNewGroup(EditContext context)
+    {
+        var valid = context.Validate();
+        if (valid)
+        {
+            newGroup.UserId = UserId;
+
+            await UserRepository.AddAndSaveAsync(newGroup);
+
+            myGroups.Add(newGroup);
+
+            newGroup = new UserGroup { GroupId = Guid.NewGuid() };
+            StateHasChanged();
+        }
     }
 
     private async Task RemoveGroup(UserGroup group, bool force = false)
@@ -79,8 +101,9 @@
         }
 
         await UserRepository.RemoveAndSaveAsync(allUsers);
-        await UserRepository.RemoveAndSaveAsync(group);
 
-        NavigationManager.NavigateTo(NavigationManager.BaseUri, true);
+        myGroups.Remove(group);
+
+        StateHasChanged();
     }
 }

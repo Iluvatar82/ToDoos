@@ -42,9 +42,7 @@
             }
         </tbody>
     </table>
-@* 
-    <EditableTable AllItems=allCategories Columns=tableColumns StateChanged=@(() => StateHasChanged())></EditableTable>
- *@}
+}
 else
 {
     <div class="form-label">Es gibt noch keine Kategorie</div>
@@ -60,15 +58,9 @@ else
     private List<Category> allCategories { get; set; } = new List<Category>();
     private int BezeichnungEditEnabled { get; set; } = -1;
 
-
-    private List<ColumnDefinition<Category>> tableColumns { get; set; } = new List<ColumnDefinition<Category>>();
-
     protected override async Task OnInitializedAsync()
     {
         allCategories = await CategoryRepository.GetAllCategoriesAsync();
-
-        // tableColumns.Add(new ColumnDefinition<Category> { Header = nameof(Category.Bezeichnung), Accessor = (c) => c.Bezeichnung, Setter = (c, v) => c.Bezeichnung = v, InputType="text", IsEditable = true, PropertyExpression = (i) => i.Bezeichnung });
-        // tableColumns.Add(new ColumnDefinition<Category> { Header = "Farbe", Accessor = (c) => c.RGB_A, Setter = (c, v) => c.RGB_A = v, InputType = "color", IsEditable = true, PropertyExpression = (i) => i.RGB_A });
     }
 
     private async Task UpdateColor(Category category, string color)

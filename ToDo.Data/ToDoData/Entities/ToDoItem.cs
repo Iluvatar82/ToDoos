@@ -62,6 +62,7 @@ namespace ToDo.Data.ToDoData.Entities
             Bezeichnung = string.Empty;
             Children = new List<ToDoItem>();
             VisuallyDeactivated = false;
+            List = new ToDoList();
         }
 
 

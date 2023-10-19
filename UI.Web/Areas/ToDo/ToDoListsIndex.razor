@@ -48,7 +48,7 @@
     private List<global::ToDo.Data.ToDoData.Entities.ToDoList> myLists { get; set; } = new List<global::ToDo.Data.ToDoData.Entities.ToDoList>();
 
     [CascadingParameter]
-    public Modal PageModal { get; set; }
+    public Modal? PageModal { get; set; }
 
     [CascadingParameter]
     public Guid UserId { get; set; } = Guid.Empty;

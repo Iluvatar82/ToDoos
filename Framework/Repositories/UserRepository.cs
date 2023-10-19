@@ -23,8 +23,8 @@ namespace Framework.Repositories
             dbContext.NotNull();
             dbContext!.ToDoLists.NotNull();
 
-            var allMyGroupIDs = dbContext.Groups.Where(g => g.UserId == userId).Select(g => g.GroupId);
-            var lists = await dbContext.ToDoLists!.Where(l => l.UserId == userId || allMyGroupIDs.Contains(l.Id)).ToListAsync();
+            var allMyGroups = dbContext.Groups.Where(g => g.UserId == userId);
+            var lists = await dbContext.ToDoLists!.Where(l => l.UserId == userId || allMyGroups.Any(g => g.GroupId == l.GroupId)).ToListAsync();
             return lists;
         }
 

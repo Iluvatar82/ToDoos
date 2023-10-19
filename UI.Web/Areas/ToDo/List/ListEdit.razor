@@ -1,0 +1,157 @@
+﻿@page "/list/edit/{ListId:guid}"
+@using Core.Validation;
+@using Microsoft.AspNetCore.Identity;
+
+<AuthorizeView>
+    <NotAuthorized>
+        <h4>Bitte einloggen!</h4>
+        <div>
+            <a href=@(NavigationManager.BaseUri + "Identity/Account/Login")>Login Page</a>
+        </div>
+    </NotAuthorized>
+
+    <Authorized>
+        <div @onclick=@(() => nameChange = true)>
+            @if (!nameChange)
+            {
+                <h4>@list.Name - Liste bearbeiten</h4>
+            }
+            else
+            {
+                <EditForm Model=@list Context="editContext">
+                    <DataAnnotationsValidator />
+
+                    <input type="text" @bind-value=@list.Name id="name" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await SaveList(editContext); }) @onblur=@(async () => await SaveList(editContext)) />
+                    <ValidationMessage For=@(() => list.Name) />
+                </EditForm>
+            }
+        </div>
+
+        <div class="row align-items-middle">
+            <div class="col @(isUserList ? "fw-bold" : "opacity-25")" disabled=!isUserList>Private Liste</div>
+
+            <div class="col-auto">
+                <div class="form-check form-switch">
+                    @if (isUserList)
+                    {
+                        <input class="form-check-input" type="checkbox" role="switch" id="showInactiveControl" @onchange=@(() =>SwitchUserGroupList())>
+                    }
+                    else
+                    {
+                        <input class="form-check-input" type="checkbox" role="switch" id="showInactiveControl" @onchange=@(() =>SwitchUserGroupList()) checked>
+                    }
+                </div>
+            </div>
+
+            <div class="col @(isUserList ? "opacity-25" : "fw-bold")">
+                <select class="form-select" @bind=@selectedUserGroupId disabled=@isUserList>
+                    <option value="" selected>Gruppe auswählen...</option>
+                    @foreach (var userGroup in userGroups)
+                    {
+                        <option value="@userGroup.GroupId">@userGroup.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col">
+                @foreach (var identityInGroup in IdentitiesInGroup ?? Enumerable.Empty<IdentityUser>())
+                {
+                    <div class="w-100 border border-1 @(IdentitiesInGroup!.IndexOf(identityInGroup) < (IdentitiesInGroup.Count - 1) ? "border-bottom-0" : null) border-secondary p-2">
+                        <span class="oi oi-person"></span>
+                        <div class="d-inline me-2">@identityInGroup.UserName</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="btn-group col-3" role="group">
+                <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
+                <button type="submit" @onclick=@(async () => { await SaveList(); NavigateBack(); }) class="btn btn-outline-primary">Speichern</button>
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private List<UserGroup> userGroups = new List<UserGroup>();
+    private List<IdentityUser>? IdentitiesInGroup;
+    private bool nameChange { get; set; } = false;
+    private ToDoList list { get; set; } = new ToDoList();
+
+    private bool isUserList{ get; set; }
+
+    private Guid? selectedUserGroupIdField;
+    private Guid? selectedUserGroupId {
+        get => selectedUserGroupIdField;
+        set
+        {
+            selectedUserGroupIdField = value;
+
+            list.GroupId = selectedUserGroupId;
+
+            GetUsersInGroup();
+        }
+    }
+
+    [Parameter]
+    public Guid ListId { get; set; }
+
+    [CascadingParameter]
+    public Guid UserId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        userGroups = await UserRepository.GetAllGroupsAsync(UserId);
+        list = (await ListRepository.GetAsync<ToDoList>(ListId))!;
+        isUserList = list.IsUserList;
+    }
+
+    private void SwitchUserGroupList()
+    {
+        isUserList = !isUserList;
+        if (isUserList)
+        {
+            selectedUserGroupId = null;
+            IdentitiesInGroup = null;
+        }
+
+        list.UserId = isUserList ? UserId : null;
+        list.GroupId = selectedUserGroupId;
+
+        StateHasChanged();
+    }
+
+    private async Task GetUsersInGroup()
+    {
+        if (selectedUserGroupId == null)
+        {
+            IdentitiesInGroup = null;
+
+            StateHasChanged();
+            return;
+        }
+
+        var allUsersInGroup = await UserRepository.GetAllUsersForGroupAsync(selectedUserGroupId.Value);
+        IdentitiesInGroup = await IdentityRepository.GetUsersByIdAsync(allUsersInGroup.Select(ug => ug.UserId.ToString()));
+
+        StateHasChanged();
+    }
+
+    private async Task SaveList(EditContext? context = null)
+    {
+        var valid = context?.Validate() ?? true;
+        if (valid)
+        {
+            await ListRepository.UpdateAndSaveAsync(list);
+            nameChange = false;
+
+            StateHasChanged();
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + $"list/{ListId}");
+    }
+}

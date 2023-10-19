@@ -11,7 +11,9 @@
     </NotAuthorized>
 
     <Authorized >
-        <h4>@listInformation?.Name</h4>
+        <h4>@listInformation?.Name
+            <span class="oi oi-wrench small ms-2" @onclick=@(() =>NavigationManager.NavigateTo(NavigationManager.BaseUri + $"list/edit/{ListId}"))></span>
+        </h4>
 
         <div class="d-flex mb-3">
             <div class="col p-3 border border-1 bg-light">
@@ -66,7 +68,7 @@
     private ToDoItem? newSubModel = null;
     private List<ToDoItem> myToDos = new List<ToDoItem>();
     private bool showInactive { get; set; }
-    private global::ToDo.Data.ToDoData.Entities.ToDoList listInformation { get; set; }
+    private global::ToDo.Data.ToDoData.Entities.ToDoList? listInformation { get; set; }
 
     [Parameter]
     public Guid ListId { get; set; }

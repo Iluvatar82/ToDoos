@@ -15,14 +15,9 @@ namespace ToDo.Data.ToDoData.Entities
         [MinLength(3, ErrorMessageResourceName = "MinLengthMessage", ErrorMessageResourceType = typeof(ValidationResources))]
         public string Name { get; set; }
 
-        //[ForeignKey(nameof(User))]
         public Guid? UserId { get; set; }
-        //public IdentityUser User { get; set; }
 
-
-        [ForeignKey(nameof(Group))]
         public Guid? GroupId { get; set; }
-        public UserGroup? Group { get; set; }
 
         [NotMapped]
         public bool IsUserList => UserId != null;
