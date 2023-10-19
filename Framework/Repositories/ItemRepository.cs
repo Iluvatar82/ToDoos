@@ -2,9 +2,8 @@
 using Framework.Extensions;
 using Framework.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
-using ToDo.Data;
-using ToDo.Data.Entities;
-
+using ToDo.Data.ToDoData;
+using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Repositories
 {
@@ -16,7 +15,7 @@ namespace Framework.Repositories
         }
 
 
-        public async Task<List<ToDoItem>> GetAllItemsCompleteAsync(Guid userId, bool isActive = true)
+        public async Task<List<ToDoItem>> GetAllItemsCompleteAsync(Guid listId)
         {
             dbContextFactory.NotNull();
 
@@ -25,8 +24,19 @@ namespace Framework.Repositories
             dbContext.NotNull();
             dbContext!.ToDoItems.NotNull();
 
-            var allItems = dbContext.ToDoItems!.Where(i => i.UserAssignments.Any(a => a.UserId == userId) && i.IsActive == isActive).IncludeAll().ToList();
-            return allItems;
+            return await dbContext.ToDoItems!.Where(i => i.ListId == listId).IncludeAll().ToListAsync();
+        }
+
+        public async Task<List<ToDoItem>> GetAllItemsCompleteAsync(Guid listId, bool isActive)
+        {
+            dbContextFactory.NotNull();
+
+            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
+            dbContext.NotNull();
+            dbContext!.ToDoItems.NotNull();
+
+            return await dbContext.ToDoItems!.Where(i => i.ListId == listId && i.IsActive == isActive).IncludeAll().ToListAsync();
         }
 
         public async Task<ToDoItem?> GetItemCompleteAsync(Guid itemId)

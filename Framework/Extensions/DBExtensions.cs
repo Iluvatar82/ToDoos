@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ToDo.Data.Entities;
-
+using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Extensions
 {
@@ -11,7 +10,7 @@ namespace Framework.Extensions
             return itemSet
                 .Include(entity => entity.Category)
                 .Include(entity => entity.Parent)
-                .Include(entity => entity.UserAssignments);
+                .Include(entity => entity.List);
         }
     }
 }

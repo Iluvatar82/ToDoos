@@ -2,10 +2,9 @@ using Framework.Repositories;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using ToDo.Data;
+using ToDo.Data.Identity;
+using ToDo.Data.ToDoData;
 using UI.Web.Areas.Identity;
-using UI.Web.Data;
-using UI.Web.Data.Repository;
 
 namespace UI.Web
 {

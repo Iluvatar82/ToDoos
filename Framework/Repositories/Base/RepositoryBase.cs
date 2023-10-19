@@ -7,12 +7,14 @@ namespace Framework.Repositories.Base
     {
         protected IDbContextFactory<TContext> dbContextFactory { get; set; }
 
+
         protected RepositoryBase(IDbContextFactory<TContext> contextFactory)
         {
             dbContextFactory = contextFactory;
         }
 
-        public async Task UpdateAndSaveAsync<T>(T item) where T : class
+
+        public async Task<T?> GetAsync<T>(Guid id) where T : class
         {
             dbContextFactory.NotNull();
 
@@ -20,8 +22,7 @@ namespace Framework.Repositories.Base
 
             dbContext.NotNull();
 
-            var result = dbContext.Update(item);
-            await dbContext.SaveChangesAsync();
+            return await dbContext.FindAsync<T>(id);
         }
 
         public async Task AddAndSaveAsync<T>(T item) where T : class
@@ -33,6 +34,30 @@ namespace Framework.Repositories.Base
             dbContext.NotNull();
 
             await dbContext.AddAsync(item);
+            await dbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateAndSaveAsync<T>(params T[] items) where T : class
+        {
+            dbContextFactory.NotNull();
+
+            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
+            dbContext.NotNull();
+
+            dbContext.UpdateRange(items);
+            await dbContext.SaveChangesAsync();
+        }
+
+        public async Task RemoveAndSaveAsync<T>(params T[] items) where T : class
+        {
+            dbContextFactory.NotNull();
+
+            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
+            dbContext.NotNull();
+
+            dbContext.RemoveRange(items);
             await dbContext.SaveChangesAsync();
         }
     }

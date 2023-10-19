@@ -1,11 +1,10 @@
 ﻿@using System.Diagnostics;
 @using Core.Validation;
-@using global::ToDo.Data.Entities;
 
-<div class="row bg-opacity-25@(Model.Done.HasValue ? " bg-success" : string.Empty)" @attributes=@GetRowAttributes()>
-    <div class="d-flex col-8">
+<div class="row bg-opacity-25 justify-content-end @(Model.Done.HasValue ? " bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25 text-opacity-25" : null)" @attributes=@GetRowAttributes()>
+    <div class="d-flex col-10 col-md-8 col-sm-6">
         <div class="d-flex-min" @attributes=@GetMarginLeft()>
-            <div class="px-2 @(Model.Done.HasValue ? "" : "animateToSuccess") p-0">
+            <div class="px-2 @((Model.Done.HasValue || Hidden || !Model.IsActive) ? "" : "animateToSuccess") p-0">
                 @if (Model.Done.HasValue)
                 {
                     <span class="oi oi-check text-success" aria-hidden="true" @onclick="() => SwapDone()"></span>
@@ -17,7 +16,7 @@
             </div>
         </div>
 
-        <div class="col" @onclick=@(() => BezeichnungEditEnabled = Model.IsActive)>
+        <div class="col" @onclick=@(() => BezeichnungEditEnabled = Model.IsActive && !Hidden)>
             @if(!BezeichnungEditEnabled)
             {
                 <span>@Model.Bezeichnung</span>
@@ -34,20 +33,17 @@
         </div>
     </div>
 
-    <div class="col">
+    <div class="col text-end">
         @if (Model.Category != null)
         {
-            <div class="d-flex">
-                <span class="me-2">@Model.Category.Bezeichnung</span>
-                <input type="color" value="@Model.Category.RGB_A" disabled class="w-100" />
-            </div>
+            <span class="me-2">@Model.Category.Bezeichnung</span>
         }
     </div>
 
-    <div class="col" @onclick=@(() => DeadlineEditEnabled = Model.IsActive)>
+    <div class="col text-end" @onclick=@(() => DeadlineEditEnabled = Model.IsActive && !Hidden)>
         @if (!DeadlineEditEnabled)
         {
-            @Model.Deadline?.ToShortDateString()@(Model.Deadline?.TimeOfDay.TotalSeconds > 0 ? $" - {Model.Deadline!.Value.ToShortTimeString()}" : string.Empty)
+            <span>@Model.Deadline?.ToShortDateString()@(Model.Deadline?.TimeOfDay.TotalSeconds > 0 ? $" - {Model.Deadline!.Value.ToShortTimeString()}" : string.Empty)</span>
         }
         else
         {
@@ -58,12 +54,21 @@
         }
     </div>
 
-    <div class="removeTodo d-flex-min">
-        <span class="oi oi-x text-secondary opacity-25" aria-hidden="true" @onclick="() => SwapActive()"></span>
-    </div>
+    @if (!Hidden)
+    {
+        <div class="removeTodo d-flex-min">
+            <span class="oi oi-x text-secondary opacity-25" aria-hidden="true" @onclick="() => SwapActive()"></span>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex-min">
+            <span class="text-secondary opacity-25">&emsp;</span>
+        </div>
+    }
 </div>
 
-@if (Model.IsActive)
+@if (Model.IsActive && !Hidden)
 {
     @if (newSubModel != null)
     {
@@ -82,27 +87,36 @@
 
 @if (Model.Children?.Any() == true)
 {
-    foreach (var child in Model.Children.OrderBy(item => item.Order).ThenByDescending(item => item.Deadline))
+    foreach (var child in Model.Children.OrderBy(item => item.Done.HasValue).ThenBy(item => item.Order).ThenByDescending(item => item.Deadline))
     {
-        <ToDoItem_Component Model=child Level=@(Level + 1) UserId=UserId OnRemove=@((item) => HandleRemove(item))></ToDoItem_Component>
+        if (InactiveMode && !child.VisuallyDeactivated && child.IsActive)
+            continue;
+
+        <ToDoItem_Component Model=child Level=@(Level + 1) InactiveMode=InactiveMode ListId=ListId OnRemove=@((item) => HandleRemove(item)) OnDoneChanged=@(() => StateHasChanged())></ToDoItem_Component>
     }
 }
 
 @code {
     [CascadingParameter]
-    public Modal? PageModal { get; set; }
+    public Modal PageModal { get; set; }
 
     [Parameter]
     public ToDoItem Model { get; set; } = new ToDoItem();
 
     [Parameter]
+    public bool InactiveMode { get; set; } = false;
+
+    [Parameter]
     public int Level { get; set; }
 
     [Parameter]
-    public Guid UserId { get; set; }
+    public Guid ListId { get; set; }
 
     [Parameter]
     public EventCallback<ToDoItem> OnRemove { get; set; }
+
+    [Parameter]
+    public EventCallback OnDoneChanged { get; set; }
 
     private ToDoItem? newSubModel { get; set; } = null;
 
@@ -110,6 +124,7 @@
     private bool DeadlineEditEnabled { get; set; } = false;
     private DateTime? date { get; set; }
     private DateTime? timeOfDay { get; set; }
+    private bool Hidden => InactiveMode && Model.IsActive;
 
 
     protected override void OnInitialized()
@@ -125,25 +140,23 @@
         newSubModel = new ToDoItem
             {
                 ParentId = Model.Id,
-                CategoryId = Model.CategoryId
+                CategoryId = Model.CategoryId,
+                ListId = ListId
             };
-
-        newSubModel.UserAssignments = new List<UserToDoAssignment> {
-            new UserToDoAssignment {
-                ToDoItemId = newSubModel.Id,
-                UserId = UserId
-            }
-        };
     }
 
     private async Task SwapDone()
     {
+        if (Hidden || !Model.IsActive)
+            return;
+
         if (Model.Done == null)
             Model.Done = DateTime.Now;
         else
             Model.Done = null;
 
         await ItemRepository.UpdateAndSaveAsync(Model);
+        await OnDoneChanged.InvokeAsync(Model);
     }
 
     private async Task HandleBezeichnungChange(EditContext context)
@@ -174,6 +187,9 @@
 
     private async Task SwapActive(bool force = false)
     {
+        if (Hidden)
+            return;
+
         if (Model.Children?.Any() == true && !force)
         {
             PageModal.NotNull();
@@ -186,6 +202,7 @@
 
                 <div class="col-9 text-start">Das Item "@(Model.Bezeichnung)" besitzt Unter-Items. Möchten Sie alle Items @(Model.IsActive ? "inaktiv" : "aktiv") setzen?</div>
             </div>;
+
             PageModal.AcceptActionAsync = async () => await SwapActive(true);
 
             PageModal.Show();
@@ -222,14 +239,20 @@
     {
         newSubModel = null;
         if (item != null)
+        {
             Model.Children.Add(item);
+            Model.Children = Model.Children
+                .OrderBy(item => item.Done.HasValue)
+                .ThenBy(item => item.Order)
+                .ThenByDescending(item => item.Deadline).ToList();
+        }
 
         StateHasChanged();
     }
 
     private Dictionary<string, object>? GetRowAttributes()
     {
-        if (Model.CategoryId == null || Model.Done.HasValue)
+        if (Model.CategoryId == null || Model.Done.HasValue || Hidden)
             return null;
 
         var styleString = $"background: {Model.Category!.RGB_A};";

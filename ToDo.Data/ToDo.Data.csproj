@@ -7,11 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Entities\Importance.cs~RF1a88232b.TMP" />
+    <None Remove="ToDoData\Entities\Importance.cs~RF1a88232b.TMP" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="EntityFramework" Version="6.4.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.11" />
   </ItemGroup>
 

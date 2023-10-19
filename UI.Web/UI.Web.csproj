@@ -11,11 +11,16 @@
   <ItemGroup>
     <None Remove="appsettings.json~RFf32d21c.TMP" />
     <None Remove="Areas\Administration\Administration.razor~RF1a4ba506.TMP" />
+    <None Remove="Areas\ToDo\Group\ToDoListsIndex.razor.css" />
+    <None Remove="Areas\ToDo\ToDoListsIndex.razor.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Areas\ToDo\ToDoListsIndex.razor.css" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.11" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.11" />

@@ -1,0 +1,48 @@
+﻿@page "/list/new/"
+@using System.ComponentModel.DataAnnotations;
+
+<h3>Neue ToDo-Liste hinzufügen</h3>
+
+<EditForm OnSubmit=@SaveNewList Model=@newList>
+    <DataAnnotationsValidator />
+
+    <div class="row">
+        <div class="mb-3 col-3">
+            <label for="name" class="form-label">Listen Name</label>
+            <input type="text" @bind-value=newList.Name id="name" class="form-control" placeholder="Name" />
+            <ValidationMessage For=@(() => newList.Name) />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="btn-group col-3" role="group">
+            <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
+            <button type="submit" class="btn btn-outline-primary">Speichern</button>
+        </div>
+    </div>
+</EditForm>
+
+
+@code {
+    private ToDoList newList = new ToDoList { Name = string.Empty };
+
+    [CascadingParameter]
+    public Guid UserId { get; set; } = Guid.Empty;
+
+    private async Task SaveNewList(EditContext context)
+    {
+        var valid = context.Validate();
+        if (valid)
+        {
+            newList.UserId = UserId;
+
+            await UserRepository.AddAndSaveAsync(newList);
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + "list/" + newList.Id, true);
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo(NavigationManager.BaseUri);
+    }
+}

@@ -1,0 +1,24 @@
+﻿table tr th:first-child,
+table tr td:first-child,
+table tr th:last-child,
+table tr td:last-child {
+	width: 49px;
+}
+
+.removeTodo span:hover {
+	transition: opacity .1s ease;
+	opacity: 1.0 !important;
+}
+
+.todo-card {
+/*	min-width: 768px;*/
+	padding: 6px;
+	border-radius: 2px;
+	border: lightgrey 1px solid;
+	margin-bottom: .5em;
+}
+
+.todo-card-inner {
+	overflow: hidden;
+	border-radius: 2px;
+}

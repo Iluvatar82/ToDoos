@@ -1,9 +1,8 @@
 ﻿using Core.Validation;
 using Framework.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
-using ToDo.Data;
-using ToDo.Data.Entities;
-
+using ToDo.Data.ToDoData;
+using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Repositories
 {

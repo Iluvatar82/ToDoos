@@ -1,4 +1,5 @@
-﻿@inject NavigationManager NavigationManager
+﻿@using UI.Web.Data.Extensions;
+@inject NavigationManager NavigationManager
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -22,35 +23,41 @@
         </AuthorizeView>
 
         <div class="nav-item px-3">
+            <NavLink class="nav-link" href=@(NavigationManager.BaseUri + "group/") Match="NavLinkMatch.All">
+                <span class="oi oi-people" aria-hidden="true"></span> Meine Gruppen
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
             <NavLink class="nav-link" href=@NavigationManager.BaseUri Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Meine Listen
+                <span class="oi oi-list" aria-hidden="true"></span> Meine Listen
             </NavLink>
 
             @foreach (var subList in allLists)
             {
-                <NavLink class="nav-item nav-link nav-sub-item" href=@(NavigationManager.BaseUri + @subList.Url)>
-                    <span class="oi oi-@subList.ListType ms-3" aria-hidden="true"></span> @subList.Name
+                <NavLink class="nav-item nav-link nav-sub-item" href=@(NavigationManager.BaseUri + @subList.GetListUrl()) Match="NavLinkMatch.All" >
+                    <span class="oi oi-@subList.GetToDoListTypeIcon() ms-3" aria-hidden="true"></span> @subList.Name
                 </NavLink>
             }
-        </div>
 
+            <NavLink class="nav-item nav-link nav-sub-item bg-primary bg-opacity-10" href=@(NavigationManager.BaseUri + "list/new")>
+                <span class="oi oi-plus ms-3" aria-hidden="true"></span><em> Neue Liste anlegen</em>
+            </NavLink>
+        </div>
     </nav>
 </div>
 
 @code {
     private bool collapseNavMenu = true;
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-    private List<(string Name, string ListType, string Url)> allLists { get; set; } = new List<(string Name, string ListType, string Url)>();
+    private List<global::ToDo.Data.ToDoData.Entities.ToDoList> allLists { get; set; } = new List<global::ToDo.Data.ToDoData.Entities.ToDoList>();
+
+    [CascadingParameter]
+    public Guid UserId { get; set; } = Guid.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        var _currentUser = (await AuthenticationProvider.GetAuthenticationStateAsync()).User;
-        if (_currentUser?.Claims.Any() != true)
-            return;
-
-        var userId = Guid.Parse(_currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
-
-        allLists = await UserRepository.GetAllListsAsync(userId);
+        allLists = await UserRepository.GetAllListsAsync(UserId);
     }
 
     private void ToggleNavMenu()

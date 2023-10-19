@@ -28,6 +28,5 @@ namespace UI.Web.Data.Dtos
 
         public static IdentityRole ToIdentityRole(IdentityRoleDto dto) => new() { Id = dto.Id, Name = dto.Rolle, NormalizedName = dto.Rolle };
         public static IdentityRoleDto ToIdentityRoleDto(IdentityRole entity) => new() { Id = entity.Id, Rolle = entity.Name ?? string.Empty };
-
     }
 }

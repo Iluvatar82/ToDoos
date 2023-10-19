@@ -1,0 +1,155 @@
+﻿@page "/group/{GroupId:guid}"
+@using Core.Validation;
+@using Microsoft.AspNetCore.Identity;
+<AuthorizeView>
+    <NotAuthorized>
+        <h4>Bitte einloggen!</h4>
+        <div>
+            <a href=@(NavigationManager.BaseUri + "Identity/Account/Login")>Login Page</a>
+        </div>
+    </NotAuthorized>
+
+    <Authorized>
+        <div @onclick=@(() => nameChange = true)>
+            @if (!nameChange)
+            {
+                <h4>@name</h4>
+            }
+            else
+            {
+                <EditForm Model=@name Context="editContext">
+                    <DataAnnotationsValidator />
+
+                    <input type="text" @bind-value=@name id="name" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await SaveGroup(editContext); }) @onblur=@(async () => await SaveGroup(editContext)) />
+                    <ValidationMessage For=@(() => name) />
+                </EditForm>
+            }
+        </div>
+
+        <table class="table table-light small table-hover table-bordered">
+            <tbody>
+                @foreach (var userInformation in usersInformation)
+                {
+                    <tr>
+                        <td>
+                            <div>
+                                <div class="d-flex justify-content-between">
+                                        <div>
+                                            <span class="oi oi-person text-black" aria-hidden="true"></span>
+                                        <span class="fw-bold text-black ms-2">@userInformation.Identity.UserName [@userInformation.Identity.Email]</span>
+                                        </div>
+
+                                    <span id="removeUserButton" class="oi oi-x text-secondary align-self-center me-2" aria-hidden="true" @onclick=@(async () => await RemoveUser(@userInformation.Group))></span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+
+                <tr>
+                    <td>
+                        <div>
+                            <div class="d-flex justify-content-between">
+                                <InputSelect class="form-select" @bind-Value=@userId>
+                                    <option value="" selected>Bitte auswählen...</option>
+                                    @foreach (var identity in allIdentities.Where(i => !usersInformation.Any(ui => ui.Identity.Id == i.Id)))
+                                    {
+                                        <option value="@identity.Id">@identity.UserName [@identity.Email]</option>
+                                    }
+                                </InputSelect>
+                                <button @onclick="@(async () => await AddUser())" class="btn btn-outline-primary">Hinzufügen</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="row">
+            <div class="btn-group col-3" role="group">
+                <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private List<(UserGroup Group, IdentityUser Identity)> usersInformation = new List<(UserGroup Group, IdentityUser Identity)>();
+    private string name { get; set; } = string.Empty;
+    private string userId { get; set; } = string.Empty;
+    private bool nameChange { get; set; } = false;
+    private List<IdentityUser> allIdentities = new List<IdentityUser>();
+
+    [Parameter]
+    public Guid GroupId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        allIdentities = await IdentityRepository.GetAllIdentities();
+        var userGroups = await UserRepository.GetAllUsersForGroupAsync(GroupId);
+        var identities = allIdentities.Where(i => userGroups.Any(u => u.UserId.ToString() == i.Id)).ToList();
+
+        userGroups.Satisfies(g => g.Count == identities.Count);
+        userGroups.Satisfies(g => g.All(u => identities.Any(i => i.Id == u.UserId.ToString())));
+        identities.Satisfies(i => i.All(u => userGroups.Any(g => g.UserId.ToString(name) == u.Id)));
+
+        foreach (var userGroup in userGroups)
+        {
+            var identity = identities.First(i => i.Id == userGroup.UserId.ToString());
+            usersInformation.Add((userGroup, identity));
+        }
+
+        name = usersInformation.FirstOrDefault().Group.Name ?? "Kein Gruppenname vergeben";
+    }
+
+    private async Task AddUser()
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            return;
+
+        var identity = allIdentities.First(i => i.Id == userId);
+
+        var newUserGroup = new UserGroup
+        {
+            Name = name,
+            UserId = Guid.Parse(identity.Id),
+            GroupId = GroupId
+        };
+
+        await UserRepository.AddAndSaveAsync(newUserGroup);
+        usersInformation.Add((newUserGroup, identity));
+
+        userId = string.Empty;
+        StateHasChanged();
+
+        await SaveGroup();
+    }
+
+    private async Task RemoveUser(UserGroup user)
+    {
+        await UserRepository.RemoveAndSaveAsync(user);
+
+        var removedUserInformation = usersInformation.FirstOrDefault(ui => ui.Group == user);
+        usersInformation.Remove(removedUserInformation);
+
+        StateHasChanged();
+    }
+
+    private async Task SaveGroup(EditContext? context = null)
+    {
+        var valid = context?.Validate() ?? true;
+        if (valid)
+        {
+            var allGroups = usersInformation.Select(ui => ui.Group).ToList();
+            allGroups.ForEach(u => u.Name = name);
+
+            await UserRepository.UpdateAndSaveAsync(allGroups.ToArray());
+            nameChange = false;
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + "group/");
+    }
+}

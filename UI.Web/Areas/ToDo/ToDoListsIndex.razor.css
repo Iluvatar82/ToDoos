@@ -1,0 +1,8 @@
+﻿#removeListButton {
+	top: -2px;
+	transition: color .1s ease;
+}
+
+#removeListButton:hover {
+	color: darkred !important;
+}

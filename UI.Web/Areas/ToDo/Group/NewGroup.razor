@@ -1,0 +1,48 @@
+﻿@page "/group/new/"
+@using System.ComponentModel.DataAnnotations;
+
+<h3>Neue ToDo-Liste hinzufügen</h3>
+
+<EditForm OnSubmit=@SaveNewList Model=@newGroup>
+    <DataAnnotationsValidator />
+
+    <div class="row">
+        <div class="mb-3 col-3">
+            <label for="name" class="form-label">Gruppen Name</label>
+            <input type="text" @bind-value=newGroup.Name id="name" class="form-control" placeholder="Name" />
+            <ValidationMessage For=@(() => newGroup.Name) />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="btn-group col-3" role="group">
+            <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
+            <button type="submit" class="btn btn-outline-primary">Speichern</button>
+        </div>
+    </div>
+</EditForm>
+
+
+@code {
+    private UserGroup newGroup = new UserGroup { GroupId = Guid.NewGuid() };
+
+    [CascadingParameter]
+    public Guid UserId { get; set; } = Guid.Empty;
+
+    private async Task SaveNewList(EditContext context)
+    {
+        var valid = context.Validate();
+        if (valid)
+        {
+            newGroup.UserId = UserId;
+
+            await UserRepository.AddAndSaveAsync(newGroup);
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + "group/" + newGroup.GroupId, true);
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + "group/");
+    }
+}

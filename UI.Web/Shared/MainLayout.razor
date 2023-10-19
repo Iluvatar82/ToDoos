@@ -6,7 +6,9 @@
 
 <div class="page">
     <div class="sidebar">
-        <NavMenu />
+        <CascadingValue Value=@UserId>
+            <NavMenu />
+        </CascadingValue>
     </div>
 
     <main>
@@ -15,11 +17,13 @@
             <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
         </div>
 
-        <article class="content px-4">
+        <article class="content px-4 container">
             <ErrorBoundaryWithOutput @ref=@myBoundary>
                 <ChildContent>
-                    <CascadingValue Value="@PageModal">
-                        @Body
+                    <CascadingValue Value=@PageModal>
+                        <CascadingValue Value=@UserId>
+                            @Body
+                        </CascadingValue>
                     </CascadingValue>
                 </ChildContent>
                 <ErrorContent>
@@ -69,6 +73,18 @@
 
     [CascadingParameter]
     public Modal PageModal { get; set; } = new Modal();
+
+    [CascadingParameter]
+    public Guid UserId { get; set; } = Guid.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var currentUser = (await AuthenticationProvider.GetAuthenticationStateAsync()).User;
+        if (currentUser?.Claims.Any() != true)
+            return;
+
+        UserId = Guid.Parse(currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
+    }
 
     private List<(string Content, int Indentation)>? myErrorLines
     {
