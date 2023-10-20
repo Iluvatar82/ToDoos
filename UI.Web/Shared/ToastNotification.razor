@@ -1,0 +1,78 @@
+﻿@using Framework.Services;
+@using Framework.Services.Base;
+@inject ToastNotificationService ToastService
+@implements IDisposable
+
+<div class="cs-toast @(_isVisible ? "cs-toast-visible" : null) @_backgroundCssClass">
+    <div class="cs-toast-icon">
+        <i class="fa fa-@_iconCssClass" aria-hidden="true"></i>
+    </div>
+    <div class="cs-toast-body">
+        <h5>@_title</h5>
+        <p>@_message</p>
+    </div>
+</div>
+
+@code {
+    private string? _title;
+    private string? _message;
+    private bool _isVisible;
+    private string? _backgroundCssClass;
+    private string? _iconCssClass;
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += ShowToast;
+        ToastService.OnHide += HideToast;
+    }
+
+    private void ShowToast(string title, string message, MessageType level)
+    {
+        BuildToastSettings(level, message);
+        _isVisible = true;
+
+        InvokeAsync(() => StateHasChanged());
+    }
+
+    private void HideToast()
+    {
+        _isVisible = false;
+
+        InvokeAsync(() => StateHasChanged());
+    }
+
+    private void BuildToastSettings(MessageType level, string message, string title = null)
+    {
+        switch (level)
+        {
+            case MessageType.Info:
+                _backgroundCssClass = $"bg-info";
+                _iconCssClass = "info";
+                _title = title ?? "Info";
+                break;
+
+            case MessageType.Warning:
+                _backgroundCssClass = $"bg-warning";
+                _iconCssClass = "exclamation";
+                _title = title ?? "Warning";
+                break;
+
+            case MessageType.Error:
+                _backgroundCssClass = "bg-danger";
+                _iconCssClass = "times";
+                _title = title ?? "Error";
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(level), level, null);
+        }
+
+        _message = message;
+    }
+
+    void IDisposable.Dispose()
+    {
+        ToastService.OnShow -= ShowToast;
+        ToastService.OnHide -= HideToast;
+    }
+}

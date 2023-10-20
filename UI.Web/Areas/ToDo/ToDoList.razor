@@ -1,8 +1,10 @@
 ﻿@page "/list/{ListId:guid}"
 @using System.Security.Claims;
 @using Core.Validation;
+@using Framework.Services;
 @using Microsoft.AspNetCore.SignalR.Client;
 @using UI.Web.Hubs;
+@inject ToastNotificationService toastService
 
 <AuthorizeView>
     <NotAuthorized>
@@ -82,10 +84,28 @@
 
     protected override async Task OnInitializedAsync()
     {
+        ListHubConnection?.On<string>("JoinedList", (username) =>
+        {
+            toastService.SendNotification("Liste geöffnet", $"{username} hat die Liste geöffnet!", Framework.Services.Base.MessageType.Info);
+
+            InvokeAsync(StateHasChanged);
+        });
+
         ListHubConnection?.On<string>("UpdateList", (username) =>
         {
-            Console.WriteLine($"{username} changed this List!. Updating...");
-            InvokeAsync(async () => await RetrieveItems());
+            toastService.SendNotification("Liste geändert", $"{username} hat die Liste geändert!. Lade Änderungen...", Framework.Services.Base.MessageType.Info);
+
+            InvokeAsync(async () =>
+            {
+                await RetrieveItems();
+                StateHasChanged();
+            });
+        });
+
+        ListHubConnection?.On<string>("LeftList", (username) =>
+        {
+            toastService.SendNotification("Liste geschlossen", $"{username} hat die Liste verlassen!", Framework.Services.Base.MessageType.Info);
+
             InvokeAsync(StateHasChanged);
         });
 
@@ -101,6 +121,8 @@
         listInformation = await UserRepository.GetListInformationAsync(ListId);
         if (!listInformation.IsUserList && ListHubConnection != null)
             await ListHubConnection.SendAsync("JoinedGroupList", ListId);
+
+        toastService.SendNotification("Liste geöffnet", $"Die Liste \"{listInformation.Name}\" wurde geöffnet!", Framework.Services.Base.MessageType.Info);
     }
 
     protected override async Task OnParametersSetAsync()
