@@ -11,6 +11,7 @@
         <thead>
             <tr>
                 <th scope="col">Bezeichnung</th>
+                <th scope="col">Icon</th>
                 <th scope="col">Farbe</th>
             </tr>
         </thead>
@@ -34,6 +35,9 @@
                                 <ValidationMessage For=@(() => category.Bezeichnung) />
                             </EditForm>
                         }
+                    </td>
+                    <td class="p-0 icon-column">
+                        <IconsBrowser Selected=@category.Icon IconDisplayOnly=true OnSelected=@(async (icon) => await IconChanged(category, icon))/>
                     </td>
                     <td class="p-0">
                         <input type="color" @bind-value=category.RGB_A class="w-100" @onblur=@(() => UpdateColor(category, category.RGB_A)) />
@@ -77,6 +81,12 @@ else
             await ItemRepository.UpdateAndSaveAsync(changedCategory);
             BezeichnungEditEnabled = -1;
         }
+    }
+
+    private async Task IconChanged(Category changedCategory, string icon)
+    {
+        changedCategory.Icon = icon;
+        await ItemRepository.UpdateAndSaveAsync(changedCategory);
     }
 
     private void NavigateToNew()

@@ -19,6 +19,12 @@
             <input type="color" @bind-value=_newCategory.RGB_A id="farbe" class="form-control" />
             <ValidationMessage For=@(() => _newCategory.RGB_A) />
         </div>
+
+        <div class="mb-3 col-3">
+            <label for="farbe" class="form-label">Icon</label>
+            <IconsBrowser></IconsBrowser>
+            <ValidationMessage For=@(() => _newCategory.Icon) />
+        </div>
     </div>
 
     <div class="row">

@@ -18,10 +18,15 @@ namespace ToDo.Data.ToDoData.Entities
         [Required(ErrorMessageResourceName = "RequiredMessage", ErrorMessageResourceType = typeof(ValidationResources))]
         public string RGB_A { get; set; }
 
+        [Required(ErrorMessageResourceName = "RequiredMessage", ErrorMessageResourceType = typeof(ValidationResources))]
+        public string Icon { get; set; }
+
+
         public Category()
         {
             Bezeichnung = string.Empty;
             RGB_A = "#ffffffff";
+            Icon = string.Empty;
         }
 
 

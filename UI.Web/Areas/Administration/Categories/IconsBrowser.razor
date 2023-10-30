@@ -1,0 +1,86 @@
+﻿@using Core.Validation;
+@using System.Text.RegularExpressions;
+
+<div class="position-relative">
+    <div class="form-control selected-icon" @onclick=@(() => SelectionActive = !SelectionActive)>
+        @SelectedComponent
+    </div>
+
+    @if (SelectionActive)
+    {
+        <div class="all-icons-container d-flex flex-row flex-md-wrap align-items-center">
+            @foreach (var icon in AllIcons.OrderBy(i => i.Substring(i.IndexOf(" ") + 1)))
+            {
+                <div class="single-icon mx-1" @onclick=@(() => Select(icon))>
+                    <i class=@icon aria-hidden="true"></i>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+
+
+@code {
+        [Parameter]
+        public string Selected { get; set; } = string.Empty;
+
+        [Parameter]
+        public bool IconDisplayOnly { get; set; } = false;
+
+        [Parameter]
+        public EventCallback<string> OnSelected { get; set; }
+
+    private RenderFragment SelectedComponent
+    {
+        get
+        {
+
+            if (string.IsNullOrWhiteSpace(Selected))
+                return@<span>&ensp;</span>;
+
+                return @<div>
+                    <i class=@Selected aria-hidden="true"></i>
+                    @if (!IconDisplayOnly)
+                    {
+                        <span> Ausgewählt</span>
+                    }
+        </div>
+    ;
+        }
+    }
+
+    public List<string> AllIcons { get; set; } = new List<string>();
+
+    private bool SelectionActive { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AllIcons = new List<string>{ string.Empty };
+        var file = File.ReadAllText("wwwroot/font-awesome/css/all.min.css");
+
+        var fileBlocks = file.Split("@font-face").Where(l => l.Contains(":before")).ToList();
+        fileBlocks.Satisfies(f => f.Count == 2);
+
+        var regex = new Regex("\\.(?<iconname>fa-.+?)\\:before");
+        var allmatches = regex.Matches(fileBlocks[0]);
+        var allIcons = allmatches.Select(match => $"fa {match.Groups["iconname"]}");
+        
+        AllIcons.AddRange(allIcons);
+
+        allmatches = regex.Matches(fileBlocks[1]);
+        allIcons = allmatches.Select(match => $"fab {match.Groups["iconname"]}");
+
+        AllIcons.AddRange(allIcons);
+    }
+
+    private void Select(string icon)
+    {
+        Selected = icon;
+
+        SelectionActive = false;
+        StateHasChanged();
+
+        OnSelected.InvokeAsync(Selected);
+    }
+}
