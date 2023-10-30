@@ -12,7 +12,7 @@
             @foreach (var icon in AllIcons.OrderBy(i => i.Substring(i.IndexOf(" ") + 1)))
             {
                 <div class="single-icon mx-1" @onclick=@(() => Select(icon))>
-                    <i class=@icon aria-hidden="true"></i>
+                    <i class=@icon aria-hidden="true" tooltip=@icon tooltip-transform=".5"></i>
                 </div>
             }
         </div>

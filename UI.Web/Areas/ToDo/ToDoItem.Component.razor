@@ -2,7 +2,7 @@
 @using Core.Validation;
 @using Framework.Services;
 
-<div class="row py-2 bg-opacity-25 justify-content-end @(Model.Done.HasValue ? " bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25 text-opacity-25" : null)" @attributes=@GetRowAttributes()>
+<div class="row py-2 bg-opacity-25 align-items-baseline @(Model.Done.HasValue ? " bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25 text-opacity-25" : null)" @attributes=@GetRowAttributes()>
     <div class="d-flex col-10 col-md-8 col-sm-6">
         <div class="d-flex-min" @attributes=@GetMarginLeft()>
             <div class="px-2 @((Model.Done.HasValue || Hidden || !Model.IsActive) ? "" : "markToDoDone") p-0">
@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <div class="col text-end" @onclick=@(() => DeadlineEditEnabled = Model.IsActive && !Hidden)>
+    <div class="col text-end @((Model.Deadline.HasValue && !DeadlineEditEnabled) ? "border-2 border-start border-end border-white mx-3 px-3" : "")" @onclick=@(() => DeadlineEditEnabled = Model.IsActive && !Hidden)>
         @if (!DeadlineEditEnabled)
         {
             <span>@Model.Deadline?.ToShortDateString()@(Model.Deadline?.TimeOfDay.TotalSeconds > 0 ? $" - {Model.Deadline!.Value.ToShortTimeString()}" : string.Empty)</span>
@@ -51,7 +51,7 @@
     <div class="d-flex-min text-end">
         @if (Model.Category != null)
         {
-            <span class="me-2"><i class=@Model.Category.Icon></i></span>
+            <span class="me-2"><i class="position-relative @Model.Category.Icon" tooltip=@Model.Category.Bezeichnung></i></span>
         }
     </div>
 
@@ -277,7 +277,7 @@
     {
         return new Dictionary<string, object>
         {
-            { "style", $"margin-left: {Level * 32}px;" }
+            { "style", $"margin-left: {Level * 24}px;" }
         };
     }
 
@@ -285,7 +285,7 @@
     {
         return new Dictionary<string, object>
         {
-            { "style", $"margin-left: 44px;" }
+            { "style", $"margin-left: 32px;" }
         };
     }
 
@@ -293,7 +293,7 @@
     {
         return new Dictionary<string, object>
         {
-            { "style", $"min-width: {Level * 32}px;" }
+            { "style", $"min-width: {Level * 24}px;" }
         };
     }
 }
