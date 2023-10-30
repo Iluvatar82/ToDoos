@@ -13,12 +13,12 @@
                         <div class="d-flex justify-content-between">
                             <NavLink class="nav-link" href=@(NavigationManager.BaseUri + @listEntry.GetListUrl())>
                                 <div>
-                                    <span class="oi oi-@listEntry.GetToDoListTypeIcon() text-black" aria-hidden="true"></span>
+                                    <span class="fa fa-@listEntry.GetToDoListTypeIcon() text-black" aria-hidden="true"></span>
                                     <span class="fw-bold text-black ms-2">@listEntry.Name</span>
                                 </div>
                             </NavLink>
 
-                            <span id="removeListButton" class="oi oi-x text-secondary align-self-center me-2" aria-hidden="true" @onclick=@(async () => await RemoveList(@listEntry))></span>
+                            <span id="removeListButton" class="text-secondary align-self-center me-2" @onclick=@(async () => await RemoveList(@listEntry))><i class="fa fa-xmark" aria-hidden="true"></i></span>
                         </div>
                     </div>
                 </td>
@@ -31,7 +31,7 @@
                     <div class="d-flex justify-content-between">
                         <NavLink class="nav-link" href=@(NavigationManager.BaseUri + "list/new")>
                             <div>
-                                <span class="oi oi-plus text-black" aria-hidden="true"></span>
+                                <span class="fa fa-plus text-black" aria-hidden="true"></span>
                                 <span class="text-black ms-2"><em>Neue Liste anlegen</em></span>
                             </div>
                         </NavLink>
@@ -68,10 +68,10 @@
             PageModal!.Title = @<h5>Achtung!</h5>;
             PageModal.Body =@<div class="row align-items-center">
                 <div class="col-3 text-center">
-                    <span class="oi oi-warning text-warning fs-2" aria-hidden="true"></span>
+                    <span class="fa fa-warning text-warning fs-2" aria-hidden="true"></span>
                 </div>
 
-                <div class="col-9 text-start"><span>Die Liste "@list.Name" besitzt ToDo-Items. Möchten Sie alle @flatItems.Length Items mitlöschen?</span></div>
+                <div class="col-9 text-start"><span>Die Liste "@list.Name" besitzt ToDo-Items. Möchten Sie alle @flatItems.Length Items löschen?</span></div>
             </div>;
 
             PageModal.AcceptActionAsync = () => RemoveList(list, true);

@@ -34,12 +34,14 @@
                         <td>
                             <div>
                                 <div class="d-flex justify-content-between">
-                                        <div>
-                                            <span class="oi oi-person text-black" aria-hidden="true"></span>
+                                    <div class="p-2">
+                                        <i class="fa fa-user text-black" aria-hidden="true"></i>
                                         <span class="fw-bold text-black ms-2">@userInformation.Identity.UserName [@userInformation.Identity.Email]</span>
-                                        </div>
+                                    </div>
 
-                                    <span id="removeUserButton" class="oi oi-x text-secondary align-self-center me-2" aria-hidden="true" @onclick=@(async () => await RemoveUser(@userInformation.Group))></span>
+                                    <span id="removeUserButton" class="me-2 p-2" @onclick=@(async () => await RemoveUser(@userInformation.Group))>
+                                        <i class="fa fa-xmark text-secondary align-self-center" aria-hidden="true"></i>
+                                    </span>
                                 </div>
                             </div>
                         </td>

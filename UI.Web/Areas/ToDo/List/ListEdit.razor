@@ -57,7 +57,7 @@
                 @foreach (var identityInGroup in IdentitiesInGroup ?? Enumerable.Empty<IdentityUser>())
                 {
                     <div class="w-100 border border-1 @(IdentitiesInGroup!.IndexOf(identityInGroup) < (IdentitiesInGroup.Count - 1) ? "border-bottom-0" : null) border-secondary p-2">
-                        <span class="oi oi-person"></span>
+                        <span class="fa fa-user"></span>
                         <div class="d-inline me-2">@identityInGroup.UserName</div>
                     </div>
                 }

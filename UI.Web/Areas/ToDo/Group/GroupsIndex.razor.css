@@ -1,6 +1,7 @@
 ﻿#removeGroupButton {
 	top: -2px;
 	transition: color .1s ease;
+	cursor: pointer;
 }
 
 #removeGroupButton:hover {

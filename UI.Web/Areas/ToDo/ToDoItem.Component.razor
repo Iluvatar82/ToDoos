@@ -1,5 +1,6 @@
 ﻿@using System.Diagnostics;
 @using Core.Validation;
+@using Framework.Services;
 
 <div class="row py-2 bg-opacity-25 justify-content-end @(Model.Done.HasValue ? " bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25 text-opacity-25" : null)" @attributes=@GetRowAttributes()>
     <div class="d-flex col-10 col-md-8 col-sm-6">
@@ -7,11 +8,11 @@
             <div class="px-2 @((Model.Done.HasValue || Hidden || !Model.IsActive) ? "" : "markToDoDone") p-0">
                 @if (Model.Done.HasValue)
                 {
-                    <span class="oi oi-check text-success" aria-hidden="true" @onclick="() => SwapDone()"></span>
+                    <span class="text-success" @onclick="() => SwapDone()"><i class="fa fa-check" aria-hidden="true"></i></span>
                 }
                 else
                 {
-                    <span class="oi oi-check text-secondary opacity-25" aria-hidden="true" @onclick="() => SwapDone()"></span>
+                    <span class="text-secondary opacity-25" @onclick="() => SwapDone()"><i class="fa fa-check" aria-hidden="true"></i></span>
                 }
             </div>
         </div>
@@ -57,7 +58,7 @@
     @if (!Hidden)
     {
         <div class="removeTodo d-flex-min">
-            <span class="oi oi-x text-secondary opacity-25" aria-hidden="true" @onclick="() => SwapActive()"></span>
+            <span class="fa fa-xmark text-secondary opacity-25" aria-hidden="true" @onclick="() => SwapActive()"></span>
         </div>
     }
     else
@@ -80,7 +81,7 @@
         </div>
 
         <div class="col text-center text-white p-0 position-relative" @attributes=@GetCheckWidthMargin()>
-            <span class="oi oi-plus" aria-hidden="true"></span>
+            <span class="fa fa-plus" aria-hidden="true"></span>
         </div>
     </div>
 }
@@ -179,7 +180,6 @@
                                 ? timeOfDay
                                 : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
 
-
         await ItemRepository.UpdateAndSaveAsync(Model);
 
         DeadlineEditEnabled = false;
@@ -197,11 +197,12 @@
             PageModal!.Title = @<h5>Achtung!</h5>;
             PageModal.Body =@<div class="row align-items-center">
                 <div class="col-3 text-center">
-                    <span class="oi oi-warning text-warning fs-2" aria-hidden="true"></span>
+                    <span class="fa fa-warning text-warning fs-2" aria-hidden="true"></span>
                 </div>
 
                 <div class="col-9 text-start">Das Item "@(Model.Bezeichnung)" besitzt Unter-Items. Möchten Sie alle Items @(Model.IsActive ? "inaktiv" : "aktiv") setzen?</div>
-            </div>;
+            </div>
+    ;
 
             PageModal.AcceptActionAsync = async () => await SwapActive(true);
 
@@ -252,10 +253,20 @@
 
     private Dictionary<string, object>? GetRowAttributes()
     {
-        if (Model.CategoryId == null || Model.Done.HasValue || Hidden)
+        if (Model.Category == null || Hidden)
             return null;
 
         var styleString = $"background: {Model.Category!.RGB_A};";
+        if (Model.Done.HasValue)
+        {
+            styleString = $"color: {UIColorService.GetDoneTextColor(Model.Category!.RGB_A)};";
+            return new Dictionary<string, object>
+            {
+                { "style", styleString }
+            };
+        }
+
+        styleString += $"color: {UIColorService.GetTextColor(Model.Category!.RGB_A)};";
         return new Dictionary<string, object>
         {
             { "style", styleString }

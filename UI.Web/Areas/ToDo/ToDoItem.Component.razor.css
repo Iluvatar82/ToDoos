@@ -1,5 +1,7 @@
 ﻿.todo-card-inner .row {
 	position: relative;
+	font-weight: bold;
+	color: #444;
 }
 
 .todo-card-inner .row:not(.addChildRow) {
