@@ -56,7 +56,7 @@
     protected override async Task OnInitializedAsync()
     {
         AllIcons = new List<string>{ string.Empty };
-        var file = File.ReadAllText("wwwroot/font-awesome/css/all.min.css");
+        var file = await File.ReadAllTextAsync("wwwroot/font-awesome/css/all.min.css");
 
         var fileBlocks = file.Split("@font-face").Where(l => l.Contains(":before")).ToList();
         fileBlocks.Satisfies(f => f.Count == 2);

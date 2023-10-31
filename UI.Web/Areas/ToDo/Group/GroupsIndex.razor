@@ -74,7 +74,7 @@
         var valid = context.Validate();
         if (valid)
         {
-            var guidId = Guid.Parse(User.Id);
+            var guidId = Guid.Parse(User!.Id);
             newGroup.UserId = guidId;
 
             await UserRepository.AddAndSaveAsync(newGroup);
