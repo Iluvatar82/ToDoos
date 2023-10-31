@@ -26,6 +26,7 @@ namespace Framework.Services
             return $"<div>{result}</div>";
         }
 
+
         [GeneratedRegex("(\\[(?<name>.+)\\])?(?<link>(http[s]:\\/\\/|www\\.).+)")]
         private static partial Regex WebLinkRegex();
 
