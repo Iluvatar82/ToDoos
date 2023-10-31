@@ -1,0 +1,35 @@
+﻿@using Framework.Services.Base;
+@using System.Diagnostics;
+@inject ToastNotificationService ToastService
+@implements IDisposable
+
+@if (this.ToastService.DisplayedToasts.Any())
+{
+    <div aria-live="polite" aria-atomic="true" class="bg-body-secondary position-relative bd-example-toasts rounded-3">
+        <div class="toast-container p-3 top-0 end-0 position-absolute" id="toastPlacement" data-original-class="toast-container p-3">
+            @foreach (var toast in ToastService.DisplayedToasts.ToList())
+            {
+                <ToastNotification Toast=toast></ToastNotification>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        ToastService.ToastsChanged += (_, _) => InvokeAsync(() =>
+        {
+            StateHasChanged();
+
+            Debug.WriteLine($"-----------------------------------------------");
+            Debug.WriteLine($"{ToastService.DisplayedToasts.Count} Toasts vorhanden");
+            Debug.WriteLine($"-----------------------------------------------");
+        });
+    }
+
+    void IDisposable.Dispose()
+    {
+        ToastService.ToastsChanged -= (_, _) => StateHasChanged();
+    }
+}

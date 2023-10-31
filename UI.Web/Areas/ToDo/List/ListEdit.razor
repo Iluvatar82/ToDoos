@@ -98,11 +98,12 @@
     public Guid ListId { get; set; }
 
     [CascadingParameter]
-    public Guid UserId { get; set; }
+    public IdentityUser? User { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        userGroups = await UserRepository.GetAllGroupsAsync(UserId);
+        var guidId = Guid.Parse(User.Id);
+        userGroups = await UserRepository.GetAllGroupsAsync(guidId);
         list = (await ListRepository.GetAsync<ToDoList>(ListId))!;
         isUserList = list.IsUserList;
         if (!isUserList)
@@ -118,7 +119,7 @@
             IdentitiesInGroup = null;
         }
 
-        list.UserId = isUserList ? UserId : null;
+        list.UserId = isUserList ? Guid.Parse(User.Id) : null;
         list.GroupId = selectedUserGroupId;
 
         StateHasChanged();

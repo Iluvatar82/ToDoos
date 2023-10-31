@@ -58,11 +58,15 @@
     public Modal? PageModal { get; set; }
 
     [CascadingParameter]
-    public Guid UserId { get; set; } = Guid.Empty;
+    public IdentityUser? User { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        myGroups = await UserRepository.GetAllGroupsAsync(UserId);
+        if (User == null)
+            return;
+
+        var guidId = Guid.Parse(User.Id);
+        myGroups = await UserRepository.GetAllGroupsAsync(guidId);
     }
 
     private async Task SaveNewGroup(EditContext context)
@@ -70,7 +74,8 @@
         var valid = context.Validate();
         if (valid)
         {
-            newGroup.UserId = UserId;
+            var guidId = Guid.Parse(User.Id);
+            newGroup.UserId = guidId;
 
             await UserRepository.AddAndSaveAsync(newGroup);
 

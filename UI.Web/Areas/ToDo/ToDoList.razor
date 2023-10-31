@@ -2,10 +2,9 @@
 @using System.Security.Claims;
 @using Core.Validation;
 @using Framework.Services;
-@using Microsoft.AspNetCore.Identity;
 @using Microsoft.AspNetCore.SignalR.Client;
 @using UI.Web.Hubs;
-@inject ToastNotificationService toastService
+@inject ToastNotificationService ToastService
 
 <AuthorizeView>
     <NotAuthorized>
@@ -72,30 +71,29 @@
     private List<ToDoItem> myToDos = new List<ToDoItem>();
     private bool showInactive { get; set; }
     private global::ToDo.Data.ToDoData.Entities.ToDoList? listInformation { get; set; }
-    //private IdentityUser user { get; set; }
 
     [Parameter]
     public Guid ListId { get; set; }
+    private Guid previousListId { get; set; }
 
     [CascadingParameter]
-    public Guid? UserId { get; set; }
+    public IdentityUser? User { get; set; }
 
     [CascadingParameter]
     public HubConnection? ListHubConnection { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        //user = await UserRepository.GetAsync<IdentityUser>(UserId.Value);
         ListHubConnection?.On<string>("JoinedList", (username) =>
         {
-            toastService.SendNotification("Liste geöffnet", $"{username} hat die Liste geöffnet!", Framework.Services.Base.MessageType.Info);
+            ToastService.SendNotification("Beigetreten", $"{username} hat die Liste geöffnet!", Framework.Services.Base.MessageType.Info);
 
             InvokeAsync(StateHasChanged);
         });
 
         ListHubConnection?.On<string>("UpdateList", (username) =>
         {
-            toastService.SendNotification("Liste geändert", $"{username} hat die Liste geändert!. Lade Änderungen...", Framework.Services.Base.MessageType.Info);
+            ToastService.SendNotification("Aktualisiert", $"{username} hat die Liste aktualisiert!.{Environment.NewLine}Lade Änderungen...", Framework.Services.Base.MessageType.Info);
 
             InvokeAsync(async () =>
             {
@@ -106,7 +104,7 @@
 
         ListHubConnection?.On<string>("LeftList", (username) =>
         {
-            toastService.SendNotification("Liste geschlossen", $"{username} hat die Liste verlassen!", Framework.Services.Base.MessageType.Info);
+            ToastService.SendNotification("Verlassen", $"{username} hat die Liste geschlossen!", Framework.Services.Base.MessageType.Info);
 
             InvokeAsync(StateHasChanged);
         });
@@ -119,16 +117,23 @@
 
             ListId = Guid.Parse(_currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
         }
-
-        listInformation = await UserRepository.GetListInformationAsync(ListId);
-        if (!listInformation.IsUserList && ListHubConnection != null)
-            await ListHubConnection.SendAsync("JoinedGroupList", ListId/* , user */);
     }
 
     protected override async Task OnParametersSetAsync()
     {
+        if (previousListId == ListId)
+            return;
+
         await RetrieveItems();
         await base.OnParametersSetAsync();
+
+        listInformation = await UserRepository.GetListInformationAsync(ListId);
+        if (!listInformation.IsUserList && ListHubConnection != null)
+            await ListHubConnection.SendAsync("JoinedGroupList", ListId, User);
+
+        ToastService.SendNotification("Liste geöffnet", $"Liste <b>{listInformation.Name}</b> wurde geöffnet!", Framework.Services.Base.MessageType.Info);
+        
+        previousListId = ListId;
     }
 
     private async Task SwitchActiveInactiveView()
@@ -210,7 +215,7 @@
 
         StateHasChanged();
 
-        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId);
+        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private void NavigateBack()
@@ -223,6 +228,6 @@
         myToDos.Remove(todoItem);
         StateHasChanged();
 
-        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId);
+        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 }

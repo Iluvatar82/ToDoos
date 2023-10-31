@@ -1,47 +1,58 @@
 ﻿@using System.Security.Claims;
 @using Core.Validation;
 @using UI.Web.Data.Extensions;
-<h3>Ihre ToDo Listen</h3>
 
-<table class="table table-light small table-hover table-bordered">
-    <tbody>
-        @foreach (var listEntry in myLists)
-        {
-            <tr>
-                <td>
-                    <div>
-                        <div class="d-flex justify-content-between">
-                            <NavLink class="nav-link" href=@(NavigationManager.BaseUri + @listEntry.GetListUrl())>
-                                <div>
-                                    <span class="fa fa-@listEntry.GetToDoListTypeIcon() text-black" aria-hidden="true"></span>
-                                    <span class="fw-bold text-black ms-2">@listEntry.Name</span>
-                                </div>
-                            </NavLink>
+<AuthorizeView>
+    <NotAuthorized>
+        <h4>Bitte einloggen!</h4>
+        <div>
+            <a href=@(NavigationManager.BaseUri + "Identity/Account/Login")>Login Page</a>
+        </div>
+    </NotAuthorized>
 
-                            <span id="removeListButton" class="text-secondary align-self-center me-2" @onclick=@(async () => await RemoveList(@listEntry))><i class="fa fa-xmark" aria-hidden="true"></i></span>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-        }
+    <Authorized>
+        <h3>Ihre ToDo Listen</h3>
 
-        <tr>
-            <td>
-                <div>
-                    <div class="d-flex justify-content-between">
-                        <NavLink class="nav-link" href=@(NavigationManager.BaseUri + "list/new")>
+        <table class="table table-light small table-hover table-bordered">
+            <tbody>
+                @foreach (var listEntry in myLists)
+                {
+                    <tr>
+                        <td>
                             <div>
-                                <span class="fa fa-plus text-black" aria-hidden="true"></span>
-                                <span class="text-black ms-2"><em>Neue Liste anlegen</em></span>
-                            </div>
-                        </NavLink>
-                    </div>
-                </div>
-            </td>
-        </tr>
-    </tbody>
-</table>
+                                <div class="d-flex justify-content-between">
+                                    <NavLink class="nav-link" href=@(NavigationManager.BaseUri + @listEntry.GetListUrl())>
+                                        <div>
+                                            <span class="fa fa-@listEntry.GetToDoListTypeIcon() text-black" aria-hidden="true"></span>
+                                            <span class="fw-bold text-black ms-2">@listEntry.Name</span>
+                                        </div>
+                                    </NavLink>
 
+                                    <span id="removeListButton" class="text-secondary align-self-center me-2" @onclick=@(async () => await RemoveList(@listEntry))><i class="fa fa-xmark" aria-hidden="true"></i></span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+
+                <tr>
+                    <td>
+                        <div>
+                            <div class="d-flex justify-content-between">
+                                <NavLink class="nav-link" href=@(NavigationManager.BaseUri + "list/new")>
+                                    <div>
+                                        <span class="fa fa-plus text-black" aria-hidden="true"></span>
+                                        <span class="text-black ms-2"><em>Neue Liste anlegen</em></span>
+                                    </div>
+                                </NavLink>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </Authorized>
+</AuthorizeView>
 
 
 @code {
@@ -51,11 +62,15 @@
     public Modal? PageModal { get; set; }
 
     [CascadingParameter]
-    public Guid UserId { get; set; } = Guid.Empty;
+    public IdentityUser? User { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        myLists = await UserRepository.GetAllListsAsync(UserId);
+        if (User == null)
+            return;
+
+        var guidId = Guid.Parse(User.Id);
+        myLists = await UserRepository.GetAllListsAsync(guidId);
     }
 
     private async Task RemoveList(global::ToDo.Data.ToDoData.Entities.ToDoList list, bool force = false)

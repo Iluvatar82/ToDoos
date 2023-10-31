@@ -17,6 +17,14 @@
         "webfonts/fa-v4compatibility.ttf",
         "webfonts/fa-v4compatibility.woff2"
       ]
+    },
+    {
+      "library": "jquery@3.7.1",
+      "destination": "wwwroot/jquery/"
+    },
+    {
+      "library": "bootstrap-toaster@5.1.0",
+      "destination": "wwwroot/bootstrap-toaster/"
     }
   ]
 }

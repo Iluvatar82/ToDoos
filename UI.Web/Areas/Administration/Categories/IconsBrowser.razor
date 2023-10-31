@@ -39,14 +39,13 @@
             if (string.IsNullOrWhiteSpace(Selected))
                 return@<span>&ensp;</span>;
 
-                return @<div>
+                return @<div class="d-flex justify-content-center" style="font-size: 24px;">
                     <i class=@Selected aria-hidden="true"></i>
                     @if (!IconDisplayOnly)
                     {
                         <span> Ausgewählt</span>
                     }
-        </div>
-    ;
+                </div>;
         }
     }
 

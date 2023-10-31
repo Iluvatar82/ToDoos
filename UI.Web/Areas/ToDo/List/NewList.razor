@@ -27,14 +27,15 @@
     private ToDoList newList = new ToDoList { Name = string.Empty };
 
     [CascadingParameter]
-    public Guid UserId { get; set; } = Guid.Empty;
+    public IdentityUser? User { get; set; }
 
     private async Task SaveNewList(EditContext context)
     {
         var valid = context.Validate();
         if (valid)
         {
-            newList.UserId = UserId;
+            var guidId = Guid.Parse(User.Id);
+            newList.UserId = guidId;
 
             await UserRepository.AddAndSaveAsync(newList);
             NavigationManager.NavigateTo(NavigationManager.BaseUri + "list/" + newList.Id, true);

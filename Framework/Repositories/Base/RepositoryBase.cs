@@ -25,6 +25,17 @@ namespace Framework.Repositories.Base
             return await dbContext.FindAsync<T>(id);
         }
 
+        public async Task<T?> GetAsync<T>(string id) where T : class
+        {
+            dbContextFactory.NotNull();
+
+            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
+            dbContext.NotNull();
+
+            return await dbContext.FindAsync<T>(id);
+        }
+
         public async Task AddAndSaveAsync<T>(T item) where T : class
         {
             dbContextFactory.NotNull();

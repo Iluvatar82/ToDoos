@@ -1,14 +1,13 @@
 ﻿@using Core.Validation;
+@using Microsoft.AspNetCore.Identity;
 @using UI.Web.Exception;
 @inherits LayoutComponentBase
 
 <PageTitle>UI.Web</PageTitle>
 
-<ToastNotification />
-
 <div class="page">
     <div class="sidebar">
-        <CascadingValue Value=@UserId>
+        <CascadingValue Value=@User>
             <NavMenu />
         </CascadingValue>
     </div>
@@ -19,11 +18,13 @@
             <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
         </div>
 
+        <ToastNotificationsContainer />
+ 
         <article class="content px-4 container">
             <ErrorBoundaryWithOutput @ref=@myBoundary>
                 <ChildContent>
                     <CascadingValue Value=@PageModal>
-                        <CascadingValue Value=@UserId>
+                        <CascadingValue Value=@User>
                             @Body
                         </CascadingValue>
                     </CascadingValue>
@@ -77,7 +78,7 @@
     public Modal PageModal { get; set; } = new Modal();
 
     [CascadingParameter]
-    public Guid UserId { get; set; } = Guid.Empty;
+    public IdentityUser? User { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -85,7 +86,8 @@
         if (currentUser?.Claims.Any() != true)
             return;
 
-        UserId = Guid.Parse(currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
+        var userId = Guid.Parse(currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
+        User = await IdentityRepository!.GetAsync<IdentityUser>(userId.ToString());
     }
 
     private List<(string Content, int Indentation)>? myErrorLines

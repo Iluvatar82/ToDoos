@@ -1,78 +1,63 @@
 ﻿@using Framework.Services;
 @using Framework.Services.Base;
-@inject ToastNotificationService ToastService
-@implements IDisposable
 
-<div class="cs-toast @(_isVisible ? "cs-toast-visible" : null) @_backgroundCssClass">
-    <div class="cs-toast-icon">
-        <i class="fa fa-@_iconCssClass" aria-hidden="true"></i>
+<div class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 4000;">
+    <div class="toast-header">
+        <i class="fa fa-@IconCssClass mx-3" aria-hidden="true"></i>
+        <strong class="me-auto">@Toast.Title</strong>
+        @if(Toast.DisplayTime <= 0)
+        {
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close" @onclick=@(() => Toast.OnRemove!.Invoke())></button>
+        }
     </div>
-    <div class="cs-toast-body">
-        <h5>@_title</h5>
-        <p>@_message</p>
+    <div class="toast-body">
+        @ToastMessage
     </div>
 </div>
 
 @code {
-    private string? _title;
-    private string? _message;
-    private bool _isVisible;
-    private string? _backgroundCssClass;
-    private string? _iconCssClass;
+    [Parameter]
+    public Toast Toast { get; set; }
+
+    private RenderFragment ToastMessage => (__builder) => __builder.AddMarkupContent(0, Toast.Message);
+
+    private bool IsVisible;
+    private string? IconCssClass;
 
     protected override void OnInitialized()
     {
-        ToastService.OnShow += ShowToast;
-        ToastService.OnHide += HideToast;
+        ShowToast();
     }
 
-    private void ShowToast(string title, string message, MessageType level)
+    private void ShowToast()
     {
-        BuildToastSettings(level, message);
-        _isVisible = true;
+        BuildToastSettings();
+        IsVisible = true;
 
         InvokeAsync(() => StateHasChanged());
     }
 
-    private void HideToast()
+    private void BuildToastSettings()
     {
-        _isVisible = false;
-
-        InvokeAsync(() => StateHasChanged());
-    }
-
-    private void BuildToastSettings(MessageType level, string message, string title = null)
-    {
-        switch (level)
+        switch (Toast.MessageType)
         {
             case MessageType.Info:
-                _backgroundCssClass = $"bg-info";
-                _iconCssClass = "info";
-                _title = title ?? "Info";
+                IconCssClass = "info";
+                Toast.Title = Toast.Title ?? "Info";
                 break;
 
             case MessageType.Warning:
-                _backgroundCssClass = $"bg-warning";
-                _iconCssClass = "exclamation";
-                _title = title ?? "Warning";
+                IconCssClass = "exclamation";
+                Toast.Title = Toast.Title ?? "Warning";
                 break;
 
             case MessageType.Error:
-                _backgroundCssClass = "bg-danger";
-                _iconCssClass = "times";
-                _title = title ?? "Error";
+                IconCssClass = "xmark";
+                Toast.Title = Toast.Title ?? "Error";
                 break;
 
             default:
-                throw new ArgumentOutOfRangeException(nameof(level), level, null);
+                throw new ArgumentOutOfRangeException(nameof(Toast.MessageType), Toast.MessageType, null);
         }
-
-        _message = message;
-    }
-
-    void IDisposable.Dispose()
-    {
-        ToastService.OnShow -= ShowToast;
-        ToastService.OnHide -= HideToast;
     }
 }

@@ -13,8 +13,11 @@
 .single-icon {
 	position: relative;
 	transition: all .2s ease;
+	display: flex;
+	justify-content: center !important;
 	font-size: x-large;
-	width: 1em;
+	width: 1.5em;
+	height: 1.5em;
 }
 
 .single-icon:hover {

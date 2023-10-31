@@ -1,6 +1,7 @@
 ﻿@using System.Diagnostics;
 @using Core.Validation;
 @using Framework.Services;
+@using Microsoft.AspNetCore.SignalR.Client;
 
 <div class="row py-2 bg-opacity-25 align-items-baseline @(Model.Done.HasValue ? " bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25 text-opacity-25" : null)" @attributes=@GetRowAttributes()>
     <div class="d-flex col-10 col-md-8 col-sm-6">
@@ -17,14 +18,14 @@
             </div>
         </div>
 
-        <div class="col" @onclick=@(() => BezeichnungEditEnabled = Model.IsActive && !Hidden)>
+        <div class="col" @onclick=@(() => SetBezeichnungEditEnabled()) @onclick:stopPropagation=true>
             @if(!BezeichnungEditEnabled)
             {
-                <span>@Model.Bezeichnung</span>
+                 @BezeichnungFragment
             }
             else
             {
-                <EditForm Model=@Model>
+                <EditForm Model=@Model style="margin-top: -4px;">
                     <DataAnnotationsValidator />
 
                     <input type="text" @bind-value=@Model.Bezeichnung id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleBezeichnungChange(context); }) @onblur=@(() => HandleBezeichnungChange(context)) />
@@ -34,10 +35,10 @@
         </div>
     </div>
 
-    <div class="col text-end @((Model.Deadline.HasValue && !DeadlineEditEnabled) ? "border-2 border-start border-end border-white mx-3 px-3" : "")" @onclick=@(() => DeadlineEditEnabled = Model.IsActive && !Hidden)>
+    <div class="col text-end @((Model.Deadline.HasValue && !DeadlineEditEnabled) ? "border-2 border-start border-end border-white mx-3 px-3" : "")" style="height: 1.5em;" @onclick=@(() => DeadlineEditEnabled = Model.IsActive && !Hidden)>
         @if (!DeadlineEditEnabled)
         {
-            <span>@Model.Deadline?.ToShortDateString()@(Model.Deadline?.TimeOfDay.TotalSeconds > 0 ? $" - {Model.Deadline!.Value.ToShortTimeString()}" : string.Empty)</span>
+            <dov>@DeadlineFragment</dov>
         }
         else
         {
@@ -101,6 +102,12 @@
     [CascadingParameter]
     public Modal? PageModal { get; set; }
 
+    [CascadingParameter]
+    public IdentityUser? User { get; set; }
+
+    [CascadingParameter]
+    public HubConnection? ListHubConnection { get; set; }
+
     [Parameter]
     public ToDoItem Model { get; set; } = new ToDoItem();
 
@@ -127,6 +134,16 @@
     private DateTime? timeOfDay { get; set; }
     private bool Hidden => InactiveMode && Model.IsActive;
 
+    private RenderFragment BezeichnungFragment => (__builder) => __builder.AddMarkupContent(0, ItemContentRenderService.RenderContent(Model.Bezeichnung));
+    private RenderFragment DeadlineFragment => (__builder) =>
+    {
+        var result = Model.Deadline?.ToShortDateString();
+        if (Model.Deadline?.TimeOfDay.TotalSeconds > 0)
+            result += $" - {Model.Deadline!.Value.ToShortTimeString()}";
+
+        __builder.AddMarkupContent(0, result);
+    };
+
 
     protected override void OnInitialized()
     {
@@ -146,6 +163,11 @@
             };
     }
 
+    private void SetBezeichnungEditEnabled()
+    {
+        BezeichnungEditEnabled = Model.IsActive && !Hidden;
+    }
+
     private async Task SwapDone()
     {
         if (Hidden || !Model.IsActive)
@@ -158,6 +180,8 @@
 
         await ItemRepository.UpdateAndSaveAsync(Model);
         await OnDoneChanged.InvokeAsync(Model);
+
+        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private async Task HandleBezeichnungChange(EditContext context)
@@ -167,6 +191,8 @@
         {
             await ItemRepository.UpdateAndSaveAsync(Model);
             BezeichnungEditEnabled = false;
+
+            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
         }
     }
 
@@ -183,6 +209,8 @@
         await ItemRepository.UpdateAndSaveAsync(Model);
 
         DeadlineEditEnabled = false;
+
+        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private async Task SwapActive(bool force = false)
@@ -218,6 +246,8 @@
 
         StateHasChanged();
         await OnRemove.InvokeAsync(Model);
+
+        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private void SetActiveStateForAll(ToDoItem item, bool isActive)
@@ -236,7 +266,7 @@
         await OnRemove.InvokeAsync(todoItem);
     }
 
-    private void HandleNewChange(ToDoItem? item)
+    private async Task HandleNewChange(ToDoItem? item)
     {
         newSubModel = null;
         if (item != null)
@@ -249,6 +279,8 @@
         }
 
         StateHasChanged();
+
+        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private Dictionary<string, object>? GetRowAttributes()

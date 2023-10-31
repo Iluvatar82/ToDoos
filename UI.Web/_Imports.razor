@@ -1,5 +1,7 @@
 ﻿@using System.Net.Http
 @using Framework.Repositories;
+@using Framework.Services;
+@using Microsoft.AspNetCore.Identity;
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
@@ -15,6 +17,7 @@
 @using UI.Web.Data.Dtos;
 @using UI.Web.Shared
 
+@inject ItemContentRenderService ItemContentRenderService;
 
 @inject AuthenticationStateProvider AuthenticationProvider;
 @inject NavigationManager NavigationManager

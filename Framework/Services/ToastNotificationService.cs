@@ -1,43 +1,69 @@
 ﻿using Framework.Services.Base;
-using System.Timers;
 
 namespace Framework.Services
 {
-    public class ToastNotificationService : INotificationService, IDisposable
+    public class ToastNotificationService : INotificationService
     {
-        public Action<string, string, MessageType>? OnShow { get; set; }
-        public Action? OnHide { get; set; }
-        public System.Timers.Timer? Countdown { get; set; }
+        public List<Toast> DisplayedToasts { get; set; }
+        public EventHandler ToastsChanged { get; set; }
 
-        public void SendNotification(string title, string message, MessageType messageType)
+
+        public ToastNotificationService()
         {
-            OnShow?.Invoke(title, message, messageType);
-            StartCountdown();
+            DisplayedToasts = new List<Toast>();
         }
 
-        private void StartCountdown()
+
+        public void SendNotification(string title, string message, MessageType messageType, int? disyplayTime = null)
         {
-            SetCountdown();
-            if (Countdown!.Enabled)
+            var newToast = new Toast() { Title = title, Message = message, MessageType = messageType };
+            if (disyplayTime != null)
+                newToast.DisplayTime = disyplayTime.Value;
+
+            newToast.OnRemove += () =>
             {
-                Countdown.Stop();
-                Countdown.Start();
-            }
-            else
+                if (DisplayedToasts.Contains(newToast))
+                    DisplayedToasts.Remove(newToast);
+
+                ToastsChanged?.Invoke(this, EventArgs.Empty);
+            };
+
+            DisplayedToasts.Add(newToast);
+            ToastsChanged?.Invoke(this, EventArgs.Empty);
+
+            newToast.StartCountdown();
+        }
+    }
+
+    public class Toast : IDisposable
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public MessageType MessageType { get; set; }
+
+        public int DisplayTime { get; set; } = 5000;
+
+        private System.Timers.Timer? Countdown { get; set; }
+
+        public Action? OnRemove { get; set; } = null;
+
+
+        public void StartCountdown()
+        {
+            if (SetCountdown())
                 Countdown!.Start();
         }
 
-        private void SetCountdown()
+        private bool SetCountdown()
         {
-            if (Countdown != null)
-                return;
+            if (DisplayTime <= 0)
+                return false;
 
-            Countdown = new System.Timers.Timer(5000);
-            Countdown.Elapsed += HideToast;
+            Countdown = new System.Timers.Timer(DisplayTime);
+            Countdown.Elapsed += (_, _) => OnRemove?.Invoke();
             Countdown.AutoReset = false;
+            return true;
         }
-
-        private void HideToast(object? source, ElapsedEventArgs args) => OnHide?.Invoke();
 
         public void Dispose() => Countdown?.Dispose();
     }
