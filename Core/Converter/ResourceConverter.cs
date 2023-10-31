@@ -5,15 +5,15 @@ namespace Core.Converter
 {
     public static class ResourceConverter
     {
-        public static decimal GetDecimal(this string resource)
-        {
-            decimal.TryParse(resource, out decimal result);
-            return result;
-        }
-
         public static int GetInt(this string resource)
         {
             int.TryParse(resource, out int result);
+            return result;
+        }
+
+        public static float GetFloat(this string resource)
+        {
+            float.TryParse(resource, new CultureInfo("en-US"), out float result);
             return result;
         }
 
@@ -23,9 +23,9 @@ namespace Core.Converter
             return result;
         }
 
-        public static float GetFloat(this string resource)
+        public static decimal GetDecimal(this string resource)
         {
-            float.TryParse(resource, new CultureInfo("en-US"), out float result);
+            decimal.TryParse(resource, out decimal result);
             return result;
         }
 
