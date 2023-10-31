@@ -18,14 +18,7 @@
 @code {
     protected override void OnInitialized()
     {
-        ToastService.ToastsChanged += (_, _) => InvokeAsync(() =>
-        {
-            StateHasChanged();
-
-            Debug.WriteLine($"-----------------------------------------------");
-            Debug.WriteLine($"{ToastService.DisplayedToasts.Count} Toasts vorhanden");
-            Debug.WriteLine($"-----------------------------------------------");
-        });
+        ToastService.ToastsChanged += (_, _) => InvokeAsync(() => StateHasChanged());
     }
 
     void IDisposable.Dispose()
