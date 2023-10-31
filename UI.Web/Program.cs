@@ -34,7 +34,6 @@ namespace UI.Web
 
             builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             builder.Services.AddScoped<ToastNotificationService>();
-            builder.Services.AddScoped<ItemContentRenderService>();
             
             builder.Services.AddTransient<CategoryRepository>();
             builder.Services.AddTransient<ItemRepository>();

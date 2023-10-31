@@ -11,4 +11,19 @@
     <ProjectReference Include="..\ToDo.Data\ToDo.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Services\Base\ServiceResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ServiceResources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Services\Base\ServiceResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ServiceResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

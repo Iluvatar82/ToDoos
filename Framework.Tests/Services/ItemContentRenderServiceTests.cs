@@ -9,7 +9,7 @@ namespace Framework.Services.Tests
         public void RenderContentTest_Ok()
         {
             var contentString = "A simple ToDo item";
-            var content = new ItemContentRenderService().RenderContent(contentString);
+            var content = ItemContentRenderService.RenderContent(contentString);
             var contentNoOuterDiv = content.Replace("<div>", string.Empty).Replace("</div>", string.Empty);
 
             Assert.IsNotNull(content);
@@ -20,7 +20,7 @@ namespace Framework.Services.Tests
         public void RenderContentTest_Replaced_Url()
         {
             var contentString = "A simple ToDo item with a link: www.google.com";
-            var content = new ItemContentRenderService().RenderContent(contentString);
+            var content = ItemContentRenderService.RenderContent(contentString);
             var contentNoOuterDiv = content.Replace("<div>", string.Empty).Replace("</div>", string.Empty);
 
             Assert.IsNotNull(contentNoOuterDiv);
@@ -32,7 +32,7 @@ namespace Framework.Services.Tests
         public void RenderContentTest_Replaced_Email()
         {
             var contentString = "A simple ToDo item with an email-address: admin@google.com";
-            var content = new ItemContentRenderService().RenderContent(contentString);
+            var content = ItemContentRenderService.RenderContent(contentString);
             var contentNoOuterDiv = content.Replace("<div>", string.Empty).Replace("</div>", string.Empty);
 
             Assert.IsNotNull(contentNoOuterDiv);

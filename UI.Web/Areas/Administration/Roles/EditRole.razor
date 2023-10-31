@@ -105,7 +105,7 @@ else
     {
         if (!IsNewPage)
         {
-            var dbRole = await IdentityRepository.GetRoleCompleteAsync(Id!);
+            var dbRole = await IdentityRepository.GetRoleAsync(Id!);
             
             dbRole.NotNull();
 
@@ -124,7 +124,7 @@ else
 
             var user = await IdentityRepository.GetUserByEmailAsync(displayEmail.Email!);
             if (user != null)
-                await IdentityRepository.ApplyRoleToUser(displayRole.Id, user.Id);
+                await IdentityRepository.ApplyRoleToUserAsync(displayRole.Id, user.Id);
         }
     }
 

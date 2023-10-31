@@ -28,7 +28,7 @@ namespace Framework.Repositories
             return lists;
         }
 
-        public async Task<ToDoList> GetListInformationAsync(Guid listId)
+        public async Task<ToDoList> GetListAsync(Guid listId)
         {
             dbContextFactory.NotNull();
 

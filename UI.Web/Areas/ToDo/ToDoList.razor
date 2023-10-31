@@ -127,7 +127,7 @@
         await RetrieveItems();
         await base.OnParametersSetAsync();
 
-        listInformation = await UserRepository.GetListInformationAsync(ListId);
+        listInformation = await UserRepository.GetListAsync(ListId);
         if (!listInformation.IsUserList && ListHubConnection != null)
             await ListHubConnection.SendAsync("JoinedGroupList", ListId, User);
 

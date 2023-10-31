@@ -17,8 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Extensions\" />
-    <Folder Include="Repositories\Base\" />
     <Folder Include="Services\Base\" />
   </ItemGroup>
 

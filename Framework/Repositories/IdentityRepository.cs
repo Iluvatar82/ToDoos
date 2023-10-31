@@ -34,7 +34,7 @@ namespace Framework.Repositories
             return allIdentities;
         }
 
-        public async Task<IdentityRole?> GetRoleCompleteAsync(string roleId)
+        public async Task<IdentityRole?> GetRoleAsync(string roleId)
         {
             dbContextFactory.NotNull();
 
@@ -86,7 +86,7 @@ namespace Framework.Repositories
             return identity;
         }
 
-        public async Task ApplyRoleToUser(string roleId, string userId)
+        public async Task ApplyRoleToUserAsync(string roleId, string userId)
         {
             dbContextFactory.NotNull();
 

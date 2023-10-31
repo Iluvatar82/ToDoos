@@ -1,22 +1,25 @@
-﻿using Framework.Services.Base;
+﻿using Core.Converter;
+using Framework.Services.Base;
 
 namespace Framework.Services
 {
     public class ToastNotificationService : INotificationService
     {
         public List<Toast> DisplayedToasts { get; set; }
-        public EventHandler ToastsChanged { get; set; }
+        public EventHandler? ToastsChanged { get; set; }
+        private int ToastDefaultDisplayTime {  get; set; }
 
 
         public ToastNotificationService()
         {
             DisplayedToasts = new List<Toast>();
+            ToastDefaultDisplayTime = ServiceResources.Toast_DefaultDisplayTime.GetInt();
         }
 
 
         public void SendNotification(string title, string message, MessageType messageType, int? disyplayTime = null)
         {
-            var newToast = new Toast() { Title = title, Message = message, MessageType = messageType };
+            var newToast = new Toast() { Title = title, Message = message, MessageType = messageType, DisplayTime = disyplayTime ?? ToastDefaultDisplayTime };
             if (disyplayTime != null)
                 newToast.DisplayTime = disyplayTime.Value;
 
@@ -41,7 +44,7 @@ namespace Framework.Services
         public string Message { get; set; } = string.Empty;
         public MessageType MessageType { get; set; }
 
-        public int DisplayTime { get; set; } = 5000;
+        public int DisplayTime { get; set; } = 4000;
 
         private System.Timers.Timer? Countdown { get; set; }
 
