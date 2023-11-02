@@ -36,5 +36,7 @@ namespace Framework.Repositories
 
             return await dbContext.Settings!.FirstOrDefaultAsync(s => s.UserId == userId && s.Key == key);
         }
+
+        public Setting Create(Guid userId,  string key, string value) => new Setting() {  UserId = userId, Key = key, Value = value };
     }
 }

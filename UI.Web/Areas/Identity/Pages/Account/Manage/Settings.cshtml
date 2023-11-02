@@ -1,5 +1,5 @@
 ﻿@page
-@model IndexModel
+@model SettingsModel
 @{
     ViewData["Title"] = "Profile";
     ViewData["ActivePage"] = ManageNavPages.Settings;
@@ -10,16 +10,12 @@
 <div class="row">
     <form id="profile-form" method="post">
         <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-        <div class="form-floating mb-3">
-            <input asp-for="Input.Username" class="form-control" placeholder="Please choose your username." />
-            <label asp-for="Input.Username" class="form-label"></label>
-            <span asp-validation-for="Input.Username" class="text-danger"></span>
+        <div class="form-check form-switch mb-3">
+            <input asp-for="Input.TwoColumns" class="form-check-input" type="checkbox" role="switch">
+            <label asp-for="Input.TwoColumns" class="form-check-label">Items in zwei Spalten anzeigen</label>
+            <span asp-validation-for="Input.TwoColumns" class="text-danger"></span>
         </div>
-        <div class="form-floating mb-3">
-            <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number."/>
-            <label asp-for="Input.PhoneNumber" class="form-label"></label>
-            <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
-        </div>
+
         <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
     </form>
 </div>

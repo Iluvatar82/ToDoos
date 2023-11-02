@@ -1,6 +1,8 @@
 ﻿@page "/list/{ListId:guid}"
 @using System.Security.Claims;
+@using Core.Converter;
 @using Core.Validation;
+@using Framework.Common;
 @using Framework.Services;
 @using Microsoft.AspNetCore.SignalR.Client;
 @using UI.Web.Hubs;
@@ -42,7 +44,7 @@
             </div>
         }
 
-        @if (myToDos.Any())
+        @if (myToDos.Any() && !showTwoColumns)
         {
             <table class="table">
                 <tbody>
@@ -53,7 +55,7 @@
                 </tbody>
             </table>
         }
-        else if (myToDos.Any() && false)
+        else if (myToDos.Any())
         {
             <div class="row" data-masonry='{ "percentPosition": true }'>
                 @foreach (var item in myToDos)
@@ -81,6 +83,7 @@
     private List<ToDoItem> myToDos = new List<ToDoItem>();
     private bool showInactive { get; set; }
     private global::ToDo.Data.ToDoData.Entities.ToDoList? listInformation { get; set; }
+    private bool showTwoColumns { get; set; } = false;
 
     [Parameter]
     public Guid ListId { get; set; }
@@ -133,6 +136,10 @@
     {
         if (previousListId == ListId)
             return;
+
+        var twoColumnSetting = await SettingRepository.GetSettingAsync(Guid.Parse(User!.Id), Settings.TwoColumns);
+        if (twoColumnSetting != null)
+            showTwoColumns = twoColumnSetting.Value.GetBool();
 
         await RetrieveItems();
         await base.OnParametersSetAsync();

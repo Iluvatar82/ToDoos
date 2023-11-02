@@ -28,7 +28,7 @@
         }
         else
         {
-            <EditForm Model=@Model style="margin-top: -4px;">
+            <EditForm Model=@Model>
                 <DataAnnotationsValidator />
 
                 <input type="text" @bind-value=@Model.Bezeichnung id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleBezeichnungChange(context); }) @onblur=@(() => HandleBezeichnungChange(context)) />

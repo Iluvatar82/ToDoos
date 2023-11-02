@@ -21,27 +21,33 @@ else
 
     <div class="row">
         <div class="mb-3 col-3">
-            <label for="roleId" class="form-label fw-bold">Identifikation</label>
             @if (IsNewPage)
             {
-                <input type="text" @bind-value=displayRole.Id id="roleId" class="form-control" placeholder="Id" />
-                <ValidationMessage For=@(() => displayRole.Id) />
+                <div class="form-floating mb-3">
+                    <input type="text" @bind-value=displayRole.Id id="roleId" class="form-control" placeholder="Id" />
+                    <label for="roleId" class="form-label">Identifikation</label>
+                    <ValidationMessage For=@(() => displayRole.Id) />
+                </div>
             }
             else
             {
+                <label class="form-label fw-bold">Identifikation</label>
                 <div>@displayRole.Id</div>
             }
         </div>
 
         <div class="mb-3 col-3">
-            <label for="bezeichnung" class="form-label fw-bold">Rollenbezeichnung</label>
             @if (IsNewPage)
             {
-                <input type="text" @bind-value=displayRole.Rolle id="bezeichnung" class="form-control" placeholder="Rolle" />
-                <ValidationMessage For=@(() => displayRole.Rolle) />
+                <div class="form-floating mb-3">
+                    <input type="text" @bind-value=displayRole.Rolle id="bezeichnung" class="form-control" placeholder="Rolle" />
+                    <label for="bezeichnung" class="form-label">Rollenbezeichnung</label>
+                    <ValidationMessage For=@(() => displayRole.Rolle) />
+                </div>
             }
             else
             {
+                <label for="bezeichnung" class="form-label fw-bold">Rollenbezeichnung</label>
                 <div>@displayRole.Rolle</div>
             }
         </div>

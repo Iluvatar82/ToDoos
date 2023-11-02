@@ -39,6 +39,8 @@ namespace UI.Web
             builder.Services.AddTransient<ItemRepository>();
             builder.Services.AddTransient<ListRepository>();
             builder.Services.AddTransient<UserRepository>();
+            builder.Services.AddTransient<SettingRepository>();
+
             builder.Services.AddTransient<IdentityRepository>();
 
             var app = builder.Build();

@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
+using Core.Converter;
+using Framework.Common;
+using Framework.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -12,69 +15,37 @@ namespace UI.Web.Areas.Identity.Pages.Account.Manage
     public class SettingsModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly SettingRepository _settingRepository;
 
         public SettingsModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+             UserManager<IdentityUser> userManager,
+             SettingRepository settingRepository)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
+            _settingRepository = settingRepository;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public string Username { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [TempData]
         public string StatusMessage { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Display(Name = "Username")]
-            [MinLength(3)]
-            public string Username { get; set; }
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Phone]
-            [Display(Name = "Phone number")]
-            public string PhoneNumber { get; set; }
+            [Display(Name = "Two Columns")]
+            public bool TwoColumns { get; set; }
         }
+
 
         private async Task LoadAsync(IdentityUser user)
         {
-            var userName = await _userManager.GetUserNameAsync(user);
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
-
-            Username = userName;
+            var settings = await _settingRepository.GetAllSettingsAsync(Guid.Parse(user.Id));
 
             Input = new InputModel
             {
-                Username = userName,
-                PhoneNumber = phoneNumber
+                TwoColumns = (settings.FirstOrDefault(s => s.Key == Settings.TwoColumns)?.Value ?? "false").GetBool()
             };
         }
 
@@ -104,30 +75,20 @@ namespace UI.Web.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
-            if (Input.PhoneNumber != phoneNumber)
+            var userIdGuid = Guid.Parse(user.Id);
+            var twoColumnSetting = await _settingRepository.GetSettingAsync(userIdGuid, Settings.TwoColumns);
+            if (twoColumnSetting == null)
             {
-                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-                if (!setPhoneResult.Succeeded)
-                {
-                    StatusMessage = "Unexpected error when trying to set phone number.";
-                    return RedirectToPage();
-                }
+                twoColumnSetting = _settingRepository.Create(userIdGuid, Settings.TwoColumns, Input.TwoColumns.ToString());
+                await _settingRepository.AddAndSaveAsync(twoColumnSetting);
+            }
+            else
+            {
+                twoColumnSetting.Value = Input.TwoColumns.ToString();
+                await _settingRepository.UpdateAndSaveAsync(twoColumnSetting);
             }
 
-            var userName = await _userManager.GetUserNameAsync(user);
-            if (Input.Username != userName)
-            {
-                var setUserNameResult = await _userManager.SetUserNameAsync(user, Input.Username);
-                if (!setUserNameResult.Succeeded)
-                {
-                    StatusMessage = "Unexpected error when trying to set user name";
-                    return RedirectToPage();
-                }
-            }
-
-            await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your profile has been updated";
+            StatusMessage = "Your settings have been updated";
             return RedirectToPage();
         }
     }

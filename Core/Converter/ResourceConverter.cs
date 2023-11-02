@@ -5,6 +5,12 @@ namespace Core.Converter
 {
     public static class ResourceConverter
     {
+        public static bool GetBool(this string resource)
+        {
+            bool.TryParse(resource, out bool result);
+            return result;
+        }
+
         public static int GetInt(this string resource)
         {
             int.TryParse(resource, out int result);

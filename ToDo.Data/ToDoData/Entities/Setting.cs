@@ -20,5 +20,8 @@ namespace ToDo.Data.ToDoData.Entities
 
         [Required]
         public string Value { get; set; } = string.Empty;
+
+
+        public override string ToString() => $"Setting {Key} for User {UserId}: {Value}";
     }
 }
