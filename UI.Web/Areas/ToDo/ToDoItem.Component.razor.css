@@ -1,52 +1,37 @@
-﻿.todo-card-inner .row {
-	position: relative;
+﻿tr {
 	font-weight: bold;
-	color: #444;
 }
 
-.todo-card-inner .row:not(.addChildRow) {
-	margin-top: -6px;
-	margin-bottom: -6px;
+tr.todo-item-separator {
+	height: 8px;
+	border: none;
 }
 
-.markToDoDone > span.oi {
+.markToDoDone > span.fa {
 	top: 3px;
 }
 
 .markToDoDone > span:hover {
-	transition: all, opacity .2s ease;
+	transition: opacity .2s ease;
 	opacity: 1.0 !important;
-	color: rgb(25, 135, 84) !important;
 }
 
-.addChildRow {
+.addChild {
 	transition: all .2s ease;
-	font-size: 2px;
-	height: 14px;
-	padding: 6px;
-	padding: 6px;
-	z-index: 1;
-}
-
-.addChildRow:hover {
-	font-size: 12px;
-	height: 30px;
-}
-
-.addChildRow > div:not(:first-child) {
 	background: #ddd;
+	font-size: 6px;
+	bottom: -1em;
+	right: -1em;
+	width: 2em;
+	height: 2em;
+	line-height: 2 !important;
 }
 
-.d-flex-min {
-	flex: 0 1 0%;
+.addChild:hover {
+	font-size: 16px;
 }
 
-.removeTodo {
-	padding-top: 2px;
-	padding-right: 16px;
-}
-
-.removeTodo > span.oi {
+.removeTodo > span.fa {
 	top: -1px;
 }
 

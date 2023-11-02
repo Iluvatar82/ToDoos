@@ -22,7 +22,7 @@
 
         <div class="mb-3 col-3">
             <label for="farbe" class="form-label">Icon</label>
-            <IconsBrowser></IconsBrowser>
+            <IconsBrowser @bind-Selected=@_newCategory.Icon></IconsBrowser>
             <ValidationMessage For=@(() => _newCategory.Icon) />
         </div>
     </div>

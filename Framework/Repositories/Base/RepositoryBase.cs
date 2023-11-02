@@ -1,5 +1,6 @@
 ﻿using Core.Validation;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace Framework.Repositories.Base
 {
@@ -19,8 +20,9 @@ namespace Framework.Repositories.Base
             dbContextFactory.NotNull();
 
             using var dbContext = await dbContextFactory.CreateDbContextAsync();
-
             dbContext.NotNull();
+            dbContext.Database.NotNull();
+            dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
 
             return await dbContext.FindAsync<T>(id);
         }
@@ -30,46 +32,71 @@ namespace Framework.Repositories.Base
             dbContextFactory.NotNull();
 
             using var dbContext = await dbContextFactory.CreateDbContextAsync();
-
             dbContext.NotNull();
+            dbContext.Database.NotNull();
+            dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
 
             return await dbContext.FindAsync<T>(id);
         }
 
         public async Task AddAndSaveAsync<T>(T item) where T : class
         {
-            dbContextFactory.NotNull();
+            try
+            {
+                dbContextFactory.NotNull();
 
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                dbContext.NotNull();
+                dbContext.Database.NotNull();
+                dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
 
-            dbContext.NotNull();
-
-            await dbContext.AddAsync(item);
-            await dbContext.SaveChangesAsync();
+                await dbContext.AddAsync(item);
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message, "Error");
+            }
         }
 
         public async Task UpdateAndSaveAsync<T>(params T[] items) where T : class
         {
-            dbContextFactory.NotNull();
+            try
+            {
+                dbContextFactory.NotNull();
 
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                dbContext.NotNull();
+                dbContext.Database.NotNull();
+                dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
 
-            dbContext.NotNull();
-
-            dbContext.UpdateRange(items);
-            await dbContext.SaveChangesAsync();
+                dbContext.UpdateRange(items);
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString(), "Error");
+            }
         }
 
         public async Task RemoveAndSaveAsync<T>(params T[] items) where T : class
         {
-            dbContextFactory.NotNull();
+            try
+            {
+                dbContextFactory.NotNull();
 
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                dbContext.NotNull();
+                dbContext.Database.NotNull();
+                dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
 
-            dbContext.NotNull();
-
-            dbContext.RemoveRange(items);
-            await dbContext.SaveChangesAsync();
+                dbContext.RemoveRange(items);
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString(), "Error");
+            }
         }
     }
 }

@@ -28,7 +28,7 @@
             </div>
         </div>
 
-        <div class="row">
+        <div class="row mb-3">
             <div class="btn-group col-3" role="group">
                 <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
                 <button @onclick="@(() => CreateNew())" class="btn btn-outline-primary" disabled=@showInactive>Hinzufügen</button>
@@ -44,24 +44,14 @@
 
         @if (myToDos.Any())
         {
-            <div class="d-flex justify-content-between p-1 mb-3 fw-bold">
-                <div>
-                    Bezeichnung
-                </div>
-
-                <div style="margin-right: 100px;">
-                    Deadline
-                </div>
-            </div>
-
-            @foreach (var item in myToDos)
-            {
-                <div class="todo-card">
-                    <div class="todo-card-inner">
+            <table class="table table-bordered">
+                <tbody>
+                    @foreach (var item in myToDos)
+                    {
                         <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId OnRemove=@((item) => HandleRemove(item)) OnDoneChanged=@(() => StateHasChanged())></ToDoItem_Component>
-                    </div>
-                </div>
-            }
+                    }
+                </tbody>
+            </table>
         }
     </Authorized>
 </AuthorizeView>

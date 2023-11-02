@@ -37,7 +37,7 @@
                         }
                     </td>
                     <td class="p-0 icon-column">
-                        <IconsBrowser Selected=@category.Icon IconDisplayOnly=true OnSelected=@(async (icon) => await IconChanged(category, icon))/>
+                        <IconsBrowser Selected=@category.Icon IconDisplayOnly=true SelectedChanged=@(async (icon) => await IconChanged(category, icon)) />
                     </td>
                     <td class="p-0">
                         <input type="color" @bind-value=category.RGB_A class="w-100" @onblur=@(() => UpdateColor(category, category.RGB_A)) />

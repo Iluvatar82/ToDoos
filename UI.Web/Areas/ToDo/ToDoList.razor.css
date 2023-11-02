@@ -2,27 +2,12 @@
 	cursor: pointer;
 }
 
-table tr th:first-child,
-table tr td:first-child,
-table tr th:last-child,
-table tr td:last-child {
-	width: 49px;
+table ::deep tr th.fixed-w,
+table ::deep tr td.fixed-w {
+	width: 48px;
 }
 
 .removeTodo span:hover {
 	transition: opacity .1s ease;
 	opacity: 1.0 !important;
-}
-
-.todo-card {
-	padding: 6px;
-	border-radius: 2px;
-	border: lightgrey 1px solid;
-	margin-bottom: .5em;
-}
-
-.todo-card-inner {
-	overflow: hidden;
-	border-radius: 2px;
-	position: relative;
 }

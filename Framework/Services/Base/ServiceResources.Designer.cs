@@ -79,7 +79,7 @@ namespace Framework.Services.Base {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die (\[(?&lt;name&gt;.+)\])?(?&lt;link&gt;(http[s]:\/\/|www\.).+) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die (?&lt;name&gt;\[.+?\])?(?&lt;link&gt;(?:http[s]:\/\/|www).+?)(?:\s|$) ähnelt.
         /// </summary>
         internal static string ContentRenderService_WebLinkRegex {
             get {
