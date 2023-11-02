@@ -5,23 +5,23 @@
 
 <tr class="bg-opacity-25 align-items-baseline @(Model.Done.HasValue ? "bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25" : null)" @attributes=@GetRowAttributes()>
     <td class="fixed-w position-relative">
-        <div class="addChild text-center text-white p-0 position-absolute" @onclick=@(() => CreateNew())>
+        <div class="addChild text-center text-white p-0 position-absolute" @onclick=@CreateNew>
             <span class="fa fa-plus" aria-hidden="true"></span>
         </div>
 
         <div class="px-2 @((Model.Done.HasValue || Hidden || !Model.IsActive) ? "" : "markToDoDone") p-0">
             @if (Model.Done.HasValue)
             {
-                <span class="text-success" @onclick="() => SwapDone()"><i class="fa fa-check" aria-hidden="true"></i></span>
+                <span class="text-success" @onclick=@SwapDone><i class="fa fa-check" aria-hidden="true"></i></span>
             }
             else
             {
-                <span class="opacity-25" @onclick="() => SwapDone()"><i class="fa fa-check" aria-hidden="true"></i></span>
+                <span class="opacity-25" @onclick=@SwapDone><i class="fa fa-check" aria-hidden="true"></i></span>
             }
         </div>
     </td>
 
-    <td @attributes=@GetPaddingLeft() @onclick=@(() => SetBezeichnungEditEnabled())>
+    <td @attributes=@GetPaddingLeft() @onclick=@SetBezeichnungEditEnabled>
         @if (!BezeichnungEditEnabled)
         {
             @BezeichnungFragment
@@ -45,8 +45,8 @@
         else
         {
             <div class="d-flex">
-                <input type="date" @bind-value=date class="form-control col me-3" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleDeadlineChange(); }) @onblur=@(() => HandleDeadlineChange()) />
-                <input type="time" @bind-value=timeOfDay class="form-control col" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleDeadlineChange(); }) @onblur=@(() => HandleDeadlineChange()) />
+                <input type="date" @bind-value=date class="form-control col me-3" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleDeadlineChange(); }) @onblur=@HandleDeadlineChange />
+                <input type="time" @bind-value=timeOfDay class="form-control col" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleDeadlineChange(); }) @onblur=@HandleDeadlineChange />
             </div>
         }
     </td>
@@ -61,7 +61,7 @@
     <td class="fixed-w removeTodo">
         @if (!Hidden)
         {
-            <span class="px-2 fa fa-xmark text-secondary opacity-25" aria-hidden="true" @onclick="() => SwapActive()"></span>
+            <span class="px-2 fa fa-xmark text-secondary opacity-25" aria-hidden="true" @onclick=@(() => SwapActive())></span>
         }
         else
         {
@@ -76,7 +76,7 @@
     {
         <tr>
             <td colspan="5">
-                <ToDoNew Model=newSubModel Level=@(Level + 1) OnChange=@((value) => HandleNewChange(value))></ToDoNew>
+                <ToDoNew Model=newSubModel Level=@(Level + 1) OnChange=@HandleNewChange></ToDoNew>
             </td>
         </tr>
     }
@@ -89,7 +89,7 @@
         if (InactiveMode && !child.VisuallyDeactivated && child.IsActive)
             continue;
 
-        <ToDoItem_Component Model=child Level=@(Level + 1) InactiveMode=InactiveMode ListId=ListId OnRemove=@((item) => HandleRemove(item)) OnDoneChanged=@(() => StateHasChanged())></ToDoItem_Component>
+        <ToDoItem_Component Model=child Level=@(Level + 1) InactiveMode=InactiveMode ListId=ListId OnRemove=@HandleRemove OnDoneChanged=@StateHasChanged></ToDoItem_Component>
     }
 }
 

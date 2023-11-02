@@ -31,24 +31,24 @@
         <div class="row mb-3">
             <div class="btn-group col-3" role="group">
                 <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
-                <button @onclick="@(() => CreateNew())" class="btn btn-outline-primary" disabled=@showInactive>Hinzufügen</button>
+                <button @onclick=@CreateNew class="btn btn-outline-primary" disabled=@showInactive>Hinzufügen</button>
             </div>
         </div>
 
         @if (newSubModel != null)
         {
             <div class="row mt-2">
-                <ToDoNew Model=newSubModel OnChange=@((value) => HandleNewChange(value))></ToDoNew>
+                <ToDoNew Model=newSubModel OnChange=@HandleNewChange></ToDoNew>
             </div>
         }
 
         @if (myToDos.Any())
         {
-            <table class="table table-bordered">
+            <table class="table">
                 <tbody>
                     @foreach (var item in myToDos)
                     {
-                        <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId OnRemove=@((item) => HandleRemove(item)) OnDoneChanged=@(() => StateHasChanged())></ToDoItem_Component>
+                        <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId OnRemove=@HandleRemove OnDoneChanged=@StateHasChanged></ToDoItem_Component>
                     }
                 </tbody>
             </table>
