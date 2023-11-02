@@ -24,13 +24,13 @@ namespace Framework.Services
             {
                 var prefix = match.Groups["link"].Value.StartsWith("http") ? string.Empty : "https://";
                 var displayValue = match.Groups["name"].Value.Length > 0 ? match.Groups["name"] : match.Groups["link"];
-                result = result.Replace(match.Value, $"<a href={prefix}{match.Groups["link"]} target=_blank>{displayValue}</a>");
+                result = result.Replace(match.Value, $"<a href={prefix}{match.Groups["link"]} target=_blank onclick=\"event.stopPropagation()\">{displayValue}</a>");
             }
 
             foreach (Match match in EmailLinkRegex.Matches(raw))
             {
                 var displayValue = match.Groups["name"].Value.Length > 0 ? match.Groups["name"] : match.Groups["email"];
-                result = result.Replace(match.Value, $"<a href=mailto:{match.Groups["email"]} target=_blank>{displayValue}</a>");
+                result = result.Replace(match.Value, $"<a href=mailto:{match.Groups["email"]} target=_blank onclick=\"event.stopPropagation()\">{displayValue}</a>");
             }
 
             return $"<div>{result}</div>";

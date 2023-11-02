@@ -9,6 +9,7 @@ namespace ToDo.Data.ToDoData
         public DbSet<Category> Categories { get; set; }
         public DbSet<ToDoList> ToDoLists { get; set; }
         public DbSet<UserGroup> Groups { get; set; }
+        public DbSet<Setting> Settings { get; set; }
 
 
         public ToDoDBContext(DbContextOptions options) : base(options)

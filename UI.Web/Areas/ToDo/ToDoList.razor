@@ -53,6 +53,26 @@
                 </tbody>
             </table>
         }
+        else if (myToDos.Any() && false)
+        {
+            <div class="row" data-masonry='{ "percentPosition": true }'>
+                @foreach (var item in myToDos)
+                {
+                    <div class="col-sm-6">
+                        <div class="card">
+                            <div class="p-1">
+                                <table class="table mb-0">
+                                    <tbody>
+                                            <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId OnRemove=@HandleRemove OnDoneChanged=@StateHasChanged></ToDoItem_Component>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
+        }
     </Authorized>
 </AuthorizeView>
 

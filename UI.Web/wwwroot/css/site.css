@@ -33,7 +33,10 @@ a, .btn-link {
 }
 
 .validation-message {
-    color: red;
+	color: red;
+	font-size: 12px;
+	font-weight: normal;
+	margin-left: 1em !important;
 }
 
 #blazor-error-ui {
