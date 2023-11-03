@@ -34,7 +34,7 @@
     private async Task SaveNewList(EditContext context)
     {
         var valid = context.Validate();
-        if (valid)
+        if (valid && User != default)
         {
             var guidId = Guid.Parse(User!.Id);
             newList.UserId = guidId;

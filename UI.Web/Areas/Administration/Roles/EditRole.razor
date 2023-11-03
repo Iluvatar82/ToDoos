@@ -99,24 +99,22 @@ else
 @code {
     [Parameter]
     public string? Id { get; set; }
-    private bool IsNewPage => string.IsNullOrWhiteSpace(Id);
 
+    private bool IsNewPage => string.IsNullOrWhiteSpace(Id);
     private IdentityRoleDto displayRole { get; set; } = new IdentityRoleDto() { Id = string.Empty };
     private EmailDto displayEmail { get; set; } = new EmailDto();
-
-
     private List<IdentityUser>? usersInRole = new List<IdentityUser>();
 
     protected override async Task OnInitializedAsync()
     {
-        if (!IsNewPage)
+        if (!IsNewPage && Id != default)
         {
-            var dbRole = await IdentityRepository.GetRoleAsync(Id!);
+            var dbRole = await IdentityRepository.GetRoleAsync(Id);
             
             dbRole.NotNull();
 
             displayRole = IdentityRoleDto.ToIdentityRoleDto(dbRole!);
-            usersInRole = await IdentityRepository.GetUsersWithRoleAsync(Id!);
+            usersInRole = await IdentityRepository.GetUsersWithRoleAsync(Id);
         }
     }
 

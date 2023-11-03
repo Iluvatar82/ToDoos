@@ -102,7 +102,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var guidId = Guid.Parse(User!.Id);
+        if (User == default)
+            return;
+
+        var guidId = Guid.Parse(User.Id);
         userGroups = await UserRepository.GetAllGroupsAsync(guidId);
         list = (await ListRepository.GetAsync<ToDoList>(ListId))!;
         isUserList = list.IsUserList;
@@ -112,6 +115,9 @@
 
     private void SwitchUserGroupList()
     {
+        if (User == default)
+            return;
+
         isUserList = !isUserList;
         if (isUserList)
         {
@@ -119,7 +125,7 @@
             IdentitiesInGroup = null;
         }
 
-        list.UserId = isUserList ? Guid.Parse(User!.Id) : null;
+        list.UserId = isUserList ? Guid.Parse(User.Id) : null;
         list.GroupId = selectedUserGroupId;
 
         StateHasChanged();

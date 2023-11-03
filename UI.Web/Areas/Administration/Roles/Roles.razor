@@ -41,7 +41,6 @@ else
 @code {
     private List<IdentityRoleDto> allRoles { get; set; } = new List<IdentityRoleDto>();
 
-
     protected override async Task OnInitializedAsync()
     {
         allRoles = (await IdentityRepository.GetAllRoles()).Select(IdentityRoleDto.ToIdentityRoleDto).ToList();

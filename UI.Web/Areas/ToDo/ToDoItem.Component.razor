@@ -181,7 +181,8 @@
         await ItemRepository.UpdateAndSaveAsync(Model);
         await OnDoneChanged.InvokeAsync(Model);
 
-        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
+        if (User != default)
+            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private async Task HandleBezeichnungChange(EditContext context)
@@ -192,7 +193,8 @@
             await ItemRepository.UpdateAndSaveAsync(Model);
             BezeichnungEditEnabled = false;
 
-            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
+            if (User != default)
+                await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
         }
     }
 
@@ -210,7 +212,8 @@
 
         DeadlineEditEnabled = false;
 
-        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
+        if (User != default)
+            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private async Task SwapActive(bool force = false)
@@ -247,7 +250,8 @@
         StateHasChanged();
         await OnRemove.InvokeAsync(Model);
 
-        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
+        if (User != default)
+            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private void SetActiveStateForAll(ToDoItem item, bool isActive)
@@ -280,7 +284,8 @@
 
         StateHasChanged();
 
-        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
+        if (User != default)
+            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private Dictionary<string, object>? GetRowAttributes()

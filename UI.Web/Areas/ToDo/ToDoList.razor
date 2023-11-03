@@ -122,7 +122,7 @@
             InvokeAsync(StateHasChanged);
         });
 
-        if (ListId == Guid.Empty)
+        if (ListId == default)
         {
             var _currentUser = (await AuthenticationProvider.GetAuthenticationStateAsync()).User;
             if (_currentUser?.Claims.Any() != true)
@@ -137,19 +137,22 @@
         if (previousListId == ListId)
             return;
 
-        var twoColumnSetting = await SettingRepository.GetSettingAsync(Guid.Parse(User!.Id), Settings.TwoColumns);
-        if (twoColumnSetting != null)
-            showTwoColumns = twoColumnSetting.Value.GetBool();
+        if (User != default)
+        {
+            var twoColumnSetting = await SettingRepository.GetSettingAsync(Guid.Parse(User.Id), Settings.TwoColumns);
+            if (twoColumnSetting != null)
+                showTwoColumns = twoColumnSetting.Value.GetBool();
+        }
 
         await RetrieveItems();
         await base.OnParametersSetAsync();
 
         listInformation = await UserRepository.GetListAsync(ListId);
-        if (!listInformation.IsUserList && ListHubConnection != null)
+        if (!listInformation.IsUserList && ListHubConnection != null && User != default)
             await ListHubConnection.SendAsync("JoinedGroupList", ListId, User);
 
         ToastService.SendNotification("Liste geöffnet", $"Liste <b>{listInformation.Name}</b> wurde geöffnet!", Framework.Services.Base.MessageType.Info);
-        
+
         previousListId = ListId;
     }
 
@@ -164,6 +167,12 @@
 
     private async Task RetrieveItems()
     {
+        if (ListId == default)
+        {
+            myToDos = new List<ToDoItem>();
+            return;
+        }
+
         if (!showInactive)
         {
             myToDos = (await ItemRepository.GetAllItemsCompleteAsync(ListId, !showInactive))
@@ -232,7 +241,8 @@
 
         StateHasChanged();
 
-        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
+        if (User != default)
+            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private void NavigateBack()
@@ -245,6 +255,7 @@
         myToDos.Remove(todoItem);
         StateHasChanged();
 
-        await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
+        if (User != default)
+            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 }
