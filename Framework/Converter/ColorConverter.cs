@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Text.RegularExpressions;
 
-namespace Core.Converter
+namespace Framework.Converter
 {
     public static partial class ColorConverter
     {

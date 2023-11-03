@@ -1,4 +1,4 @@
-﻿using Core.Converter;
+﻿using Framework.Converter;
 using Framework.Services.Base;
 using System.Drawing;
 
@@ -17,13 +17,13 @@ namespace Framework.Services
             darkColor = darkColor != default ? darkColor : ServiceResources.DarkTextColor.GetColorValues();
             lightColor = lightColor != default ? lightColor : ServiceResources.LightTextColor.GetColorValues();
 
-            var convertedColor = Core.Converter.ColorConverter.GetColor(backgroundColor);
+            var convertedColor = Converter.ColorConverter.GetColor(backgroundColor);
             if (convertedColor.GetBrightness() < brightnessThreshold)
-                return Core.Converter.ColorConverter.GetString(Color.FromArgb(lightColor.A, lightColor.R, lightColor.G, lightColor.B));
+                return Converter.ColorConverter.GetString(Color.FromArgb(lightColor.A, lightColor.R, lightColor.G, lightColor.B));
 
-            return Core.Converter.ColorConverter.GetString(Color.FromArgb(darkColor.A, darkColor.R, darkColor.G, darkColor.B));
+            return Converter.ColorConverter.GetString(Color.FromArgb(darkColor.A, darkColor.R, darkColor.G, darkColor.B));
         }
 
-        public static string GetDoneTextColor(string backgroundColor) => Core.Converter.ColorConverter.GetString(Color.FromArgb(255, 20, 66, 20));
+        public static string GetDoneTextColor(string backgroundColor) => Converter.ColorConverter.GetString(Color.FromArgb(255, 20, 66, 20));
     }
 }

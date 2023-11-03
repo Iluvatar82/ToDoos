@@ -38,7 +38,8 @@
     </td>
 
     <td class="text-end" style="height: 1.5em;" @onclick=@(() => DeadlineEditEnabled = Model.IsActive && !Hidden)>
-        @if (!DeadlineEditEnabled)
+        <div>@DeadlineFragment</div>
+        @*@if (!DeadlineEditEnabled)
         {
             <dov>@DeadlineFragment</dov>
         }
@@ -48,8 +49,8 @@
                 <input type="date" @bind-value=date class="form-control col me-3" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleDeadlineChange(); }) @onblur=@HandleDeadlineChange />
                 <input type="time" @bind-value=timeOfDay class="form-control col" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleDeadlineChange(); }) @onblur=@HandleDeadlineChange />
             </div>
-        }
-    </td>
+        }*@
+     </td>
 
     <td class="fixed-w text-end">
         @if (Model.Category != null)
@@ -200,13 +201,14 @@
 
     private async Task HandleDeadlineChange()
     {
-        if (date != default)
-            Model.Deadline = date;
+        //TODO
+        // if (date != default)
+        //     Model.Deadline = date;
 
-        if (timeOfDay != default)
-            Model.Deadline = date == default
-                                ? timeOfDay
-                                : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
+        // if (timeOfDay != default)
+        //     Model.Deadline = date == default
+        //                         ? timeOfDay
+        //                         : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
 
         await ItemRepository.UpdateAndSaveAsync(Model);
 

@@ -1,7 +1,7 @@
 ﻿using Core.Validation;
 using System.Globalization;
 
-namespace Core.Converter
+namespace Framework.Converter
 {
     public static class ResourceConverter
     {

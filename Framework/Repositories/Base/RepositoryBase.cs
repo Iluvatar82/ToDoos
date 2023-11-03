@@ -15,6 +15,28 @@ namespace Framework.Repositories.Base
         }
 
 
+        public async Task<List<T>> GetAllAsync<T>() where T : class
+        {
+
+            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            dbContext.NotNull();
+            dbContext.Database.NotNull();
+            dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
+
+            return await dbContext.Set<T>().ToListAsync();
+        }
+
+        public async Task<List<T>> GetAllAsync<T>(Func<T, bool> filterFunc) where T : class
+        {
+
+            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            dbContext.NotNull();
+            dbContext.Database.NotNull();
+            dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
+
+            return dbContext.Set<T>().Where(filterFunc).ToList();
+        }
+
         public async Task<T?> GetAsync<T>(Guid id) where T : class
         {
             dbContextFactory.NotNull();

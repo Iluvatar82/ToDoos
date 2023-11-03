@@ -33,6 +33,8 @@ namespace ToDo.Data.ToDoData.Entities
         public Guid ListId { get; set; }
 
         public DateTime? Deadline { get; set; }
+        //[NotMapped]
+        //public DateTime? Deadline => Schedules?.FirstOrDefault(s => s.Definition.Deadline.HasValue)?.Definition.Deadline;
 
         public ICollection<Schedule> Schedules{ get; set; }
 
@@ -67,6 +69,6 @@ namespace ToDo.Data.ToDoData.Entities
         }
 
 
-        public override string ToString() => $"{Bezeichnung}, Category: {Category}, Deadline: {Deadline?.ToShortDateString() ?? "-"}, Order: {Order}";
+        public override string ToString() => $"{Bezeichnung}, Category: {Category}, Deadline: {Deadline?.ToShortDateString() ?? "-"}";
     }
 }

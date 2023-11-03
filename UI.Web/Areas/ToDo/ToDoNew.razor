@@ -95,13 +95,14 @@
         var valid = context.Validate();
         if (valid)
         {
-            if (date != default)
-                Model.Deadline = date;
+            //TODO
+            // if (date != default)
+            //     Model.Deadline = date;
 
-            if (timeOfDay != default)
-                Model.Deadline = date == default
-                                    ? timeOfDay
-                                    : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
+            // if (timeOfDay != default)
+            //     Model.Deadline = date == default
+            //                         ? timeOfDay
+            //                         : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
 
             await ItemRepository.AddAndSaveAsync(Model);
             Model = await ItemRepository.GetItemCompleteAsync(Model.Id) ?? new ToDoItem();

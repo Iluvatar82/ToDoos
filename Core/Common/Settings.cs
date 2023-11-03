@@ -1,4 +1,4 @@
-﻿namespace Framework.Common
+﻿namespace Core.Common
 {
     public class Settings
     {

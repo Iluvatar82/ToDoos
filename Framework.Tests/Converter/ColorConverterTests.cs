@@ -1,8 +1,7 @@
-﻿using Core.Converter;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Drawing;
 
-namespace Core.Converter.Tests
+namespace Framework.Converter.Tests
 {
     [TestClass()]
     public class ColorConverterTests
