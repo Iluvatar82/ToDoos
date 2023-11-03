@@ -34,6 +34,8 @@ namespace ToDo.Data.ToDoData.Entities
 
         public DateTime? Deadline { get; set; }
 
+        public ICollection<Schedule> Schedules{ get; set; }
+
         public DateTime? Done { get; set; }
 
         public bool IsActive { get; set; }
@@ -61,6 +63,7 @@ namespace ToDo.Data.ToDoData.Entities
             Bezeichnung = string.Empty;
             Children = new List<ToDoItem>();
             VisuallyDeactivated = false;
+            Schedules = new List<Schedule>();
         }
 
 
