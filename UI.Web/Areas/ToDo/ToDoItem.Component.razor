@@ -37,19 +37,8 @@
         }
     </td>
 
-    <td class="text-end" style="height: 1.5em;" @onclick=@(() => DeadlineEditEnabled = Model.IsActive && !Hidden)>
+    <td class="text-end">
         <div>@DeadlineFragment</div>
-        @*@if (!DeadlineEditEnabled)
-        {
-            <dov>@DeadlineFragment</dov>
-        }
-        else
-        {
-            <div class="d-flex">
-                <input type="date" @bind-value=date class="form-control col me-3" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleDeadlineChange(); }) @onblur=@HandleDeadlineChange />
-                <input type="time" @bind-value=timeOfDay class="form-control col" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleDeadlineChange(); }) @onblur=@HandleDeadlineChange />
-            </div>
-        }*@
      </td>
 
     <td class="fixed-w text-end">
@@ -130,7 +119,6 @@
     private ToDoItem? newSubModel { get; set; } = null;
 
     private bool BezeichnungEditEnabled { get; set; } = false;
-    private bool DeadlineEditEnabled { get; set; } = false;
     private DateTime? date { get; set; }
     private DateTime? timeOfDay { get; set; }
     private bool Hidden => InactiveMode && Model.IsActive;
@@ -197,25 +185,6 @@
             if (User != default)
                 await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
         }
-    }
-
-    private async Task HandleDeadlineChange()
-    {
-        //TODO
-        // if (date != default)
-        //     Model.Deadline = date;
-
-        // if (timeOfDay != default)
-        //     Model.Deadline = date == default
-        //                         ? timeOfDay
-        //                         : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
-
-        await ItemRepository.UpdateAndSaveAsync(Model);
-
-        DeadlineEditEnabled = false;
-
-        if (User != default)
-            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private async Task SwapActive(bool force = false)
