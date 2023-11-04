@@ -1,0 +1,150 @@
+﻿@page "/schedule/{ListId:guid}/{ItemId:guid}"
+@using Common = global::ToDo.Data.Common;
+
+<h4>Item bearbeiten</h4>
+
+<div class="row mb-3">
+    <div class="btn-group col-3" role="group">
+        <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
+        <button @onclick=@(() => CreateNew()) class="btn btn-outline-primary">Hinzufügen</button>
+    </div>
+</div>
+
+<table class="table table-bordered table-hover table-light">
+    <thead>
+        <tr>
+            <th>
+                Typ
+            </th>
+
+            <th>
+                Definition
+            </th>
+
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+    </tbody>
+    @for(int index = 0; index < Schedules.Count; index++)
+    {
+        var currentIndex = index;
+        var schedule = Schedules[currentIndex];
+        var scheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(schedule.ScheduleDefinition);
+        <tr>
+            <td>
+                <select @bind:get=@((int)schedule.Type) @bind:set=@((int newType) => ChangeTo(currentIndex, newType)) class="form-control">
+                    <option value="0">Fixer Zeitpunkt</option>
+                    <option value="1">Wochentage</option>
+                    <option value="2">Intervall</option>
+                </select>
+            </td>
+
+            <td class="d-flex">
+                @switch (schedule.Type)
+                {
+                    case Common.Enums.ScheduleType.Fixed:
+                        <ScheduleFixed Value=@scheduleDefinition.Fixed!.Date ValueChanged=@((value) => FixedValueChanged(schedule, value))></ScheduleFixed>
+                        break;
+                    case Common.Enums.ScheduleType.WeekDays:
+                        <ScheduleWeekdays Value=@scheduleDefinition!.WeekDays ValueChanged=@((value) => WeekdaysValueChanged(schedule, value))></ScheduleWeekdays>
+                        break;
+                }
+            </td>
+
+            <td class="fixed-w fade-in-on-hover">
+                <span class="px-2 fa fa-xmark text-secondary opacity-25" aria-hidden="true" @onclick=@(() => RemoveAt(currentIndex))></span>
+            </td>
+        </tr>
+    }
+</table>
+
+@code {
+    [Parameter]
+    public Guid ListId { get; set; }
+
+    [Parameter]
+    public Guid ItemId { get; set; }
+
+    private List<Schedule> Schedules { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Schedules = await ItemRepository.GetAllAsync<Schedule>(s => s.ToDoItemId == ItemId);
+    }
+
+    private int GetTypeFromDefinition(string definition)
+    {
+        if (definition[0] == 'd')
+            return 0;
+
+        if (definition[0] == 'w')
+            return 1;
+
+        //if (definition[0] == 'i')
+        return 2;
+    }
+
+    private async Task ChangeTo(int index, int newType)
+    {
+        switch (newType)
+        {
+            case 0:
+                Schedules[index].ScheduleDefinition = Common.ScheduleWeekdays.Default;
+
+                break;
+
+            case 1:
+                Schedules[index].ScheduleDefinition = Common.ScheduleWeekdays.Default;
+
+                break;
+
+            case 2:
+                Schedules[index].ScheduleDefinition = Common.ScheduleInterval.Default;
+
+                break;
+        }
+
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task RemoveAt(int index)
+    {
+        await ItemRepository.RemoveAndSaveAsync(Schedules[index]);
+        Schedules.RemoveAt(index);
+
+        StateHasChanged();
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + $"/list/{ListId}");
+    }
+
+    private async Task CreateNew()
+    {
+        var newSchedule = new Schedule() { ToDoItemId = ItemId, ScheduleDefinition = Common.ScheduleFixed.Default };
+        Schedules.Add(newSchedule);
+        await ItemRepository.AddAndSaveAsync(newSchedule);
+
+        StateHasChanged();
+    }
+
+    private async Task FixedValueChanged(Schedule schedule, DateTime value)
+    {
+        schedule.ScheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(new Common.ScheduleDefinition(){ Fixed = value });
+        await ItemRepository.UpdateAndSaveAsync(schedule);
+
+        StateHasChanged();
+    }
+
+    private async Task WeekdaysValueChanged(Schedule schedule, Common.ScheduleWeekdays value)
+    {
+        schedule.ScheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(new Common.ScheduleDefinition() { WeekDays = value });
+        await ItemRepository.UpdateAndSaveAsync(schedule);
+
+        StateHasChanged();
+    }
+}

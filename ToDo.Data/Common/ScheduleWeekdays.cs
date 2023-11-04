@@ -2,6 +2,9 @@
 {
     public class ScheduleWeekdays
     {
+        public static string Default = $"w {string.Join(", ", Enumerable.Repeat(1, 7))}";
+
+
         private List<bool> _days;
         public List<bool> Days { get => _days; set => _days = value; }
 
@@ -18,7 +21,7 @@
 
         public ScheduleWeekdays()
         {
-            _days = Enumerable.Repeat(false, 7).ToList();
+            _days = Enumerable.Repeat(true, 7).ToList();
             Time = new TimeOnly();
         }
 
@@ -26,33 +29,22 @@
 
         public override string ToString()
         {
-            var result = string.Empty;
-            var activeDays = new List<string>();
-            if (Montag)
-                activeDays.Add(nameof(Montag));
-            
-            if (Dienstag)
-                activeDays.Add(nameof(Dienstag));
-            
-            if (Mittwoch)
-                activeDays.Add(nameof(Mittwoch));
-            
-            if (Donnerstag)
-                activeDays.Add(nameof(Donnerstag));
-            
-            if (Freitag)
-                activeDays.Add(nameof(Freitag));
-            
-            if (Samstag)
-                activeDays.Add(nameof(Samstag));
-            
-            if (Sonntag)
-                activeDays.Add(nameof(Sonntag));
+            var result = "w ";
+            var activeDays = new List<string>
+            {
+                Montag ? "1" : "0",
+                Dienstag ? "1" : "0",
+                Mittwoch ? "1" : "0",
+                Donnerstag ? "1" : "0",
+                Freitag ? "1" : "0",
+                Samstag ? "1" : "0",
+                Sonntag ? "1" : "0"
+            };
 
-            result = string.Join(", ", activeDays);
+            result += string.Join(", ", activeDays);
 
             if (Time != default)
-                result += $" - {Time.ToShortTimeString()}";
+                result += $" {Time.ToShortTimeString()}";
 
             return result;
         }

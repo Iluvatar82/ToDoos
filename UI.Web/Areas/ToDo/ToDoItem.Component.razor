@@ -44,11 +44,11 @@
     <td class="fixed-w text-end fade-in-on-hover">
         @if(!string.IsNullOrWhiteSpace(NextOccurrenceString))
         {
-            <span class="px-2 position-relative fa fa-clock" tooltip=@NextOccurrenceString></span>
+            <span class="px-2 position-relative fa fa-clock" tooltip=@NextOccurrenceString @onclick=@(() => NavigationManager.NavigateTo(NavigationManager.BaseUri + $"Schedule/{ListId}/{Model.Id}"))></span>
         }
         else
         {
-            <span class="px-2 position-relative fa-regular fa-clock opacity-25"></span>
+            <span class="px-2 position-relative fa-regular fa-clock opacity-25" @onclick=@(() => NavigationManager.NavigateTo(NavigationManager.BaseUri + $"Schedule/{ListId}/{Model.Id}"))></span>
         }
     </td>
 

@@ -1,5 +1,6 @@
 ﻿using Framework.Repositories;
 using ToDo.Data.Common;
+using ToDo.Data.Common.Converter;
 using ToDo.Data.ToDoData.Entities;
 
 namespace ToDo.Data.MigrationTool.ManualMigrations
@@ -19,7 +20,7 @@ namespace ToDo.Data.MigrationTool.ManualMigrations
             var items = await _itemRepository.GetAllAsync<ToDoItem>(i => i.NextOccurence.HasValue);
             foreach (var item in items)
             {
-                var newSchedule = new Schedule() { ToDoItemId = item.Id, Definition = new ScheduleDefinition() { Fixed = item.NextOccurence } };
+                var newSchedule = new Schedule() { ToDoItemId = item.Id, ScheduleDefinition = ScheduleDefinitionConverter.Convert(new ScheduleDefinition() { Fixed = item.NextOccurence }) };
                 await _itemRepository.AddAndSaveAsync(newSchedule);
             }
         }

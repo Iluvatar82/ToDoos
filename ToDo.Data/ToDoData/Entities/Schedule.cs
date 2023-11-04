@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ToDo.Data.Common;
-using ToDo.Data.Common.Converter;
+using ToDo.Data.Common.Enums;
 
 namespace ToDo.Data.ToDoData.Entities
 {
     [Table("Schedule", Schema = "LiveData")]
-    public class Schedule
+    public partial class Schedule
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -17,13 +16,27 @@ namespace ToDo.Data.ToDoData.Entities
         public Guid ToDoItemId { get; set; }
 
         public DateTime? Start { get; set; }
-        
+
         public DateTime? End { get; set; }
 
         [Required]
-        public string ScheduleDefinition { get; private set; } = string.Empty;
+        public string ScheduleDefinition { get; set; } = string.Empty;
+
 
         [NotMapped]
-        public ScheduleDefinition Definition { get => ScheduleDefinitionConverter.Convert(ScheduleDefinition); set => ScheduleDefinition = ScheduleDefinitionConverter.Convert(value); }
+        public ScheduleType Type
+        {
+            get
+            {
+                if (ScheduleDefinition[0] == 'd')
+                    return ScheduleType.Fixed;
+
+                if (ScheduleDefinition[0] == 'w')
+                    return ScheduleType.WeekDays;
+
+                //if (ScheduleDefinition[0] == 'i')
+                    return ScheduleType.Interval;
+            }
+        }
     }
 }

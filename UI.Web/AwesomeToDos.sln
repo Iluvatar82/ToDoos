@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Tests", "..\Core.Tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Framework.Tests", "..\Framework.Tests\Framework.Tests.csproj", "{747FE1DD-98CD-4934-9ADC-1F4050B9C496}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo.Data.MigrationTool", "..\ToDo.Data.MigrationTool\ToDo.Data.MigrationTool.csproj", "{8D797891-A10C-45B2-9494-55AC60C7B52B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ToDo.Data.MigrationTool", "..\ToDo.Data.MigrationTool\ToDo.Data.MigrationTool.csproj", "{8D797891-A10C-45B2-9494-55AC60C7B52B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

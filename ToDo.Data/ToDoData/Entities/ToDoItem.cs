@@ -55,7 +55,7 @@ namespace ToDo.Data.ToDoData.Entities
         }
 
         [NotMapped]
-        public DateTime? NextOccurence => Schedules?.FirstOrDefault(s => s.Definition.Fixed != null)?.Definition.Fixed;
+        public DateTime? NextOccurence => Schedules?.Select(s => Common.Converter.ScheduleDefinitionConverter.Convert(s.ScheduleDefinition)).FirstOrDefault(s => s.Fixed != null)?.Fixed;
 
 
         public ToDoItem()

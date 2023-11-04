@@ -1,0 +1,8 @@
+﻿.fixed-w {
+	width: 48px;
+}
+
+.fade-in-on-hover > span:hover {
+	transition: opacity .25s ease;
+	opacity: 1.0 !important;
+}

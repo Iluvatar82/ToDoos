@@ -27,12 +27,12 @@ namespace ToDo.Data.Common.Converter
                         weekdays.Satisfies(w => w.Length == 7);
                         weekdays.Satisfies(w => w.All(c => c[0] == '1' || c[0] == '0'));
 
-                        var weekdayActive = weekdays.Select(c => bool.Parse(c));
+                        var weekdayActive = weekdays.Select(c => c == "1").ToList();
                         var time = new TimeOnly();
-                        if (matchWeekdays.Groups.ContainsKey("time"))
+                        if (matchWeekdays.Groups.ContainsKey("time") && matchWeekdays.Groups["time"].Length > 0)
                             time = TimeOnly.Parse(matchWeekdays.Groups["time"].Value);
 
-                        result.WeekDays = new ScheduleWeekdays() { Days = weekdayActive.ToList(), Time = time };
+                        result.WeekDays = new ScheduleWeekdays() { Days = weekdayActive, Time = time };
                     }
 
                     break;
@@ -55,13 +55,19 @@ namespace ToDo.Data.Common.Converter
             if (scheduleDefinition?.Fixed != null)
                 return $"d {scheduleDefinition.Fixed}";
 
+            if (scheduleDefinition?.WeekDays != null)
+                return $"w {scheduleDefinition.WeekDays}";
+
+            if (scheduleDefinition?.Interval != null)
+                return $"i {scheduleDefinition.Interval}";
+
             return string.Empty;
         }
 
         [GeneratedRegex("d\\s(?<time>.+)")]
         private static partial Regex FixedRegex();
 
-        [GeneratedRegex("w\\s(?<weekdays>(?:[01],\\s*?){6}\\s*?[01])(?:(?:\\s?-\\s?)?(?<time>.+))*")]
+        [GeneratedRegex("w\\s(?<weekdays>(?:[01],\\s*?){6}\\s*?[01])\\s?(?<time>.+)*")]
         private static partial Regex WeekdayRegex();
 
         [GeneratedRegex("i\\s(?<interval>\\d*[\\.,]?\\d*)")]

@@ -1,0 +1,13 @@
+﻿<input type="date" class="form-control col" @bind-value=date />
+<input type="time" class="form-control col" @bind-value=time />
+
+@code {
+    private DateTime dateValue;
+    private DateOnly date { get => DateOnly.FromDateTime(dateValue); set { Value = value.ToDateTime(time); } }
+    private TimeOnly time { get => TimeOnly.FromDateTime(dateValue); set { Value = date.ToDateTime(value); } }
+    [Parameter]
+    public DateTime Value { get => dateValue; set { if (value == dateValue) return; dateValue = value; ValueChanged.InvokeAsync(value); } }
+
+    [Parameter]
+    public EventCallback<DateTime> ValueChanged { get; set; }
+}
