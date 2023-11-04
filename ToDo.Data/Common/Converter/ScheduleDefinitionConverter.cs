@@ -1,8 +1,9 @@
-﻿using System.Text.RegularExpressions;
+﻿using Core.Validation;
+using System.Text.RegularExpressions;
 
 namespace ToDo.Data.Common.Converter
 {
-    public static class ScheduleDefinitionConverter
+    public static partial class ScheduleDefinitionConverter
     {
         public static ScheduleDefinition Convert(string scheduleDefinitionString)
         {
@@ -12,13 +13,36 @@ namespace ToDo.Data.Common.Converter
 
             switch (scheduleDefinitionString[0])
             {
-                case 'd': //Deadline
-                    if (DateTime.TryParse(new Regex("d\\s(?<time>.+)").Match(scheduleDefinitionString).Groups["time"].Value, out var deadline))
-                        result.Deadline = deadline;
+                case 'd': //Fixed
+                    var matchDeadline = FixedRegex().Match(scheduleDefinitionString);
+                    if (matchDeadline.Success && DateTime.TryParse(matchDeadline.Groups["time"].Value, out var deadline))
+                        result.Fixed = deadline;
                     break;
 
                 case 'w': //Days of week
+                    var matchWeekdays = WeekdayRegex().Match(scheduleDefinitionString);
+                    if (matchWeekdays.Success)
+                    {
+                        var weekdays = matchWeekdays.Groups["weekdays"].Value.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        weekdays.Satisfies(w => w.Length == 7);
+                        weekdays.Satisfies(w => w.All(c => c[0] == '1' || c[0] == '0'));
+
+                        var weekdayActive = weekdays.Select(c => bool.Parse(c));
+                        var time = new TimeOnly();
+                        if (matchWeekdays.Groups.ContainsKey("time"))
+                            time = TimeOnly.Parse(matchWeekdays.Groups["time"].Value);
+
+                        result.WeekDays = new ScheduleWeekdays() { Days = weekdayActive.ToList(), Time = time };
+                    }
+
+                    break;
+
                 case 'i': //Intervall
+                    var matchInterval = IntervalRegex().Match(scheduleDefinitionString);
+                    if (matchInterval.Success && decimal.TryParse(matchInterval.Groups["interval"].Value, out var interval))
+                        result.Interval = interval;
+                    break;
+
                 default:
                     break;
             }
@@ -28,10 +52,20 @@ namespace ToDo.Data.Common.Converter
 
         public static string Convert(ScheduleDefinition scheduleDefinition)
         {
-            if (scheduleDefinition?.Deadline != null)
-                return $"d {scheduleDefinition.Deadline}";
+            if (scheduleDefinition?.Fixed != null)
+                return $"d {scheduleDefinition.Fixed}";
 
             return string.Empty;
         }
+
+        [GeneratedRegex("d\\s(?<time>.+)")]
+        private static partial Regex FixedRegex();
+
+        [GeneratedRegex("w\\s(?<weekdays>(?:[01],\\s*?){6}\\s*?[01])(?:(?:\\s?-\\s?)?(?<time>.+))*")]
+        private static partial Regex WeekdayRegex();
+
+        [GeneratedRegex("i\\s(?<interval>\\d*[\\.,]?\\d*)")]
+        private static partial Regex IntervalRegex();
+
     }
 }

@@ -21,10 +21,14 @@
         </div>
     </td>
 
-    <td @attributes=@GetPaddingLeft() @onclick=@SetBezeichnungEditEnabled>
+    <td class="position-relative" @attributes=@GetPaddingLeft() @onclick=@SetBezeichnungEditEnabled >
         @if (!BezeichnungEditEnabled)
         {
             @BezeichnungFragment
+            if(!string.IsNullOrWhiteSpace(NextOccurrenceString))
+            {
+                <span class="next-occurrence-info">@NextOccurrenceString</span>
+            }
         }
         else
         {
@@ -37,18 +41,25 @@
         }
     </td>
 
-    <td class="text-end">
-        <div>@DeadlineFragment</div>
-     </td>
+    <td class="fixed-w text-end fade-in-on-hover">
+        @if(!string.IsNullOrWhiteSpace(NextOccurrenceString))
+        {
+            <span class="px-2 position-relative fa fa-clock" tooltip=@NextOccurrenceString></span>
+        }
+        else
+        {
+            <span class="px-2 position-relative fa-regular fa-clock opacity-25"></span>
+        }
+    </td>
 
     <td class="fixed-w text-end">
         @if (Model.Category != null)
         {
-            <span class="px-2"><i class="position-relative @Model.Category.Icon" tooltip=@Model.Category.Bezeichnung></i></span>
+            <span class="px-2 position-relative @Model.Category.Icon" tooltip=@Model.Category.Bezeichnung></span>
         }
     </td>
 
-    <td class="fixed-w removeTodo">
+    <td class="fixed-w fade-in-on-hover">
         @if (!Hidden)
         {
             <span class="px-2 fa fa-xmark text-secondary opacity-25" aria-hidden="true" @onclick=@(() => SwapActive())></span>
@@ -74,7 +85,7 @@
 
 @if (Model.Children?.Any() == true)
 {
-    foreach (var child in Model.Children.OrderBy(item => item.Done.HasValue).ThenBy(item => item.Order).ThenByDescending(item => item.Deadline))
+    foreach (var child in Model.Children.OrderBy(item => item.Done.HasValue).ThenBy(item => item.Order).ThenByDescending(item => item.NextOccurence))
     {
         if (InactiveMode && !child.VisuallyDeactivated && child.IsActive)
             continue;
@@ -124,20 +135,26 @@
     private bool Hidden => InactiveMode && Model.IsActive;
 
     private RenderFragment BezeichnungFragment => (__builder) => __builder.AddMarkupContent(0, ItemContentRenderService.RenderContent(Model.Bezeichnung));
-    private RenderFragment DeadlineFragment => (__builder) =>
+    private string NextOccurrenceString
     {
-        var result = Model.Deadline?.ToShortDateString();
-        if (Model.Deadline?.TimeOfDay.TotalSeconds > 0)
-            result += $" - {Model.Deadline!.Value.ToShortTimeString()}";
+        get
+        {
+            if (Model.NextOccurence == null)
+                return string.Empty;
 
-        __builder.AddMarkupContent(0, result);
-    };
+            var result = Model.NextOccurence.Value.ToShortDateString();
+            if (Model.NextOccurence.Value.TimeOfDay.TotalSeconds > 0)
+                result += $" - {Model.NextOccurence.Value.ToShortTimeString()}";
+
+            return result;
+        }
+    }
 
 
     protected override void OnInitialized()
     {
-        date = Model.Deadline?.Date;
-        timeOfDay = Model.Deadline;
+        date = Model.NextOccurence?.Date;
+        timeOfDay = Model.NextOccurence;
 
         base.OnInitialized();
     }
@@ -250,7 +267,7 @@
             Model.Children = Model.Children
                 .OrderBy(item => item.Done.HasValue)
                 .ThenBy(item => item.Order)
-                .ThenByDescending(item => item.Deadline).ToList();
+                .ThenByDescending(item => item.NextOccurence).ToList();
         }
 
         StateHasChanged();

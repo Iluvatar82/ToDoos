@@ -32,10 +32,6 @@ namespace ToDo.Data.ToDoData.Entities
         [ForeignKey("List")]
         public Guid ListId { get; set; }
 
-        public DateTime? Deadline { get; set; }
-        //[NotMapped]
-        //public DateTime? Deadline => Schedules?.FirstOrDefault(s => s.Definition.Deadline.HasValue)?.Definition.Deadline;
-
         public ICollection<Schedule> Schedules{ get; set; }
 
         public DateTime? Done { get; set; }
@@ -58,6 +54,9 @@ namespace ToDo.Data.ToDoData.Entities
             }
         }
 
+        [NotMapped]
+        public DateTime? NextOccurence => Schedules?.FirstOrDefault(s => s.Definition.Fixed != null)?.Definition.Fixed;
+
 
         public ToDoItem()
         {
@@ -69,6 +68,6 @@ namespace ToDo.Data.ToDoData.Entities
         }
 
 
-        public override string ToString() => $"{Bezeichnung}, Category: {Category}, Deadline: {Deadline?.ToShortDateString() ?? "-"}";
+        public override string ToString() => $"{Bezeichnung}, Category: {Category}, Deadline: {NextOccurence?.ToShortDateString() ?? "-"}";
     }
 }

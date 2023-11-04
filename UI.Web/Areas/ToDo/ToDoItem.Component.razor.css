@@ -2,6 +2,13 @@
 	font-weight: bold;
 }
 
+span.next-occurrence-info {
+	font-size: 10px;
+	position: absolute;
+	bottom: -2px;
+	opacity: .75;
+}
+
 tr.todo-item-separator {
 	height: 8px;
 	border: none;
@@ -32,11 +39,7 @@ tr.todo-item-separator {
 	font-size: 16px;
 }
 
-.removeTodo > span.fa {
-	top: -1px;
-}
-
-.removeTodo > span:hover {
-	transition: opacity .1s ease;
+.fade-in-on-hover > span:hover {
+	transition: opacity .25s ease;
 	opacity: 1.0 !important;
 }
