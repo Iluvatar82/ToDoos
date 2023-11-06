@@ -1,0 +1,19 @@
+﻿@using  Common = global::ToDo.Data.Common;
+
+<div class="d-flex py-0 align-items-center">
+    <div class="form-floating mb-3 col">
+        <input type="number"  class="form-control" @bind-value=interval id="interval" placeholder="Interval in Days" />
+        <label for="interval">Interval</label>
+    </div>
+</div>
+
+@code {
+    private Common.ScheduleInterval intervalValue;
+    private decimal interval { get => intervalValue.Interval; set { if (Value.Interval == value) return; intervalValue.Interval = value; ValueChanged.InvokeAsync(intervalValue); } }
+
+    [Parameter]
+    public Common.ScheduleInterval Value { get => intervalValue; set { if (value?.Interval == intervalValue?.Interval) return; intervalValue = value; ValueChanged.InvokeAsync(intervalValue); } }
+
+    [Parameter]
+    public EventCallback<Common.ScheduleInterval> ValueChanged { get; set; }
+}

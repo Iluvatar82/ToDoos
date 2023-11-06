@@ -55,8 +55,13 @@ else
                     case Common.Enums.ScheduleType.Fixed:
                         <ScheduleFixed Value=@scheduleDefinition.Fixed!.Date ValueChanged=@((value) => FixedValueChanged(schedule, value))></ScheduleFixed>
                         break;
+
                     case Common.Enums.ScheduleType.WeekDays:
                         <ScheduleWeekdays Value=@scheduleDefinition!.WeekDays ValueChanged=@((value) => WeekdaysValueChanged(schedule, value))></ScheduleWeekdays>
+                        break;
+
+                    case Common.Enums.ScheduleType.Interval:
+                        <ScheduleInterval Value=@scheduleDefinition!.Interval ValueChanged=@((value) => IntervalValueChanged(schedule, value))></ScheduleInterval>
                         break;
                 }
             </td>
@@ -94,8 +99,10 @@ else
         if (definition[0] == 'w')
             return 1;
 
-        //if (definition[0] == 'i')
-        return 2;
+        if (definition[0] == 'i')
+            return 2;
+
+        return 0;
     }
 
     private async Task ChangeTo(int index, int newType)
@@ -173,6 +180,19 @@ else
     {
         schedule.ScheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(new Common.ScheduleDefinition() { WeekDays = value });
         
+        if (ListId != Guid.Empty && ListId != Guid.Empty)
+            await ItemRepository.UpdateAndSaveAsync(schedule);
+
+        await InvokeAsync(async () =>
+        {
+            await SchedulesChanged.InvokeAsync(Schedules);
+            StateHasChanged();
+        });
+    }
+
+    private async Task IntervalValueChanged(Schedule schedule, Common.ScheduleInterval value)
+    {
+        schedule.ScheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(new Common.ScheduleDefinition() { Interval = value });
         if (ListId != Guid.Empty && ListId != Guid.Empty)
             await ItemRepository.UpdateAndSaveAsync(schedule);
 

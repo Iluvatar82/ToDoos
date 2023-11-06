@@ -56,7 +56,8 @@ namespace ToDo.Data.ToDoData.Entities
         }
 
         [NotMapped]
-        public DateTime? NextOccurence => GetNextOccurrenceAfter(DateTime.Now);
+        public DateTime? NextOrLastOccurrence => Schedules?.NextOccurrenceAfter(DateTime.Now) ?? Schedules?.LastOccurrenceBefore(DateTime.Now);
+
 
         public ToDoItem()
         {
@@ -68,8 +69,6 @@ namespace ToDo.Data.ToDoData.Entities
         }
 
 
-        private DateTime? GetNextOccurrenceAfter(DateTime after) => Schedules?.NextOccurrenceAfter(after);
-
-        public override string ToString() => $"{Bezeichnung}, Category: {Category}, Deadline: {NextOccurence?.ToShortDateString() ?? "-"}";
+        public override string ToString() => $"{Bezeichnung}, Category: {Category}, Deadline: {NextOrLastOccurrence?.ToShortDateString() ?? "-"}";
     }
 }

@@ -17,10 +17,10 @@ namespace ToDo.Data.MigrationTool.ManualMigrations
 
         public async Task MigrateAsync()
         {
-            var items = await _itemRepository.GetAllAsync<ToDoItem>(i => i.NextOccurence.HasValue);
+            var items = await _itemRepository.GetAllAsync<ToDoItem>(i => i.NextOrLastOccurrence.HasValue);
             foreach (var item in items)
             {
-                var newSchedule = new Schedule() { ToDoItemId = item.Id, ScheduleDefinition = ScheduleDefinitionConverter.Convert(new ScheduleDefinition() { Fixed = item.NextOccurence }) };
+                var newSchedule = new Schedule() { ToDoItemId = item.Id, ScheduleDefinition = ScheduleDefinitionConverter.Convert(new ScheduleDefinition() { Fixed = item.NextOrLastOccurrence }) };
                 await _itemRepository.AddAndSaveAsync(newSchedule);
             }
         }

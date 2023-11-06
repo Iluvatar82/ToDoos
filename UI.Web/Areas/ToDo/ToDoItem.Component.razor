@@ -25,9 +25,9 @@
         @if (!BezeichnungEditEnabled)
         {
             @BezeichnungFragment
-            if(!string.IsNullOrWhiteSpace(NextOccurrenceString))
+            if(!string.IsNullOrWhiteSpace(OccurrenceString))
             {
-                <span class="next-occurrence-info">@NextOccurrenceString</span>
+                <span class="next-occurrence-info">@OccurrenceString</span>
             }
         }
         else
@@ -42,9 +42,9 @@
     </td>
 
     <td class="fixed-w text-end fade-in-on-hover">
-        @if(!string.IsNullOrWhiteSpace(NextOccurrenceString))
+        @if(!string.IsNullOrWhiteSpace(OccurrenceString))
         {
-            <span class="px-2 position-relative fa fa-clock" tooltip=@NextOccurrenceString @onclick=@(() => NavigationManager.NavigateTo(NavigationManager.BaseUri + $"Schedule/{ListId}/{Model.Id}"))></span>
+            <span class="px-2 position-relative fa fa-clock @(Model.NextOrLastOccurrence < DateTime.Now ? "opacity-50" : string.Empty)" tooltip=@OccurrenceString @onclick=@(() => NavigationManager.NavigateTo(NavigationManager.BaseUri + $"Schedule/{ListId}/{Model.Id}"))></span>
         }
         else
         {
@@ -85,7 +85,7 @@
 
 @if (Model.Children?.Any() == true)
 {
-    foreach (var child in Model.Children.OrderBy(item => item.Done.HasValue).ThenBy(item => item.Order).ThenByDescending(item => item.NextOccurence))
+    foreach (var child in Model.Children.OrderBy(item => item.Done.HasValue).ThenBy(item => item.Order).ThenByDescending(item => item.NextOrLastOccurrence))
     {
         if (InactiveMode && !child.VisuallyDeactivated && child.IsActive)
             continue;
@@ -135,16 +135,16 @@
     private bool Hidden => InactiveMode && Model.IsActive;
 
     private RenderFragment BezeichnungFragment => (__builder) => __builder.AddMarkupContent(0, ItemContentRenderService.RenderContent(Model.Bezeichnung));
-    private string NextOccurrenceString
+    private string OccurrenceString
     {
         get
         {
-            if (Model.NextOccurence == null)
+            if (Model.NextOrLastOccurrence == null)
                 return string.Empty;
 
-            var result = Model.NextOccurence.Value.ToShortDateString();
-            if (Model.NextOccurence.Value.TimeOfDay.TotalSeconds > 0)
-                result += $" - {Model.NextOccurence.Value.ToShortTimeString()}";
+            var result = Model.NextOrLastOccurrence.Value.ToShortDateString();
+            if (Model.NextOrLastOccurrence.Value.TimeOfDay.TotalSeconds > 0)
+                result += $" - {Model.NextOrLastOccurrence.Value.ToShortTimeString()}";
 
             return result;
         }
@@ -153,8 +153,8 @@
 
     protected override void OnInitialized()
     {
-        date = Model.NextOccurence?.Date;
-        timeOfDay = Model.NextOccurence;
+        date = Model.NextOrLastOccurrence?.Date;
+        timeOfDay = Model.NextOrLastOccurrence;
 
         base.OnInitialized();
     }
@@ -267,7 +267,7 @@
             Model.Children = Model.Children
                 .OrderBy(item => item.Done.HasValue)
                 .ThenBy(item => item.Order)
-                .ThenByDescending(item => item.NextOccurence).ToList();
+                .ThenByDescending(item => item.NextOrLastOccurrence).ToList();
         }
 
         StateHasChanged();
