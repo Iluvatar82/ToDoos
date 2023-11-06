@@ -1,6 +1,7 @@
 ﻿using Core.Validation;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ToDo.Data.Common.Extensions;
 
 namespace ToDo.Data.ToDoData.Entities
 {
@@ -55,8 +56,7 @@ namespace ToDo.Data.ToDoData.Entities
         }
 
         [NotMapped]
-        public DateTime? NextOccurence => Schedules?.Select(s => Common.Converter.ScheduleDefinitionConverter.Convert(s.ScheduleDefinition)).FirstOrDefault(s => s.Fixed != null)?.Fixed;
-
+        public DateTime? NextOccurence => GetNextOccurrenceAfter(DateTime.Now);
 
         public ToDoItem()
         {
@@ -67,6 +67,8 @@ namespace ToDo.Data.ToDoData.Entities
             Schedules = new List<Schedule>();
         }
 
+
+        private DateTime? GetNextOccurrenceAfter(DateTime after) => Schedules?.NextOccurrenceAfter(after);
 
         public override string ToString() => $"{Bezeichnung}, Category: {Category}, Deadline: {NextOccurence?.ToShortDateString() ?? "-"}";
     }

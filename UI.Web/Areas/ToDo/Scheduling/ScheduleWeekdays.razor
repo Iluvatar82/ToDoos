@@ -1,0 +1,51 @@
+﻿@using  Common = global::ToDo.Data.Common;
+@using System.Globalization;
+
+<div class="d-flex py-0 align-items-center">
+    @for(var dayNumber = 0; dayNumber < 7; dayNumber++)
+    {
+        var currentNumber = dayNumber;
+        <div class="form-check px-3 ms-3 py-1 col">
+            <input class="form-check-input" type="checkbox" value="" id="checkbox.@GetWochentag(dayNumber).ToLower()" @attributes=@GetCheckboxAttributes(Value.Days[dayNumber]) @oninput=@((args) => CheckboxChanged(args, currentNumber))>
+            <label class="form-check-label" for="checkbox.@GetWochentag(dayNumber).ToLower()">
+                @GetWochentag(dayNumber)
+            </label>
+        </div>
+    }
+
+    <input type="time" class="form-control col" @bind-value=time />
+</div>
+
+@code {
+    private Common.ScheduleWeekdays weekdaysValue;
+    private TimeOnly time { get => weekdaysValue.Time; set { weekdaysValue.Time = value; ValueChanged.InvokeAsync(weekdaysValue); } }
+
+
+    [Parameter]
+    public Common.ScheduleWeekdays Value { get => weekdaysValue; set { if (value.ToString() == weekdaysValue?.ToString() || value == null) return; weekdaysValue = value; ValueChanged.InvokeAsync(value); } }
+
+    [Parameter]
+    public EventCallback<Common.ScheduleWeekdays> ValueChanged { get; set; }
+
+
+    private Dictionary<string, object>? GetCheckboxAttributes(bool isActive)
+    {
+        if (!isActive)
+            return new Dictionary<string, object>();
+
+        return new Dictionary<string, object>
+        {
+            { "checked", string.Empty }
+        };
+    }
+
+    private string GetWochentag(int dayNumber) => new CultureInfo("de-AT").DateTimeFormat.GetDayName((DayOfWeek)dayNumber);
+
+    private async Task CheckboxChanged(ChangeEventArgs e, int index)
+    {
+        var value = e.Value as bool?;
+        weekdaysValue.Days[index] = value ?? false;
+        
+        await ValueChanged.InvokeAsync(weekdaysValue);
+    }
+}

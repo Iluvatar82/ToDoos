@@ -1,4 +1,6 @@
-﻿<EditForm Model=Model OnSubmit=@SaveNewToDo>
+﻿@using UI.Web.Areas.ToDo.Scheduling
+
+<EditForm Model=Model OnSubmit=@SaveNewToDo>
     <DataAnnotationsValidator />
 
     <div class="row bg-opacity-25">
@@ -6,13 +8,6 @@
             <div class="col">
                 <input type="text" @bind-value=Model.Bezeichnung id="bezeichnung" class="form-control" />
                 <ValidationMessage For=@(() => Model.Bezeichnung) />
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="d-flex">
-                <input type="date" @bind-value=date class="form-control col me-3" />
-                <input type="time" @bind-value=timeOfDay class="form-control col" />
             </div>
         </div>
 
@@ -26,6 +21,8 @@
             </select>
         </div>
     </div>
+
+    <ScheduleEdit ItemId=Guid.Empty ListId=Guid.Empty SchedulesChanged=@UpdateModelSchedules></ScheduleEdit>
 
     <div class="row pb-3">
         <div class="btn-group col-3" @attributes=@GetMarginLeft() role="group">
@@ -90,20 +87,13 @@
         };
     }
 
+    private void UpdateModelSchedules(object? schedules) => Model.Schedules = schedules as List<Schedule> ?? new List<Schedule>();
+
     private async Task SaveNewToDo(EditContext context)
     {
         var valid = context.Validate();
         if (valid)
         {
-            //TODO
-            // if (date != default)
-            //     Model.Deadline = date;
-
-            // if (timeOfDay != default)
-            //     Model.Deadline = date == default
-            //                         ? timeOfDay
-            //                         : date!.Value.AddSeconds(timeOfDay!.Value.TimeOfDay.TotalSeconds);
-
             await ItemRepository.AddAndSaveAsync(Model);
             Model = await ItemRepository.GetItemCompleteAsync(Model.Id) ?? new ToDoItem();
 
