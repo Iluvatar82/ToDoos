@@ -32,7 +32,7 @@ namespace ToDo.Data.Common.Extensions
         public static List<DateTime> GetOccurrences(this IEnumerable<Schedule> schedules, DateTime from, DateTime to)
         {
             if (!schedules.Any())
-                return null;
+                return new List<DateTime>();
 
             var scheduleDefinitions = schedules.Select((s, i) => (Definition: ScheduleDefinitionConverter.Convert(s.ScheduleDefinition), Index: i));
 

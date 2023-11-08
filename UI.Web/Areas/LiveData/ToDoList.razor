@@ -16,7 +16,7 @@
         </div>
     </NotAuthorized>
 
-    <Authorized >
+    <Authorized>
         <h4>@listInformation?.Name
             <span @onclick=@(() =>NavigationManager.NavigateTo(NavigationManager.BaseUri + $"list/edit/{ListId}"))><i class="fa-solid fa-gears small ms-2"></i></span>
         </h4>
@@ -52,7 +52,8 @@
                         <tbody>
                             @foreach (var item in myToDos)
                             {
-                                <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item)) OnDoneChanged=@StateHasChanged></ToDoItem_Component>
+                                var index = myToDos.IndexOf(item);
+                                <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item)) OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))></ToDoItem_Component>
                             }
                         </tbody>
                     </table>
@@ -63,12 +64,13 @@
                 <div class="row" data-masonry='{ "percentPosition": true }'>
                     @foreach (var item in myToDos)
                     {
+                        var index = myToDos.IndexOf(item);
                         <div class="col-sm-6">
                             <div class="card">
                                 <div class="p-1">
                                     <table class="table mb-0">
                                         <tbody>
-                                            <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item)) OnDoneChanged=@StateHasChanged></ToDoItem_Component>
+                                            <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item)) OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))></ToDoItem_Component>
                                         </tbody>
                                     </table>
                                 </div>
@@ -82,12 +84,64 @@
     </Authorized>
 </AuthorizeView>
 
+<script>
+    window.topLevelSelector = 'table tbody tr.top';
+    window.currentElement = null;
+    window.currentIndex = 0;
+
+    document.onkeypress = function (e) {
+        if (e.key == "j") {
+            let topLevelElements = document.querySelectorAll(window.topLevelSelector);
+            currentIndex++;
+            if (currentIndex >= topLevelElements.length)
+                currentIndex = 0;
+
+            if (currentElement != null)
+                currentElement.classList.remove('active');
+
+            currentElement = topLevelElements[currentIndex];
+            currentElement.classList.add('active');
+
+            window.scrollTo({
+                    behavior: 'smooth',
+                    top:
+                        currentElement.getBoundingClientRect().top -
+                        document.body.getBoundingClientRect().top -
+                        document.querySelectorAll('.top-row')[0].getBoundingClientRect().height,
+                });
+        }
+        else if (e.key == "k"){
+            let topLevelElements = document.querySelectorAll(window.topLevelSelector);
+            currentIndex--;
+            if (currentIndex < 0)
+                currentIndex = topLevelElements.length - 1;
+
+            if (currentElement != null)
+                currentElement.classList.remove('active');
+
+            currentElement = topLevelElements[currentIndex];
+            currentElement.classList.add('active');
+
+            window.scrollTo({
+                behavior: 'smooth',
+                top:
+                    currentElement.getBoundingClientRect().top -
+                    document.body.getBoundingClientRect().top -
+                    document.querySelectorAll('.top-row')[0].getBoundingClientRect().height,
+            });
+        }
+    };
+</script>
+
 @code {
     private ToDoItem? newSubModel = null;
     private List<ToDoItem> myToDos = new List<ToDoItem>();
     private bool showInactive { get; set; }
     private global::ToDo.Data.ToDoData.Entities.ToDoList? listInformation { get; set; }
     private bool showTwoColumns { get; set; } = false;
+
+    private List<ElementReference> topLevelReferenceList { get; set; }
+    private ElementReference currentTopLevelReference { get; set; }
 
     public ToDoItem? DraggedToDoItem{ get; set; }
 
@@ -195,6 +249,8 @@
                 .ThenBy(item => item.Order)
                 .ThenByDescending(item => item.NextOrLastOccurrence).ToList();
         }
+
+        topLevelReferenceList = new List<ElementReference>();
     }
 
     private void CreateNew()
@@ -291,5 +347,18 @@
         }
 
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleKeyNavigation(KeyboardEventArgs args)
+    {
+        if (new [] { "j", "k" }.Contains(args.Key.ToLower()))
+        {
+            if (args.Key.ToLower() == "j")
+                currentTopLevelReference = topLevelReferenceList[(topLevelReferenceList.IndexOf(currentTopLevelReference) + topLevelReferenceList.Count + 1) % topLevelReferenceList.Count];
+            else if (args.Key.ToLower() == "k")
+                currentTopLevelReference = topLevelReferenceList[(topLevelReferenceList.IndexOf(currentTopLevelReference) + topLevelReferenceList.Count - 1) % topLevelReferenceList.Count];
+
+            await currentTopLevelReference.FocusAsync();
+        }
     }
 }

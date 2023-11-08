@@ -87,14 +87,14 @@ else
     [Parameter]
     public EventCallback SchedulesChanged { get; set; }
 
-    private string Title{ get; set; }
+    private string Title { get; set; } = "Keine Beschreibung";
     private List<Schedule> Schedules { get; set; } = new List<Schedule>();
 
     protected override async Task OnParametersSetAsync()
     {
         if (ItemId != Guid.Empty && ListId != Guid.Empty)
         {
-            Title = $"\"{(await ItemRepository.GetAsync<ToDoItem>(ItemId))?.Bezeichnung ?? "No Description"}\"";
+            Title = (await ItemRepository.GetAsync<ToDoItem>(ItemId))?.Bezeichnung ?? Title;
             Schedules = await ItemRepository.GetAllAsync<Schedule>(s => s.ToDoItemId == ItemId);
          }
     }

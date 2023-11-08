@@ -72,7 +72,7 @@ namespace ToDo.Data.ToDoData.Entities
         }
 
 
-        public List<DateTime> Occurrences(DateTime from, DateTime to) => Schedules?.GetOccurrences(from, to);
+        public List<DateTime> Occurrences(DateTime from, DateTime to) => Schedules?.GetOccurrences(from, to) ?? new List<DateTime>();
 
         public override string ToString() => $"{Bezeichnung}, Category: {Category}, Deadline: {NextOrLastOccurrence?.ToShortDateString() ?? "-"}";
     }

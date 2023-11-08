@@ -3,7 +3,7 @@
 @using Framework.Services;
 @using Microsoft.AspNetCore.SignalR.Client;
 
-<tr class="bg-opacity-25 align-items-baseline @(Model.Done.HasValue ? "bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25" : null)"
+<tr @ref=@ItemReference class="bg-opacity-25 align-items-baseline @(Level == 0 ? "top" : string.Empty) @(Model.Done.HasValue ? "bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25" : null)"
     draggable="true" @ondragstart=@(_ => HandleDragStart(Model)) ondragover="event.preventDefault();" @ondrop=@(_ => HandleDrop(Model)) @attributes=@GetRowAttributes()>
     <td class="position-relative fade-in-on-hover">
         <span class="fa fa-grip-vertical opacity-25"></span>
@@ -108,7 +108,7 @@
 
 @code {
     [CascadingParameter]
-    ToDoList Container { get; set; }
+    ToDoList? Container { get; set; }
 
     [CascadingParameter]
     public Modal? PageModal { get; set; }
@@ -142,6 +142,12 @@
 
     [Parameter]
     public EventCallback OnDoneChanged { get; set; }
+
+    private ElementReference reference;
+    public ElementReference ItemReference { get => reference; private set { reference = value; OnReferenced.InvokeAsync(value); } }
+    
+    [Parameter]
+    public EventCallback<ElementReference> OnReferenced { get; set; }
 
     private ToDoItem? newSubModel { get; set; } = null;
 
@@ -294,7 +300,8 @@
 
     private void HandleDragStart(ToDoItem dragItem)
     {
-        Container.DraggedToDoItem = dragItem;
+        if (Container != null)
+            Container.DraggedToDoItem = dragItem;
     }
 
     private void HandleDragEnter()
@@ -303,7 +310,7 @@
 
     private async Task HandleDrop(ToDoItem dropItem)
     {
-        var item = Container.DraggedToDoItem;
+        var item = Container?.DraggedToDoItem;
         item.NotNull();
 
         if (dropItem == item || dropItem == item!.Parent)
@@ -315,8 +322,8 @@
         item.ParentId = dropItem?.Id;
         await ItemRepository.UpdateAndSaveAsync(item);
 
-        Container.DraggedToDoItem = null;
-        StateHasChanged();
+        if (Container != null)
+            Container.DraggedToDoItem = null;
 
         await HandleDraggedTo(item.Parent, item);
     }
