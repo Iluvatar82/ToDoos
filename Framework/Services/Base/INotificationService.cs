@@ -2,6 +2,6 @@
 {
     public interface INotificationService
     {
-        public void SendNotification(string title, string message, MessageType messageType, int? disyplayTime = null);
+        public Task SendAsync(string title, string message, MessageType messageType, int? disyplayTime = null, params string[] recipients);
     }
 }

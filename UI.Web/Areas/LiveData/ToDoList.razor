@@ -6,7 +6,9 @@
 @using Framework.Services;
 @using Microsoft.AspNetCore.SignalR.Client;
 @using UI.Web.Hubs;
+
 @inject ToastNotificationService ToastService
+@inject EmailService EmailService;
 
 <AuthorizeView>
     <NotAuthorized>
@@ -157,29 +159,26 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ListHubConnection?.On<string>("JoinedList", (username) =>
+        ListHubConnection?.On<string>("JoinedList", async (username) =>
         {
-            ToastService.SendNotification("Beigetreten", $"{username} hat die Liste geöffnet!", Framework.Services.Base.MessageType.Info);
-
-            InvokeAsync(StateHasChanged);
+            await ToastService.SendAsync("Beigetreten", $"{username} hat die Liste geöffnet!", Framework.Services.Base.MessageType.Info);
+            await InvokeAsync(StateHasChanged);
         });
 
-        ListHubConnection?.On<string>("UpdateList", (username) =>
+        ListHubConnection?.On<string>("UpdateList", async (username) =>
         {
-            ToastService.SendNotification("Aktualisiert", $"{username} hat die Liste aktualisiert!.{Environment.NewLine}Lade Änderungen...", Framework.Services.Base.MessageType.Info);
-
-            InvokeAsync(async () =>
+            await ToastService.SendAsync("Aktualisiert", $"{username} hat die Liste aktualisiert!.{Environment.NewLine}Lade Änderungen...", Framework.Services.Base.MessageType.Info);
+            await InvokeAsync(async () =>
             {
                 await RetrieveItems();
                 StateHasChanged();
             });
         });
 
-        ListHubConnection?.On<string>("LeftList", (username) =>
+        ListHubConnection?.On<string>("LeftList", async (username) =>
         {
-            ToastService.SendNotification("Verlassen", $"{username} hat die Liste geschlossen!", Framework.Services.Base.MessageType.Info);
-
-            InvokeAsync(StateHasChanged);
+            await ToastService.SendAsync("Verlassen", $"{username} hat die Liste geschlossen!", Framework.Services.Base.MessageType.Info);
+            await InvokeAsync(StateHasChanged);
         });
 
         if (ListId == default)
@@ -211,7 +210,7 @@
         if (!listInformation.IsUserList && ListHubConnection != null && User != default)
             await ListHubConnection.SendAsync("JoinedGroupList", ListId, User);
 
-        ToastService.SendNotification("Liste geöffnet", $"Liste <b>{listInformation.Name}</b> wurde geöffnet!", Framework.Services.Base.MessageType.Info);
+        await ToastService.SendAsync("Liste geöffnet", $"Liste <b>{listInformation.Name}</b> wurde geöffnet!", Framework.Services.Base.MessageType.Info);
 
         previousListId = ListId;
     }

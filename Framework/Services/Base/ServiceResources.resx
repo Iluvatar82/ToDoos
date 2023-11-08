@@ -129,6 +129,13 @@
   <data name="DarkTextColor" xml:space="preserve">
     <value>255, 88, 88, 88</value>
   </data>
+  <data name="Email_Password" xml:space="preserve">
+    <value>vwxf xblj qllm kifv</value>
+    <comment>vwxf xblj qllm kifv</comment>
+  </data>
+  <data name="Email_Sender" xml:space="preserve">
+    <value>spitefr@gmail.com</value>
+  </data>
   <data name="LightTextColor" xml:space="preserve">
     <value>255, 255, 255, 255</value>
   </data>

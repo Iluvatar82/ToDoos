@@ -43,6 +43,8 @@ namespace UI.Web
 
             builder.Services.AddTransient<IdentityRepository>();
 
+            builder.Services.AddSingleton<EmailService>();
+
             var app = builder.Build();
             if (app.Environment.IsDevelopment())
             {

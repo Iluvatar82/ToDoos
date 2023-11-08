@@ -97,6 +97,24 @@ namespace Framework.Services.Base {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vwxf xblj qllm kifv ähnelt.
+        /// </summary>
+        internal static string Email_Password {
+            get {
+                return ResourceManager.GetString("Email_Password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die spitefr@gmail.com ähnelt.
+        /// </summary>
+        internal static string Email_Sender {
+            get {
+                return ResourceManager.GetString("Email_Sender", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 255, 255, 255, 255 ähnelt.
         /// </summary>
         internal static string LightTextColor {

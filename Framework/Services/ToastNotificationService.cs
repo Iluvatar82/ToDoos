@@ -17,7 +17,7 @@ namespace Framework.Services
         }
 
 
-        public void SendNotification(string title, string message, MessageType messageType, int? disyplayTime = null)
+        public async Task SendAsync(string title, string message, MessageType messageType, int? disyplayTime = null, params string[] recipients)
         {
             var newToast = new Toast() { Title = title, Message = message, MessageType = messageType, DisplayTime = disyplayTime ?? ToastDefaultDisplayTime };
             if (disyplayTime != null)
@@ -41,6 +41,8 @@ namespace Framework.Services
             ToastsChanged?.Invoke(this, EventArgs.Empty);
 
             newToast.StartCountdown();
+
+            await Task.CompletedTask;
         }
     }
 
