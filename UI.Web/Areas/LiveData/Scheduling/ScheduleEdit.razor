@@ -3,7 +3,7 @@
 
 @if (ItemId != Guid.Empty)
 {
-    <h4>Item bearbeiten</h4>
+    <h4>@Title - Scheduling bearbeiten</h4>
 
     <div class="row mb-3">
         <div class="btn-group col-3" role="group">
@@ -17,7 +17,7 @@ else
     <button type="button" @onclick=@(() => CreateNew()) class="btn btn-outline-primary">Schedule Hinzufügen</button>
 }
 
-<table class="table table-bordered table-hover table-light">
+<table class="table table-bordered">
     <thead>
         <tr>
             <th>
@@ -41,27 +41,31 @@ else
         var schedule = Schedules[currentIndex];
         var scheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(schedule.ScheduleDefinition);
         <tr>
-            <td>
-                <select @bind:get=@((int)schedule.Type) @bind:set=@((int newType) => ChangeTo(currentIndex, newType)) class="form-control">
-                    <option value="0">Fixer Zeitpunkt</option>
-                    <option value="1">Wochentage</option>
-                    <option value="2">Intervall</option>
-                </select>
+            <td class="align-top py-0">
+                <div class="form-floating col py-0 px-2">
+                    <select @bind:get=@((int)schedule.Type) @bind:set=@((int newType) => ChangeTo(currentIndex, newType)) class="form-control border" id="TypeSelect">
+                        <option value="0">Fixer Zeitpunkt</option>
+                        <option value="1">Wochentage</option>
+                        <option value="2">Intervall</option>
+                    </select>
+
+                    <label for="TypeSelect">Scheduletyp</label>
+                </div>
             </td>
 
-            <td>
+            <td class="align-top py-0">
                 @switch (schedule.Type)
                 {
                     case Common.Enums.ScheduleType.Fixed:
-                        <ScheduleFixed Value=@scheduleDefinition.Fixed!.Date ValueChanged=@((value) => FixedValueChanged(schedule, value))></ScheduleFixed>
+                        <ScheduleFixed_Component Model=@scheduleDefinition.Fixed!.Date ModelChanged=@((value) => FixedValueChanged(schedule, value))></ScheduleFixed_Component>
                         break;
 
                     case Common.Enums.ScheduleType.WeekDays:
-                        <ScheduleWeekdays Value=@scheduleDefinition!.WeekDays ValueChanged=@((value) => WeekdaysValueChanged(schedule, value))></ScheduleWeekdays>
+                        <ScheduleWeekdays_Component Model=@scheduleDefinition!.WeekDays Start=@schedule.Start End=@schedule.End ModelChanged=@((value) => WeekdaysValueChanged(schedule, value.Definition, value.Start, value.End))></ScheduleWeekdays_Component>
                         break;
 
                     case Common.Enums.ScheduleType.Interval:
-                        <ScheduleInterval Value=@scheduleDefinition!.Interval ValueChanged=@((value) => IntervalValueChanged(schedule, value))></ScheduleInterval>
+                        <ScheduleInterval_Component Model=@scheduleDefinition!.Interval Start=@schedule.Start End=@schedule.End ModelChanged=@((value) => IntervalValueChanged(schedule, value.Definition, value.Start, value.End))></ScheduleInterval_Component>
                         break;
                 }
             </td>
@@ -83,12 +87,16 @@ else
     [Parameter]
     public EventCallback SchedulesChanged { get; set; }
 
-    public List<Schedule> Schedules { get; set; } = new List<Schedule>();
+    private string Title{ get; set; }
+    private List<Schedule> Schedules { get; set; } = new List<Schedule>();
 
     protected override async Task OnParametersSetAsync()
     {
-        if (ListId != Guid.Empty && ListId != Guid.Empty)
+        if (ItemId != Guid.Empty && ListId != Guid.Empty)
+        {
+            Title = $"\"{(await ItemRepository.GetAsync<ToDoItem>(ItemId))?.Bezeichnung ?? "No Description"}\"";
             Schedules = await ItemRepository.GetAllAsync<Schedule>(s => s.ToDoItemId == ItemId);
+         }
     }
 
     private int GetTypeFromDefinition(string definition)
@@ -110,7 +118,7 @@ else
         switch (newType)
         {
             case 0:
-                Schedules[index].ScheduleDefinition = Common.ScheduleWeekdays.Default;
+                Schedules[index].ScheduleDefinition = Common.ScheduleFixed.Default;
 
                 break;
 
@@ -176,10 +184,13 @@ else
         });
     }
 
-    private async Task WeekdaysValueChanged(Schedule schedule, Common.ScheduleWeekdays value)
+    private async Task WeekdaysValueChanged(Schedule schedule, Common.ScheduleWeekdays value, DateTime? start, DateTime? end)
     {
         schedule.ScheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(new Common.ScheduleDefinition() { WeekDays = value });
         
+        schedule.Start = start;
+        schedule.End = end;
+
         if (ListId != Guid.Empty && ListId != Guid.Empty)
             await ItemRepository.UpdateAndSaveAsync(schedule);
 
@@ -190,9 +201,13 @@ else
         });
     }
 
-    private async Task IntervalValueChanged(Schedule schedule, Common.ScheduleInterval value)
+    private async Task IntervalValueChanged(Schedule schedule, Common.ScheduleInterval value, DateTime? start, DateTime? end)
     {
         schedule.ScheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(new Common.ScheduleDefinition() { Interval = value });
+
+        schedule.Start = start;
+        schedule.End = end;
+
         if (ListId != Guid.Empty && ListId != Guid.Empty)
             await ItemRepository.UpdateAndSaveAsync(schedule);
 

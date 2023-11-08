@@ -26,7 +26,13 @@ namespace Framework.Services
             newToast.OnRemove += () =>
             {
                 if (DisplayedToasts.Contains(newToast))
-                    DisplayedToasts.Remove(newToast);
+                {
+                    try
+                    {
+                        DisplayedToasts.Remove(newToast);
+                    }
+                    catch { }
+                }
 
                 ToastsChanged?.Invoke(this, EventArgs.Empty);
             };

@@ -29,7 +29,7 @@
 
         public override string ToString()
         {
-            var result = "w ";
+            var result = string.Empty;
             var activeDays = new List<string>
             {
                 Montag ? "1" : "0",

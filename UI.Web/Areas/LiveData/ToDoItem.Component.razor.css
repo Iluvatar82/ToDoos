@@ -2,6 +2,10 @@
 	font-weight: bold;
 }
 
+[draggable=true] span.fa-grip-vertical {
+	cursor: move;
+}
+
 span.next-occurrence-info {
 	font-size: 10px;
 	position: absolute;
@@ -14,13 +18,18 @@ tr.todo-item-separator {
 	border: none;
 }
 
-.markToDoDone > span.fa {
-	top: 3px;
+tr.todo-item-separator > td {
+	height: 8px;
+	padding: 0;
 }
 
-.markToDoDone > span:hover {
-	transition: opacity .2s ease;
-	opacity: 1.0 !important;
+tr.todo-item-separator:drop {
+	height: 18px;
+	border: none;
+}
+
+.markToDoDone > span.fa {
+	top: 3px;
 }
 
 .addChild {

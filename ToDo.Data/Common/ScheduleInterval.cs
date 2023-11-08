@@ -9,6 +9,7 @@
 
         public static implicit operator ScheduleInterval(decimal interval) => new ScheduleInterval() { Interval = interval };
         public static implicit operator decimal(ScheduleInterval schedule) => schedule.Interval;
+        public static implicit operator double(ScheduleInterval schedule) => (double)schedule.Interval;
 
         public override string ToString() => Interval.ToString();
     }

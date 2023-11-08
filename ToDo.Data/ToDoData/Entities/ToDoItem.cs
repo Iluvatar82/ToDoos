@@ -33,7 +33,7 @@ namespace ToDo.Data.ToDoData.Entities
         [ForeignKey("List")]
         public Guid ListId { get; set; }
 
-        public ICollection<Schedule> Schedules{ get; set; }
+        public ICollection<Schedule> Schedules { get; set; }
 
         public DateTime? Done { get; set; }
 
@@ -58,6 +58,9 @@ namespace ToDo.Data.ToDoData.Entities
         [NotMapped]
         public DateTime? NextOrLastOccurrence => Schedules?.NextOccurrenceAfter(DateTime.Now) ?? Schedules?.LastOccurrenceBefore(DateTime.Now);
 
+        [NotMapped]
+        public List<DateTime> DefaultOccurences => Occurrences(DateTime.Today.AddDays(-7), DateTime.Today.AddDays(7));
+
 
         public ToDoItem()
         {
@@ -68,6 +71,8 @@ namespace ToDo.Data.ToDoData.Entities
             Schedules = new List<Schedule>();
         }
 
+
+        public List<DateTime> Occurrences(DateTime from, DateTime to) => Schedules?.GetOccurrences(from, to);
 
         public override string ToString() => $"{Bezeichnung}, Category: {Category}, Deadline: {NextOrLastOccurrence?.ToShortDateString() ?? "-"}";
     }

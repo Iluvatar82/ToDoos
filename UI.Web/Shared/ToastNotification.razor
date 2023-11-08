@@ -4,8 +4,8 @@
 <div class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 4000;">
     <div class="toast-header">
         <i class="fa fa-@IconCssClass mx-3" aria-hidden="true"></i>
-        <strong class="me-auto">@Toast!.Title</strong>
-        @if(Toast.DisplayTime <= 0)
+        <strong class="me-auto">@Toast?.Title</strong>
+        @if(Toast?.DisplayTime <= 0)
         {
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close" @onclick=@(() => Toast.OnRemove!.Invoke())></button>
         }
@@ -19,7 +19,7 @@
     [Parameter]
     public Toast? Toast { get; set; }
 
-    private RenderFragment ToastMessage => (__builder) => __builder.AddMarkupContent(0, Toast!.Message);
+    private RenderFragment ToastMessage => (__builder) => __builder.AddMarkupContent(0, Toast?.Message);
 
     private string? IconCssClass;
 

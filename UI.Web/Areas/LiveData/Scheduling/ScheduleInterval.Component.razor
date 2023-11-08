@@ -1,0 +1,41 @@
+﻿@using  Common = global::ToDo.Data.Common;
+
+<div class="py-0 align-items-center">
+    <div class="row px-2">
+        <div class="form-floating col px-2">
+            <input type="date" class="form-control" @bind-value=Start id="start" placeholder="Start" />
+            <label for="start">Start</label>
+        </div>
+
+        <div class="form-floating col pe-0">
+            <input type="date" class="form-control" @bind-value=End id="end" placeholder="End" />
+            <label for="end">Ende</label>
+        </div>
+
+        <div class="form-floating col">
+            <input type="number" class="form-control" @bind-value=interval id="interval" placeholder="Interval in Days" />
+            <label for="interval">Interval</label>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private Common.ScheduleInterval intervalValue;
+    private DateTime? start;
+    private DateTime? end;
+ 
+    private decimal interval { get => intervalValue.Interval; set { if (Model.Interval == value) return; intervalValue.Interval = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
+
+    [Parameter]
+    public Common.ScheduleInterval Model { get => intervalValue; set { if (value?.Interval == intervalValue?.Interval) return; intervalValue = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
+
+    [Parameter]
+    public DateTime? Start { get => start; set { if (start == value) return; start = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
+
+    [Parameter]
+    public DateTime? End { get => end; set { if (end == value) return; end = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
+
+    [Parameter]
+    public EventCallback<(Common.ScheduleInterval Definition, DateTime? Start, DateTime? End)> ModelChanged { get; set; }
+}

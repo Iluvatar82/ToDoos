@@ -34,8 +34,10 @@ namespace ToDo.Data.ToDoData.Entities
                 if (ScheduleDefinition[0] == 'w')
                     return ScheduleType.WeekDays;
 
-                //if (ScheduleDefinition[0] == 'i')
+                if (ScheduleDefinition[0] == 'i')
                     return ScheduleType.Interval;
+
+                return default;
             }
         }
     }

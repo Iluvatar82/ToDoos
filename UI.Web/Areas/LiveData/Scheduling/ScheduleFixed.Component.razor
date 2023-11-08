@@ -1,0 +1,25 @@
+﻿<div class="d-flex py-0 align-items-center">
+    <div class="form-floating col px-2">
+        <input type="date" class="form-control" @bind-value=date id="date" />
+        <label for="date">Datum</label>
+    </div>
+
+    <div class="form-floating col pe-0">
+        <input type="time" class="form-control" @bind-value=time id="time"  />
+        <label for="time">Uhrzeit</label>
+    </div>
+
+    <div class="form-floating col pe-0"></div>
+</div>
+
+@code {
+    private DateTime dateValue;
+    private DateOnly date { get => DateOnly.FromDateTime(dateValue); set => Model = value.ToDateTime(time); }
+    private TimeOnly time { get => TimeOnly.FromDateTime(dateValue); set => Model = date.ToDateTime(value); }
+    
+    [Parameter]
+    public DateTime Model { get => dateValue; set { if (value == dateValue) return; dateValue = value; ModelChanged.InvokeAsync(value); } }
+
+    [Parameter]
+    public EventCallback<DateTime> ModelChanged { get; set; }
+}

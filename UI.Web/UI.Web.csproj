@@ -11,12 +11,12 @@
   <ItemGroup>
     <None Remove="appsettings.json~RFf32d21c.TMP" />
     <None Remove="Areas\Administration\Administration.razor~RF1a4ba506.TMP" />
-    <None Remove="Areas\ToDo\Group\ToDoListsIndex.razor.css" />
-    <None Remove="Areas\ToDo\ToDoListsIndex.razor.css" />
+    <None Remove="Areas\LiveData\Group\ToDoListsIndex.razor.css" />
+    <None Remove="Areas\LiveData\ToDoListsIndex.razor.css" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Areas\ToDo\ToDoListsIndex.razor.css" />
+    <Content Include="Areas\LiveData\ToDoListsIndex.razor.css" />
   </ItemGroup>
 
   <ItemGroup>
