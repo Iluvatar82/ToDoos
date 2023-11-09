@@ -1,8 +1,10 @@
 using Framework.Repositories;
 using Framework.Services;
+using Hangfire;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Configuration;
 using ToDo.Data.Identity;
 using ToDo.Data.ToDoData;
 using UI.Web.Areas.Identity;
@@ -45,6 +47,8 @@ namespace UI.Web
 
             builder.Services.AddSingleton<EmailService>();
 
+            //ConfigureHangfireService(builder.Services);
+
             var app = builder.Build();
             if (app.Environment.IsDevelopment())
             {
@@ -56,11 +60,12 @@ namespace UI.Web
                 app.UseHsts();
             }
 
+            //app.UseHangfireDashboard();
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthorization();
-
 
             app.MapControllers();
             app.MapBlazorHub();
@@ -68,6 +73,16 @@ namespace UI.Web
             app.MapFallbackToPage("/_Host");
 
             app.Run();
+        }
+        private static void ConfigureHangfireService(IServiceCollection services)
+        {
+            services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage("DBConnection"));
+
+            services.AddHangfireServer();
         }
     }
 }
