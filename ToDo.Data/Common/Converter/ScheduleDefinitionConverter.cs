@@ -1,5 +1,6 @@
 ﻿using Core.Validation;
 using System.Text.RegularExpressions;
+using ToDo.Data.Common.Enums;
 
 namespace ToDo.Data.Common.Converter
 {
@@ -39,8 +40,8 @@ namespace ToDo.Data.Common.Converter
 
                 case 'i': //Intervall
                     var matchInterval = IntervalRegex().Match(scheduleDefinitionString);
-                    if (matchInterval.Success && decimal.TryParse(matchInterval.Groups["interval"].Value, out var interval))
-                        result.Interval = interval;
+                    if (matchInterval.Success && decimal.TryParse(matchInterval.Groups["interval"].Value, out var interval) && matchInterval.Groups["unit"].Value.Length == 1)
+                        result.Interval = new ScheduleInterval { Interval = interval, Unit = TimeUnitConverter.Convert(matchInterval.Groups["unit"].Value) };
                     break;
 
                 default:
@@ -70,7 +71,7 @@ namespace ToDo.Data.Common.Converter
         [GeneratedRegex("w\\s(?<weekdays>(?:[01],\\s*?){6}\\s*?[01])\\s?(?<time>.+)*")]
         private static partial Regex WeekdayRegex();
 
-        [GeneratedRegex("i\\s(?<interval>\\d*[\\.,]?\\d*)")]
+        [GeneratedRegex("i\\s(?<interval>\\d*[\\.,]?\\d*)\\s(?<unit>[hdwmy])")]
         private static partial Regex IntervalRegex();
 
     }

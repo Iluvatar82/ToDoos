@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.Design;
-using ToDo.Data.ToDoData.Entities;
+﻿using ToDo.Data.Common.Enums;
 
 namespace ToDo.Data.Common.Extensions
 {
@@ -29,8 +28,8 @@ namespace ToDo.Data.Common.Extensions
                 if (start == null)
                     return null;
 
-                var firstOccurrenceAfter = start.Value.AddDays(Math.Ceiling((after - start.Value).TotalDays / (double)schedule.Interval.Interval) * (double)schedule.Interval.Interval);
-                if (end < firstOccurrenceAfter) 
+                var firstOccurrenceAfter = CalculateIntervalOccurrence(schedule, start.Value, after);
+                if (end < firstOccurrenceAfter)
                     return null;
 
                 return firstOccurrenceAfter;
@@ -63,7 +62,7 @@ namespace ToDo.Data.Common.Extensions
                 if (start == null)
                     return null;
 
-                var lastOccurrenceBefore = start.Value.AddDays(-Math.Floor((before - start.Value).TotalDays / (double)schedule.Interval.Interval) * (double)schedule.Interval.Interval);
+                var lastOccurrenceBefore = CalculateIntervalOccurrence(schedule, start.Value, before);
                 if (end < lastOccurrenceBefore)
                     return null;
 
@@ -71,6 +70,35 @@ namespace ToDo.Data.Common.Extensions
             }
 
             return null;
+        }
+
+        private static DateTime CalculateIntervalOccurrence(ScheduleDefinition schedule, DateTime start, DateTime comparison, bool after = true)
+        {
+            Func<DateTime, double, DateTime> timeIntervalFunc = schedule.Interval!.Unit switch
+            {
+                ScheduleTimeUnit.Hour => (c, i) => c.AddHours(i),
+                ScheduleTimeUnit.Day => (c, i) => c.AddDays(i),
+                ScheduleTimeUnit.Week => (c, i) => c.AddDays(i * 7),
+                ScheduleTimeUnit.Month => (c, i) => c.AddMonths((int)i),
+                ScheduleTimeUnit.Year => (c, i) => c.AddYears((int)i),
+                _ => (c, i) => c
+            };
+
+            if (after && comparison < start)
+                return start;
+            else if (!after && comparison > start)
+                return start;
+
+            var intervalFactor = (double)schedule.Interval.Interval * (after ? 1 : -1);
+            var currentValue = start;
+            while(true)
+            {
+                currentValue = timeIntervalFunc(currentValue, intervalFactor);
+                if (after && currentValue > comparison || !after && currentValue < comparison)
+                    break;
+            }
+
+            return currentValue;
         }
 
         public static List<DateTime> GetOccurrences(this ScheduleDefinition schedule, DateTime from, DateTime to, DateTime? start = null, DateTime? end = null)
@@ -109,7 +137,7 @@ namespace ToDo.Data.Common.Extensions
                     while(currentCheckDate <= lastCheckDate)
                     {
                         result.Add(currentCheckDate);
-                        currentCheckDate = currentCheckDate.AddDays((double)schedule.Interval);
+                        currentCheckDate = currentCheckDate.AddDays((double)schedule.Interval.Interval);
                     }
                 }
             }

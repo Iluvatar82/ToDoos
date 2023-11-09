@@ -28,6 +28,9 @@ namespace ToDo.Data.ToDoData.Entities
         {
             get
             {
+                if (string.IsNullOrWhiteSpace(ScheduleDefinition))
+                    return default;
+
                 if (ScheduleDefinition[0] == 'd')
                     return ScheduleType.Fixed;
 

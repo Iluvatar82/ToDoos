@@ -1,4 +1,5 @@
 ﻿@using  Common = global::ToDo.Data.Common;
+@using ToDo.Data.Common.Enums;
 
 <div class="py-0 align-items-center">
     <div class="row px-2">
@@ -16,6 +17,18 @@
             <input type="number" class="form-control" @bind-value=interval id="interval" placeholder="Interval in Days" />
             <label for="interval">Interval</label>
         </div>
+
+        <div class="form-floating col">
+            <select @bind:get=@((int)unit) @bind:set=@((int newUnit) => unit = (ScheduleTimeUnit)newUnit) class="form-control border" id="UnitSelect">
+                <option value="0">Stunden</option>
+                <option value="1">Tage</option>
+                <option value="2">Wochen</option>
+                <option value="3">Monate</option>
+                <option value="4">Jahre</option>
+            </select>
+
+            <label for="UnitSelect">Zeiteinheit</label>
+        </div>
     </div>
 </div>
 
@@ -24,8 +37,9 @@
     private Common.ScheduleInterval intervalValue;
     private DateTime? start;
     private DateTime? end;
- 
-    private decimal interval { get => intervalValue.Interval; set { if (Model.Interval == value) return; intervalValue.Interval = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
+
+    private decimal interval { get => intervalValue?.Interval ?? 0; set { if (Model.Interval == value) return; intervalValue.Interval = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
+    private ScheduleTimeUnit unit { get => intervalValue?.Unit ?? ScheduleTimeUnit.Day; set { if (Model.Unit == value) return; intervalValue.Unit = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
 
     [Parameter]
     public Common.ScheduleInterval Model { get => intervalValue; set { if (value?.Interval == intervalValue?.Interval) return; intervalValue = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }

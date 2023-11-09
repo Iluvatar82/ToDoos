@@ -55,7 +55,10 @@
                             @foreach (var item in myToDos)
                             {
                                 var index = myToDos.IndexOf(item);
-                                <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item)) OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))></ToDoItem_Component>
+                                <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId 
+                                    OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item))
+                                    OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))
+                                    OnOrderChanged=@((ci) => ChangeChildOrder(ci.Item, ci.Movement)) OnOrderRemoved=@RemoveOrder></ToDoItem_Component>
                             }
                         </tbody>
                     </table>
@@ -72,7 +75,10 @@
                                 <div class="p-1">
                                     <table class="table mb-0">
                                         <tbody>
-                                            <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item)) OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))></ToDoItem_Component>
+                                            <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId 
+                                                OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item)) 
+                                                OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))
+                                                OnOrderChanged=@((ci) => ChangeChildOrder(ci.Item, ci.Movement)) OnOrderRemoved=@RemoveOrder></ToDoItem_Component>
                                         </tbody>
                                     </table>
                                 </div>
@@ -238,7 +244,8 @@
                 .OrderBy(item => item.Done.HasValue)
                 .ThenBy(item => item.Order)
                 .ThenByDescending(item => item.NextOrLastOccurrence)
-                .Where(item => item.Parent == null).ToList();
+                    .Where(item => item.Parent == null)
+                    .ToList();
         }
         else
         {
@@ -246,7 +253,8 @@
             myToDos = BuildInactiveItemsFromAll(allItems)
                 .OrderBy(item => item.Done.HasValue)
                 .ThenBy(item => item.Order)
-                .ThenByDescending(item => item.NextOrLastOccurrence).ToList();
+                .ThenByDescending(item => item.NextOrLastOccurrence)
+                    .ToList();
         }
 
         topLevelReferenceList = new List<ElementReference>();
@@ -294,10 +302,11 @@
         {
             myToDos.Add(item);
             myToDos = myToDos
-               .OrderBy(item => item.Done.HasValue)
-               .ThenBy(item => item.Order)
-                   .ThenByDescending(item => item.NextOrLastOccurrence)
-                   .Where(item => item.Parent == null).ToList();
+                .OrderBy(item => item.Done.HasValue)
+                .ThenBy(item => item.Order)
+                .ThenByDescending(item => item.NextOrLastOccurrence)
+                   .Where(item => item.Parent == null)
+                   .ToList();
         }
 
         StateHasChanged();
@@ -339,13 +348,45 @@
         {
             myToDos.Add(item);
             myToDos = myToDos
-               .OrderBy(item => item.Done.HasValue)
-               .ThenBy(item => item.Order)
-                   .ThenByDescending(item => item.NextOrLastOccurrence)
-                   .Where(item => item.Parent == null).ToList();
+                .OrderBy(item => item.Done.HasValue)
+                .ThenBy(item => item.Order)
+                .ThenByDescending(item => item.NextOrLastOccurrence)
+                   .Where(item => item.Parent == null)
+                   .ToList();
         }
 
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ChangeChildOrder(ToDoItem itemToMove, int change)
+    {
+        if (!myToDos.Contains(itemToMove))
+            return;
+
+        var currentIndex = myToDos.IndexOf(itemToMove);
+        myToDos.Remove(itemToMove);
+        var newIndex = Math.Clamp(currentIndex + change, 0, myToDos.Count);
+        myToDos.Insert(newIndex, itemToMove);
+
+        for (var index = 0; index < myToDos.Count; index++)
+            myToDos[index].Order = index;
+
+        await ItemRepository.UpdateAndSaveAsync(myToDos.ToArray());
+
+        StateHasChanged();
+    }
+
+    private async Task RemoveOrder(ToDoItem item)
+    {
+        if (!myToDos.Contains(item))
+            return;
+
+        for (var index = 0; index < myToDos.Count; index++)
+            myToDos[index].Order = 0;
+
+        await ItemRepository.UpdateAndSaveAsync(myToDos.ToArray());
+
+        StateHasChanged();
     }
 
     private async Task HandleKeyNavigation(KeyboardEventArgs args)

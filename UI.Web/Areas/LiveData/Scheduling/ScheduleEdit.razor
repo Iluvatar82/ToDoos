@@ -1,5 +1,6 @@
 ﻿@page "/schedule/{ListId:guid}/{ItemId:guid}"
 @using Common = global::ToDo.Data.Common;
+@using ToDo.Data.Common.Enums;
 
 @if (ItemId != Guid.Empty)
 {
@@ -39,6 +40,11 @@ else
     {
         var currentIndex = index;
         var schedule = Schedules[currentIndex];
+        if (string.IsNullOrWhiteSpace(schedule.ScheduleDefinition))
+        {
+            InvokeAsync(async () => await RemoveAt(currentIndex));
+        }
+
         var scheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(schedule.ScheduleDefinition);
         <tr>
             <td class="align-top py-0">
@@ -203,7 +209,7 @@ else
 
     private async Task IntervalValueChanged(Schedule schedule, Common.ScheduleInterval value, DateTime? start, DateTime? end)
     {
-        schedule.ScheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(new Common.ScheduleDefinition() { Interval = value });
+        schedule.ScheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(new Common.ScheduleDefinition() { Interval = value,  });
 
         schedule.Start = start;
         schedule.End = end;
