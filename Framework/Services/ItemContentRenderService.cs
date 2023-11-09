@@ -20,6 +20,9 @@ namespace Framework.Services
         {
             var result = raw;
 
+            result = result.Replace("<", "&lt;");
+            result = result.Replace(">", "&gt;");
+
             foreach (Match match in WebLinkRegex.Matches(raw))
             {
                 var prefix = match.Groups["link"].Value.StartsWith("http") ? string.Empty : "https://";

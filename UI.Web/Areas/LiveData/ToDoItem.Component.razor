@@ -232,8 +232,8 @@
         await ItemRepository.UpdateAndSaveAsync(Model);
         await OnDoneChanged.InvokeAsync(Model);
 
-        if (User != default)
-            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
+        if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
+            await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private async Task HandleBezeichnungChange(EditContext context)
@@ -244,8 +244,8 @@
             await ItemRepository.UpdateAndSaveAsync(Model);
             BezeichnungEditEnabled = false;
 
-            if (User != default)
-                await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
+            if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
+                await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
         }
     }
 
@@ -283,8 +283,8 @@
         StateHasChanged();
         await OnRemove.InvokeAsync(Model);
 
-        if (User != default)
-            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
+        if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
+            await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private void SetActiveStateForAll(ToDoItem item, bool isActive)
@@ -318,8 +318,8 @@
 
         StateHasChanged();
 
-        if (User != default)
-            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
+        if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
+            await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
     }
 
     private void HandleDragStart(ToDoItem dragItem)
