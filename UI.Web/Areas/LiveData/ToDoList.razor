@@ -373,7 +373,7 @@
 
         await ItemRepository.UpdateAndSaveAsync(myToDos.ToArray());
 
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task RemoveOrder(ToDoItem item)
@@ -386,7 +386,7 @@
 
         await ItemRepository.UpdateAndSaveAsync(myToDos.ToArray());
 
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleKeyNavigation(KeyboardEventArgs args)
