@@ -14,6 +14,7 @@ namespace UI.Web.Areas.Identity.Pages.Account.Manage
 {
     public class SettingsModel : PageModel
     {
+        internal const string DefaultReminderUnit = "m";
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SettingRepository _settingRepository;
 
@@ -34,8 +35,11 @@ namespace UI.Web.Areas.Identity.Pages.Account.Manage
 
         public class InputModel
         {
-            [Display(Name = "Two Columns")]
+            [Display(Name = "Zwei Spalten")]
             public bool TwoColumns { get; set; }
+
+            [Display(Name = "Standard-Erinnerung")]
+            public decimal ReminderValue { get; set; }
         }
 
 
@@ -45,7 +49,8 @@ namespace UI.Web.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
-                TwoColumns = (settings.FirstOrDefault(s => s.Key == Settings.TwoColumns)?.Value ?? "false").GetBool()
+                TwoColumns = (settings.FirstOrDefault(s => s.Key == Settings.TwoColumns)?.Value ?? "false").GetBool(),
+                ReminderValue = (settings.FirstOrDefault(s => s.Key == Settings.ReminderValue)?.Value ?? "30").GetDecimal(),
             };
         }
 
@@ -86,6 +91,18 @@ namespace UI.Web.Areas.Identity.Pages.Account.Manage
             {
                 twoColumnSetting.Value = Input.TwoColumns.ToString();
                 await _settingRepository.UpdateAndSaveAsync(twoColumnSetting);
+            }
+
+            var reminderSetting = await _settingRepository.GetSettingAsync(userIdGuid, Settings.ReminderValue);
+            if (reminderSetting == null)
+            {
+                reminderSetting = _settingRepository.Create(userIdGuid, Settings.ReminderValue, Input.ReminderValue.ToString());
+                await _settingRepository.AddAndSaveAsync(reminderSetting);
+            }
+            else
+            {
+                reminderSetting.Value = Input.ReminderValue.ToString();
+                await _settingRepository.UpdateAndSaveAsync(reminderSetting);
             }
 
             StatusMessage = "Your settings have been updated";

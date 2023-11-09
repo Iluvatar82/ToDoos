@@ -2,6 +2,7 @@
 {
     public enum ScheduleTimeUnit
     {
+        Minute,
         Hour,
         Day,
         Week,

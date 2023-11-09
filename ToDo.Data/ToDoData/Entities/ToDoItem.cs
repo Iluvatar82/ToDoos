@@ -35,6 +35,8 @@ namespace ToDo.Data.ToDoData.Entities
 
         public ICollection<Schedule> Schedules { get; set; }
 
+        public ICollection<ScheduleReminder> Reminders { get; set; }
+
         public DateTime? Done { get; set; }
 
         public bool IsActive { get; set; }
@@ -69,6 +71,7 @@ namespace ToDo.Data.ToDoData.Entities
             Children = new List<ToDoItem>();
             VisuallyDeactivated = false;
             Schedules = new List<Schedule>();
+            Reminders = new List<ScheduleReminder>();
         }
 
 

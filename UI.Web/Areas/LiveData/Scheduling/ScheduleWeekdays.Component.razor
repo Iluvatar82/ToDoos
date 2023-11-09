@@ -1,36 +1,91 @@
 ﻿@using  Common = global::ToDo.Data.Common;
 @using System.Globalization;
 
-<div class="py-0 align-items-center">
-    <div class="row px-2">
-        <div class="form-floating col px-2">
-            <input type="date" class="form-control" @bind-value=Start id="start" placeholder="Start" />
-            <label for="start">Start</label>
-        </div>
 
-        <div class="form-floating col pe-0">
-            <input type="date" class="form-control" @bind-value=End id="end" placeholder="End" />
-            <label for="end">Ende</label>
-        </div>
+<td class="align-top py-0 border-0" colspan="4">
+    <table class="table mb-0">
+        <tbody>
+            <tr>
+                <td class="align-top py-0 border-0">
+                    <div class="form-floating col p-0" b-6yl1ru612t="">
+                        <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
+                            von
+                        </div>
+                    </div>
+                </td>
 
-        <div class="form-floating col pe-0"></div>
-    </div>
+                <td class="align-top py-0 border-0">
+                    <div class="form-floating col px-2">
+                        <input type="date" class="form-control border-0" @bind-value=Start id="start" placeholder="Start" />
+                        <label for="start">Start</label>
+                    </div>
+                </td>
 
-    <div class="row mx-1 px-2 py-1 border border-1 rounded-2">
-        @for (var dayNumber = 0; dayNumber < 7; dayNumber++)
-        {
-            var currentNumber = dayNumber;
-            <div class="form-check px-3 ms-3 pt-2 col">
-                <input class="form-check-input" type="checkbox" value="" id="checkbox.@GetWochentag(dayNumber).ToLower()" @attributes=@GetCheckboxAttributes(Model.Days[dayNumber]) @oninput=@((args) => CheckboxChanged(args, currentNumber))>
-                <label class="form-check-label" for="checkbox.@GetWochentag(dayNumber).ToLower()">
-                    @GetWochentag(dayNumber)
-                </label>
-            </div>
-        }
+                <td class="align-top py-0 border-0">
+                    <div class="form-floating col p-0" b-6yl1ru612t="">
+                        <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
+                            bis
+                        </div>
+                    </div>
+                </td>
 
-        <input type="time" class="form-control col" @bind-value=time />
-    </div>
-</div>
+                <td class="align-top py-0 border-0">
+                    <div class="form-floating col pe-0">
+                        <input type="date" class="form-control border-0" @bind-value=End id="end" placeholder="End" />
+                        <label for="end">Ende</label>
+                    </div>
+                </td>
+             </tr>
+
+             <tr>
+                <td class="align-top py-0 border-0">
+                    <div class="form-floating col p-0" b-6yl1ru612t="">
+                        <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
+                            an den Wochentagen
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                @for (var dayNumber = 0; dayNumber < 4; dayNumber++)
+                {
+                    var currentNumber = dayNumber;
+                    <td class="align-top py-0 border-0">
+                        <div class="form-check px-3 ms-3 pt-2 col">
+                            <input class="form-check-input" type="checkbox" value="" id="checkbox.@GetWochentag(dayNumber).ToLower()" @attributes=@GetCheckboxAttributes(Model.Days[dayNumber]) @oninput=@((args) => CheckboxChanged(args, currentNumber))>
+                            <label class="form-check-label" for="checkbox.@GetWochentag(dayNumber).ToLower()">
+                                @GetWochentag(dayNumber)
+                            </label>
+                        </div>
+                    </td>
+                }
+            </tr>
+
+            <tr>
+                @for (var dayNumber = 4; dayNumber < 7; dayNumber++)
+                {
+                    var currentNumber = dayNumber;
+                    <td class="align-top py-0 border-0">
+                        <div class="form-check px-3 ms-3 pt-2 col">
+                            <input class="form-check-input" type="checkbox" value="" id="checkbox.@GetWochentag(dayNumber).ToLower()" @attributes=@GetCheckboxAttributes(Model.Days[dayNumber]) @oninput=@((args) => CheckboxChanged(args, currentNumber))>
+                            <label class="form-check-label" for="checkbox.@GetWochentag(dayNumber).ToLower()">
+                                @GetWochentag(dayNumber)
+                            </label>
+                        </div>
+                    </td>
+                }
+
+                <td class="align-top py-0 border-0">
+                    <div class="form-floating col pe-0">
+                        <input type="time" class="form-control border-0" @bind-value=time id="time" />
+                        <label for="time">Uhrzeit</label>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</td>
 
 @code {
     private Common.ScheduleWeekdays weekdaysValue;

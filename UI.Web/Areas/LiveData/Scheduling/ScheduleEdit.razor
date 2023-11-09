@@ -1,89 +1,165 @@
 ﻿@page "/schedule/{ListId:guid}/{ItemId:guid}"
 @using Common = global::ToDo.Data.Common;
+@using Core.Common;
+@using ToDo.Data.Common.Converter;
 @using ToDo.Data.Common.Enums;
+@using UI.Web.Areas.Identity.Pages.Account.Manage;
 
 @if (ItemId != Guid.Empty)
 {
-    <h4>@Title - Scheduling bearbeiten</h4>
+    <h4>@Title<br>Scheduling bearbeiten</h4>
+}
 
-    <div class="row mb-3">
+<div class="row mt-1">
+    <div class="btn-group col-3" role="group">
+        <button @onclick=@(() => CreateNew()) class="btn btn-outline-primary">Schedule Hinzufügen</button>
+    </div>
+</div>
+
+@if(Schedules.Any())
+{
+    <table class="table table-bordered mb-0">
+        <tbody>
+            @for (int index = 0; index < Schedules.Count; index++)
+            {
+                var currentIndex = index;
+                var schedule = Schedules[currentIndex];
+                if (string.IsNullOrWhiteSpace(schedule.ScheduleDefinition))
+                {
+                    InvokeAsync(async () => await RemoveAt(currentIndex, true));
+                }
+
+                var scheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(schedule.ScheduleDefinition);
+                
+                <tr>
+                    <td class="align-top py-0" style="border-right-width: 0;">
+                        <div class="form-floating col p-0">
+                            <div class="form-control border-0 align-items-center d-flex">
+                                Typ ist
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="align-top py-0 border-0">
+                        <div class="form-floating col py-0 px-2">
+                            <select @bind:get=@((int)schedule.Type) @bind:set=@((int newType) => ChangeTo(currentIndex, newType)) class="form-control border-0" id="TypeSelect">
+                                <option value="0">Fixer Zeitpunkt</option>
+                                <option value="1">Wochentage</option>
+                                <option value="2">Intervall</option>
+                            </select>
+
+                            <label for="TypeSelect">Scheduletyp</label>
+                        </div>
+                    </td>
+
+                    @switch (schedule.Type)
+                    {
+                        case Common.Enums.ScheduleType.Fixed:
+                            <ScheduleFixed_Component Model=@scheduleDefinition.Fixed!.Date ModelChanged=@((value) => FixedValueChanged(schedule, value))></ScheduleFixed_Component>
+                            break;
+
+                        case Common.Enums.ScheduleType.WeekDays:
+                            <ScheduleWeekdays_Component Model=@scheduleDefinition!.WeekDays Start=@schedule.Start End=@schedule.End ModelChanged=@((value) => WeekdaysValueChanged(schedule, value.Definition, value.Start, value.End))></ScheduleWeekdays_Component>
+                            break;
+
+                        case Common.Enums.ScheduleType.Interval:
+                            <ScheduleInterval_Component Model=@scheduleDefinition!.Interval Start=@schedule.Start End=@schedule.End ModelChanged=@((value) => IntervalValueChanged(schedule, value.Definition, value.Start, value.End))></ScheduleInterval_Component>
+                            break;
+                    }
+
+                    <td class="fixed-w fade-in-on-hover">
+                        <span class="px-2 fa fa-xmark text-secondary opacity-25" aria-hidden="true" @onclick=@(() => RemoveAt(currentIndex, true))></span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (ItemId != Guid.Empty)
+{
+    <h4>Erinngerungen bearbeiten</h4>
+}
+
+<div class="row mt-1">
+    <div class="btn-group col-3" role="group">
+        <button @onclick=@(() => CreateNewReminder()) class="btn btn-outline-primary">Reminder Hinzufügen</button>
+    </div>
+</div>
+
+@if (Reminders.Any())
+{
+    <table class="table table-bordered mb-0">
+        <tbody>
+            @for (int index = 0; index < Reminders.Count; index++)
+            {
+                var currentIndex = index;
+                var reminder = Reminders[currentIndex];
+                if (string.IsNullOrWhiteSpace(reminder.Definition))
+                {
+                    InvokeAsync(async () => await RemoveAt(currentIndex, false));
+                }
+
+                var reminderDefinition = Common.Converter.ReminderConverter.Convert(reminder.Definition);
+                <tr>
+                    <td class="align-top py-0" style="border-right-width: 0;">
+                        <div class="form-floating col p-0">
+                            <div class="form-control border-0 align-items-center d-flex">
+                                Erinnern
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="align-top py-0 border-0">
+                        <div class="form-floating col p-0">
+                            <input type="number" class="form-control border-0" @bind:get=@reminderDefinition.Value @bind:set=@((decimal newValue) => SetReminderValue(currentIndex, newValue)) id="value" />
+                            <label for="value">Wert</label>
+                        </div>
+                    </td>
+
+                    <td class="align-top py-0 border-0">
+                        <div class="form-floating col py-0 px-2">
+                            <select @bind:get=@((int)reminderDefinition.Unit) @bind:set=@((int unit) => SetReminderUnit(currentIndex, unit)) class="form-control border-0" id="TypeSelect">
+                                <option value="0">Minuten</option>
+                                <option value="1">Stunden</option>
+                                <option value="2">Tage</option>
+                            </select>
+
+                            <label for="TypeSelect">Zeiteinheit</label>
+                        </div>
+                    </td>
+
+                    <td class="align-top py-0 border-right-0 border-0">
+                        <div class="form-floating col p-0">
+                            <div class="form-control border-0 align-items-center d-flex">
+                                vor Schedule
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="fixed-w fade-in-on-hover">
+                        <span class="px-2 fa fa-xmark text-secondary opacity-25" aria-hidden="true" @onclick=@(() => RemoveAt(currentIndex, false))></span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (ItemId != Guid.Empty)
+{
+    <div class="row mt-3">
         <div class="btn-group col-3" role="group">
             <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
-            <button @onclick=@(() => CreateNew()) class="btn btn-outline-primary">Schedule Hinzufügen</button>
         </div>
     </div>
 }
-else
-{
-    <button type="button" @onclick=@(() => CreateNew()) class="btn btn-outline-primary">Schedule Hinzufügen</button>
-}
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>
-                Typ
-            </th>
-
-            <th>
-                Definition
-            </th>
-
-            <th></th>
-        </tr>
-    </thead>
-
-    <tbody>
-
-    </tbody>
-    @for (int index = 0; index < Schedules.Count; index++)
-    {
-        var currentIndex = index;
-        var schedule = Schedules[currentIndex];
-        if (string.IsNullOrWhiteSpace(schedule.ScheduleDefinition))
-        {
-            InvokeAsync(async () => await RemoveAt(currentIndex));
-        }
-
-        var scheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(schedule.ScheduleDefinition);
-        <tr>
-            <td class="align-top py-0">
-                <div class="form-floating col py-0 px-2">
-                    <select @bind:get=@((int)schedule.Type) @bind:set=@((int newType) => ChangeTo(currentIndex, newType)) class="form-control border" id="TypeSelect">
-                        <option value="0">Fixer Zeitpunkt</option>
-                        <option value="1">Wochentage</option>
-                        <option value="2">Intervall</option>
-                    </select>
-
-                    <label for="TypeSelect">Scheduletyp</label>
-                </div>
-            </td>
-
-            <td class="align-top py-0">
-                @switch (schedule.Type)
-                {
-                    case Common.Enums.ScheduleType.Fixed:
-                        <ScheduleFixed_Component Model=@scheduleDefinition.Fixed!.Date ModelChanged=@((value) => FixedValueChanged(schedule, value))></ScheduleFixed_Component>
-                        break;
-
-                    case Common.Enums.ScheduleType.WeekDays:
-                        <ScheduleWeekdays_Component Model=@scheduleDefinition!.WeekDays Start=@schedule.Start End=@schedule.End ModelChanged=@((value) => WeekdaysValueChanged(schedule, value.Definition, value.Start, value.End))></ScheduleWeekdays_Component>
-                        break;
-
-                    case Common.Enums.ScheduleType.Interval:
-                        <ScheduleInterval_Component Model=@scheduleDefinition!.Interval Start=@schedule.Start End=@schedule.End ModelChanged=@((value) => IntervalValueChanged(schedule, value.Definition, value.Start, value.End))></ScheduleInterval_Component>
-                        break;
-                }
-            </td>
-
-            <td class="fixed-w fade-in-on-hover">
-                <span class="px-2 fa fa-xmark text-secondary opacity-25" aria-hidden="true" @onclick=@(() => RemoveAt(currentIndex))></span>
-            </td>
-        </tr>
-    }
-</table>
 
 @code {
+    [CascadingParameter]
+    public IdentityUser? User { get; set; }
+
     [Parameter]
     public Guid ListId { get; set; }
 
@@ -93,8 +169,13 @@ else
     [Parameter]
     public EventCallback SchedulesChanged { get; set; }
 
+    [Parameter]
+    public EventCallback RemindersChanged { get; set; }
+
     private string Title { get; set; } = "Keine Beschreibung";
     private List<Schedule> Schedules { get; set; } = new List<Schedule>();
+    private List<ScheduleReminder> Reminders { get; set; } = new List<ScheduleReminder>();
+    private decimal DefaultReminderTimeInMinutes { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -102,21 +183,21 @@ else
         {
             Title = (await ItemRepository.GetAsync<ToDoItem>(ItemId))?.Bezeichnung ?? Title;
             Schedules = await ItemRepository.GetAllAsync<Schedule>(s => s.ToDoItemId == ItemId);
-         }
-    }
+            Reminders = await ItemRepository.GetAllAsync<ScheduleReminder>(r => r.ToDoItemId == ItemId);
+        }
 
-    private int GetTypeFromDefinition(string definition)
-    {
-        if (definition[0] == 'd')
-            return 0;
+        if (User != null)
+        {
+            var reminderValueString = (await SettingRepository.GetAllSettingsAsync(Guid.Parse(User.Id))).FirstOrDefault(s => s.Key == Settings.ReminderValue)?.Value;
+            decimal reminderValue = 30m;
+            if (!string.IsNullOrWhiteSpace(reminderValueString))
+                decimal.TryParse(reminderValueString, out reminderValue);
 
-        if (definition[0] == 'w')
-            return 1;
+            DefaultReminderTimeInMinutes = reminderValue;
+        }
 
-        if (definition[0] == 'i')
-            return 2;
-
-        return 0;
+        if (!Schedules.Any() && !Reminders.Any())
+            await CreateNewReminder();
     }
 
     private async Task ChangeTo(int index, int newType)
@@ -145,14 +226,22 @@ else
         });
     }
 
-    private async Task RemoveAt(int index)
+    private async Task RemoveAt(int index, bool schedules = true)
     {
-        await ItemRepository.RemoveAndSaveAsync(Schedules[index]);
-        Schedules.RemoveAt(index);
+        object toRemove = schedules ? Schedules[index] : Reminders[index];
+        await ItemRepository.RemoveAndSaveAsync(toRemove);
+        if (schedules)
+            Schedules.RemoveAt(index);
+        else
+            Reminders.RemoveAt(index);
 
         await InvokeAsync(async () =>
         {
-            await SchedulesChanged.InvokeAsync(Schedules);
+            if (schedules)
+                await SchedulesChanged.InvokeAsync(Schedules);
+            else
+                await RemindersChanged.InvokeAsync(Reminders);
+
             StateHasChanged();
         });
     }
@@ -173,6 +262,53 @@ else
         await InvokeAsync(async () =>
         {
             await SchedulesChanged.InvokeAsync(Schedules);
+            StateHasChanged();
+        });
+    }
+
+    private async Task CreateNewReminder()
+    {
+        var newReminder = new ScheduleReminder() { ToDoItemId = ItemId, Definition = $"{DefaultReminderTimeInMinutes}{SettingsModel.DefaultReminderUnit}" };
+        Reminders.Add(newReminder);
+
+        if (ListId != Guid.Empty && ListId != Guid.Empty)
+            await ItemRepository.AddAndSaveAsync(newReminder);
+
+        await InvokeAsync(async () =>
+        {
+            await RemindersChanged.InvokeAsync(Reminders);
+            StateHasChanged();
+        });
+    }
+
+    private async Task SetReminderValue(int index, decimal value)
+    {
+        var definition = ReminderConverter.Convert(Reminders[index].Definition);
+        definition.Value = value;
+        Reminders[index].Definition = ReminderConverter.Convert(definition);
+
+        if (ListId != Guid.Empty && ListId != Guid.Empty)
+            await ItemRepository.UpdateAndSaveAsync(Reminders[index]);
+
+        await InvokeAsync(async () =>
+        {
+            await RemindersChanged.InvokeAsync(Reminders);
+            StateHasChanged();
+        });
+    }
+
+    private async Task SetReminderUnit(int index, int unit)
+    {
+        var definition = ReminderConverter.Convert(Reminders[index].Definition);
+        definition.Unit = (ScheduleTimeUnit)unit;
+        Reminders[index].Definition = ReminderConverter.Convert(definition);
+        
+        if (ListId != Guid.Empty && ListId != Guid.Empty)
+            await ItemRepository.UpdateAndSaveAsync(Reminders[index]);
+
+        await InvokeAsync(async () =>
+        {
+            await RemindersChanged.InvokeAsync(Reminders);
             StateHasChanged();
         });
     }

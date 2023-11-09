@@ -76,6 +76,7 @@ namespace ToDo.Data.Common.Extensions
         {
             Func<DateTime, double, DateTime> timeIntervalFunc = schedule.Interval!.Unit switch
             {
+                ScheduleTimeUnit.Minute => (c, i) => c.AddMinutes(i),
                 ScheduleTimeUnit.Hour => (c, i) => c.AddHours(i),
                 ScheduleTimeUnit.Day => (c, i) => c.AddDays(i),
                 ScheduleTimeUnit.Week => (c, i) => c.AddDays(i * 7),

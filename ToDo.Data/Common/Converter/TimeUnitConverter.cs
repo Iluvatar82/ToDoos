@@ -8,6 +8,9 @@ namespace ToDo.Data.Common.Converter
         {
             switch (unit)
             {
+                case ScheduleTimeUnit.Minute:
+                    return "m";
+
                 case ScheduleTimeUnit.Hour:
                     return "h";
 
@@ -18,7 +21,7 @@ namespace ToDo.Data.Common.Converter
                     return "w";
 
                 case ScheduleTimeUnit.Month:
-                    return "m";
+                    return "M";
 
                 case ScheduleTimeUnit.Year:
                     return "y";
@@ -32,6 +35,9 @@ namespace ToDo.Data.Common.Converter
         {
             switch (unitString)
             {
+                case "m":
+                    return ScheduleTimeUnit.Minute;
+
                 case "h":
                     return ScheduleTimeUnit.Hour;
 
@@ -41,7 +47,7 @@ namespace ToDo.Data.Common.Converter
                 case "w":
                     return ScheduleTimeUnit.Week;
 
-                case "m":
+                case "M":
                     return ScheduleTimeUnit.Month;
 
                 case "y":

@@ -7,6 +7,7 @@ namespace ToDo.Data.ToDoData
     {
         public DbSet<ToDoItem> ToDoItems { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
+        public DbSet<ScheduleReminder> Reminders { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<ToDoList> ToDoLists { get; set; }
         public DbSet<UserGroup> Groups { get; set; }

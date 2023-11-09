@@ -1,16 +1,32 @@
-﻿<div class="d-flex py-0 align-items-center">
+﻿<td class="align-top py-0 border-0">
+    <div class="form-floating col p-0" b-6yl1ru612t="">
+        <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
+            am
+        </div>
+    </div>
+</td>
+
+<td class="align-top py-0 border-0">
     <div class="form-floating col px-2">
-        <input type="date" class="form-control" @bind-value=date id="date" />
+        <input type="date" class="form-control border-0" @bind-value=date id="date" />
         <label for="date">Datum</label>
     </div>
+</td>
 
+<td class="align-top py-0 border-0">
+    <div class="form-floating col p-0" b-6yl1ru612t="">
+        <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
+            um
+        </div>
+    </div>
+</td>
+
+<td class="align-top py-0 border-0">
     <div class="form-floating col pe-0">
-        <input type="time" class="form-control" @bind-value=time id="time"  />
+        <input type="time" class="form-control border-0" @bind-value=time id="time" />
         <label for="time">Uhrzeit</label>
     </div>
-
-    <div class="form-floating col pe-0"></div>
-</div>
+</td>
 
 @code {
     private DateTime dateValue;

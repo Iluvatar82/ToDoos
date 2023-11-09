@@ -22,7 +22,6 @@ namespace ToDo.Data.ToDoData.Entities
         [Required]
         public string ScheduleDefinition { get; set; } = string.Empty;
 
-
         [NotMapped]
         public ScheduleType Type
         {
