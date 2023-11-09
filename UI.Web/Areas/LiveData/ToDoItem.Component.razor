@@ -21,7 +21,7 @@
         @if(Model.Order != default)
         {
             <div class="removeOrder text-center text-white p-0 position-absolute" @onclick=@(_ => OnOrderRemoved.InvokeAsync(Model))>
-                <span class="fa fa-xmark aria-hidden="true"></span>
+                <span class="fa fa-xmark" aria-hidden="true"></span>
             </div>
         }
 
@@ -152,10 +152,10 @@
     public EventCallback<ToDoItem> OnRemove { get; set; }
 
     [Parameter]
-    public EventCallback<(ToDoItem Destination, ToDoItem Item)> OnDraggedTo { get; set; }
+    public EventCallback<(ToDoItem? Destination, ToDoItem Item)> OnDraggedTo { get; set; }
 
     [Parameter]
-    public EventCallback<(ToDoItem Source, ToDoItem Item)> OnDraggedFrom { get; set; }
+    public EventCallback<(ToDoItem? Source, ToDoItem Item)> OnDraggedFrom { get; set; }
 
     [Parameter]
     public EventCallback OnDoneChanged { get; set; }
@@ -328,7 +328,7 @@
             Container.DraggedToDoItem = dragItem;
     }
 
-    private async Task HandleDrop(ToDoItem dropItem)
+    private async Task HandleDrop(ToDoItem? dropItem)
     {
         var item = Container?.DraggedToDoItem;
         item.NotNull();
@@ -348,7 +348,7 @@
         await HandleDraggedTo(item.Parent, item);
     }
 
-    private async Task HandleDraggedFrom(ToDoItem source, ToDoItem item)
+    private async Task HandleDraggedFrom(ToDoItem? source, ToDoItem item)
     {
         if (source != null)
             source.Children.Remove(item);
@@ -358,7 +358,7 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task HandleDraggedTo(ToDoItem destination, ToDoItem item)
+    private async Task HandleDraggedTo(ToDoItem? destination, ToDoItem item)
     {
         if (destination != null && !destination.Children.Contains(item))
         {

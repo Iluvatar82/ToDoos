@@ -148,7 +148,7 @@
     private global::ToDo.Data.ToDoData.Entities.ToDoList? listInformation { get; set; }
     private bool showTwoColumns { get; set; } = false;
 
-    private List<ElementReference> topLevelReferenceList { get; set; }
+    private List<ElementReference> topLevelReferenceList { get; set; } = new List<ElementReference>();
     private ElementReference currentTopLevelReference { get; set; }
 
     public ToDoItem? DraggedToDoItem{ get; set; }

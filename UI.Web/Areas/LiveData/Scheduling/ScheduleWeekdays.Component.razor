@@ -88,7 +88,7 @@
 </td>
 
 @code {
-    private Common.ScheduleWeekdays weekdaysValue;
+    private Common.ScheduleWeekdays weekdaysValue = new Common.ScheduleWeekdays();
     private DateTime? start;
     private DateTime? end;
 
@@ -101,7 +101,7 @@
     public DateTime? End { get => end; set { if (end == value) return; end = value; ModelChanged.InvokeAsync((weekdaysValue, start, end)); } }
 
     [Parameter]
-    public Common.ScheduleWeekdays Model { get => weekdaysValue; set { if (value.ToString() == weekdaysValue?.ToString() || value == null) return; weekdaysValue = value; ModelChanged.InvokeAsync((weekdaysValue, start, end)); } }
+    public Common.ScheduleWeekdays Model { get => weekdaysValue; set { if (value.ToString() == weekdaysValue.ToString() || value == null) return; weekdaysValue = value; ModelChanged.InvokeAsync((weekdaysValue, start, end)); } }
 
     [Parameter]
     public EventCallback<(Common.ScheduleWeekdays Definition, DateTime? Start, DateTime? End)> ModelChanged { get; set; }

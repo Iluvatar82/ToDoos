@@ -71,7 +71,7 @@
 
 
 @code {
-    private Common.ScheduleInterval intervalValue;
+    private Common.ScheduleInterval intervalValue = new Common.ScheduleInterval();
     private DateTime? start;
     private DateTime? end;
 
@@ -79,7 +79,7 @@
     private ScheduleTimeUnit unit { get => intervalValue?.Unit ?? ScheduleTimeUnit.Day; set { if (Model.Unit == value) return; intervalValue.Unit = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
 
     [Parameter]
-    public Common.ScheduleInterval Model { get => intervalValue; set { if (value?.Interval == intervalValue?.Interval) return; intervalValue = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
+    public Common.ScheduleInterval Model { get => intervalValue; set { if (value.Interval == intervalValue.Interval) return; intervalValue = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
 
     [Parameter]
     public DateTime? Start { get => start; set { if (start == value) return; start = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
