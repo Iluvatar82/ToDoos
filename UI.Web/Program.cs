@@ -47,7 +47,7 @@ namespace UI.Web
 
             builder.Services.AddSingleton<EmailService>();
 
-            //ConfigureHangfireService(builder.Services);
+            ConfigureHangfireService(builder.Services, connectionString);
 
             var app = builder.Build();
             if (app.Environment.IsDevelopment())
@@ -60,7 +60,7 @@ namespace UI.Web
                 app.UseHsts();
             }
 
-            //app.UseHangfireDashboard();
+            app.UseHangfireDashboard();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -74,13 +74,13 @@ namespace UI.Web
 
             app.Run();
         }
-        private static void ConfigureHangfireService(IServiceCollection services)
+        private static void ConfigureHangfireService(IServiceCollection services, string connectionString)
         {
             services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
-                .UseSqlServerStorage("DBConnection"));
+                .UseSqlServerStorage(connectionString));
 
             services.AddHangfireServer();
         }
