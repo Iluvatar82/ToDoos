@@ -4,7 +4,6 @@ using Hangfire;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Configuration;
 using ToDo.Data.Identity;
 using ToDo.Data.ToDoData;
 using UI.Web.Areas.Identity;
@@ -45,6 +44,7 @@ namespace UI.Web
 
             builder.Services.AddTransient<IdentityRepository>();
 
+            builder.Services.AddSingleton<ReminderService>();
             builder.Services.AddSingleton<EmailService>();
 
             ConfigureHangfireService(builder.Services, connectionString);

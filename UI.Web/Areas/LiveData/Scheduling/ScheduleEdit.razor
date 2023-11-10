@@ -5,6 +5,8 @@
 @using ToDo.Data.Common.Enums;
 @using UI.Web.Areas.Identity.Pages.Account.Manage;
 
+@inject ReminderService ReminderService
+
 @if (ItemId != Guid.Empty)
 {
     <h4>@Title<br>Scheduling bearbeiten</h4>
@@ -220,10 +222,7 @@
                 break;
         }
 
-        await InvokeAsync(async () => {
-            await SchedulesChanged.InvokeAsync(Schedules);
-            StateHasChanged();
-        });
+        await RaiseEventCallbacks(true, false);
     }
 
     private async Task RemoveAt(int index, bool schedules = true)
@@ -235,15 +234,7 @@
         else
             Reminders.RemoveAt(index);
 
-        await InvokeAsync(async () =>
-        {
-            if (schedules)
-                await SchedulesChanged.InvokeAsync(Schedules);
-            else
-                await RemindersChanged.InvokeAsync(Reminders);
-
-            StateHasChanged();
-        });
+        await RaiseEventCallbacks(schedules == true, schedules == false);
     }
 
     private void NavigateBack()
@@ -259,11 +250,7 @@
         if (ListId != Guid.Empty && ListId != Guid.Empty)
             await ItemRepository.AddAndSaveAsync(newSchedule);
 
-        await InvokeAsync(async () =>
-        {
-            await SchedulesChanged.InvokeAsync(Schedules);
-            StateHasChanged();
-        });
+        await RaiseEventCallbacks(true, false);
     }
 
     private async Task CreateNewReminder()
@@ -274,11 +261,7 @@
         if (ListId != Guid.Empty && ListId != Guid.Empty)
             await ItemRepository.AddAndSaveAsync(newReminder);
 
-        await InvokeAsync(async () =>
-        {
-            await RemindersChanged.InvokeAsync(Reminders);
-            StateHasChanged();
-        });
+        await RaiseEventCallbacks(false, true);
     }
 
     private async Task SetReminderValue(int index, decimal value)
@@ -290,11 +273,7 @@
         if (ListId != Guid.Empty && ListId != Guid.Empty)
             await ItemRepository.UpdateAndSaveAsync(Reminders[index]);
 
-        await InvokeAsync(async () =>
-        {
-            await RemindersChanged.InvokeAsync(Reminders);
-            StateHasChanged();
-        });
+        await RaiseEventCallbacks(false, true);
     }
 
     private async Task SetReminderUnit(int index, int unit)
@@ -302,15 +281,11 @@
         var definition = ReminderConverter.Convert(Reminders[index].Definition);
         definition.Unit = (ScheduleTimeUnit)unit;
         Reminders[index].Definition = ReminderConverter.Convert(definition);
-        
+
         if (ListId != Guid.Empty && ListId != Guid.Empty)
             await ItemRepository.UpdateAndSaveAsync(Reminders[index]);
 
-        await InvokeAsync(async () =>
-        {
-            await RemindersChanged.InvokeAsync(Reminders);
-            StateHasChanged();
-        });
+        await RaiseEventCallbacks(false, true);
     }
 
     private async Task FixedValueChanged(Schedule schedule, DateTime value)
@@ -319,28 +294,20 @@
         if (ListId != Guid.Empty && ListId != Guid.Empty)
             await ItemRepository.UpdateAndSaveAsync(schedule);
 
-        await InvokeAsync(async () =>
-        {
-            await SchedulesChanged.InvokeAsync(Schedules);
-            StateHasChanged();
-        });
+        await RaiseEventCallbacks(true, false);
     }
 
     private async Task WeekdaysValueChanged(Schedule schedule, Common.ScheduleWeekdays value, DateTime? start, DateTime? end)
     {
         schedule.ScheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(new Common.ScheduleDefinition() { WeekDays = value });
-        
+
         schedule.Start = start;
         schedule.End = end;
 
         if (ListId != Guid.Empty && ListId != Guid.Empty)
             await ItemRepository.UpdateAndSaveAsync(schedule);
 
-        await InvokeAsync(async () =>
-        {
-            await SchedulesChanged.InvokeAsync(Schedules);
-            StateHasChanged();
-        });
+        await RaiseEventCallbacks(true, false);
     }
 
     private async Task IntervalValueChanged(Schedule schedule, Common.ScheduleInterval value, DateTime? start, DateTime? end)
@@ -353,9 +320,20 @@
         if (ListId != Guid.Empty && ListId != Guid.Empty)
             await ItemRepository.UpdateAndSaveAsync(schedule);
 
+        await RaiseEventCallbacks(true, false);
+    }
+
+    private async Task RaiseEventCallbacks(bool schedules, bool reminders)
+    {
         await InvokeAsync(async () =>
         {
-            await SchedulesChanged.InvokeAsync(Schedules);
+            if (schedules)
+                await SchedulesChanged.InvokeAsync(Schedules);
+
+            if (reminders)
+                await RemindersChanged.InvokeAsync(Reminders);
+
+            await ReminderService.UpdateReminders(ItemId);
             StateHasChanged();
         });
     }

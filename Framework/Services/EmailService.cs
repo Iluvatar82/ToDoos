@@ -47,7 +47,6 @@ namespace Framework.Services
                     mailBody.To.Add(new MailAddress(recipient));
 
                 await smtpClient.SendMailAsync(mailBody);
-                //smtpClient.Send(mailBody);
             }
 
             await Task.CompletedTask;

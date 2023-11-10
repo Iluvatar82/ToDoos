@@ -11,6 +11,7 @@ namespace ToDo.Data.ToDoData
         public DbSet<Category> Categories { get; set; }
         public DbSet<ToDoList> ToDoLists { get; set; }
         public DbSet<UserGroup> Groups { get; set; }
+        public DbSet<HangfireJob> Jobs { get; set; }
         public DbSet<Setting> Settings { get; set; }
 
 

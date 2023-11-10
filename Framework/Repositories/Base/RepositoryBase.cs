@@ -61,7 +61,7 @@ namespace Framework.Repositories.Base
             return await dbContext.FindAsync<T>(id);
         }
 
-        public async Task AddAndSaveAsync<T>(T item) where T : class
+        public async Task AddAndSaveAsync<T>(params T[] items) where T : class
         {
             try
             {
@@ -72,7 +72,7 @@ namespace Framework.Repositories.Base
                 dbContext.Database.NotNull();
                 dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
 
-                await dbContext.AddAsync(item);
+                await dbContext.AddRangeAsync(items);
                 await dbContext.SaveChangesAsync();
             }
             catch (Exception ex)

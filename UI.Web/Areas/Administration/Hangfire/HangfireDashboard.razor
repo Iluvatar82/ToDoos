@@ -1,0 +1,12 @@
+﻿@page "/administration/hangfire"
+
+<iframe src=@HangFireUrl style="width: 100%; height: 900px;"></iframe>
+
+@code {
+    private string HangFireUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        HangFireUrl = NavigationManager.BaseUri + "hangfire";
+    }
+}
