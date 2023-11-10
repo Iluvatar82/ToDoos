@@ -41,8 +41,4 @@
     <ProjectReference Include="..\ToDo.Data\ToDo.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Hangfire\" />
-  </ItemGroup>
-
 </Project>

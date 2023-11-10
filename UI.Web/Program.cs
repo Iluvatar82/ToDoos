@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using ToDo.Data.Identity;
 using ToDo.Data.ToDoData;
 using UI.Web.Areas.Identity;
+using UI.Web.Hangfire;
 using UI.Web.Hubs;
 
 namespace UI.Web
@@ -60,7 +61,14 @@ namespace UI.Web
                 app.UseHsts();
             }
 
-            app.UseHangfireDashboard();
+            var url = builder.WebHost.GetSetting("applicationUrl");
+            var hangfireOptions = new DashboardOptions()
+            {
+                Authorization = new[] { new DashboardAuthorizationFilter() },
+                AppPath = "/todos/",
+            };
+
+            app.UseHangfireDashboard("/hangfire", hangfireOptions);
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

@@ -1,4 +1,5 @@
-﻿@using Microsoft.AspNetCore.SignalR.Client;
+﻿@using Microsoft.AspNetCore.Http.Connections.Client;
+@using Microsoft.AspNetCore.SignalR.Client;
 
 <CascadingValue Value="ListHubConnection">
     <CascadingAuthenticationState>
@@ -28,7 +29,11 @@
     protected override async Task OnInitializedAsync()
     {
         ListHubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.BaseUri + "hubs/updatelist")
+            .WithUrl(NavigationManager.BaseUri + "hubs/updatelist", (options) =>
+            {
+                options.SkipNegotiation = true;
+                options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
+            })
             .Build();
 
         await ListHubConnection.StartAsync();

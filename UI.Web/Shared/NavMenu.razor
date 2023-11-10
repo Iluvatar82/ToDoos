@@ -17,6 +17,11 @@
                     <NavLink class="nav-link" href=@(NavigationManager.BaseUri + "administration/") Match="NavLinkMatch.All">
                         <i class="fa fa-wrench pe-3" aria-hidden="true"></i> Administration
                     </NavLink>
+
+                    <NavLink class="nav-item nav-link nav-sub-item" href=@(NavigationManager.BaseUri + "administration/hangfire") Match="NavLinkMatch.All">
+                        <i class="fa fa-chart-line pe-3 ms-1" aria-hidden="true"></i> Service Dashboard
+                    </NavLink>
+
                 </div>
             </Authorized>
         </AuthorizeView>
