@@ -14,7 +14,7 @@ namespace Framework.Repositories
         }
 
 
-        public async Task<List<Category>> GetAllCategoriesAsync()
+        public async Task<List<Category>> GetAllCategoriesAsync(Func<Category, bool>? filterFunc = null)
         {
             dbContextFactory.NotNull();
 
@@ -23,8 +23,11 @@ namespace Framework.Repositories
             dbContext.NotNull();
             dbContext!.ToDoItems.NotNull();
 
-            var allCategories = dbContext.Categories.ToList();
-            return allCategories;
+            var allCategories = dbContext.Categories.AsEnumerable();
+            if (filterFunc != null)
+                allCategories = allCategories.Where(filterFunc);
+
+            return allCategories.ToList();
         }
     }
 }

@@ -26,7 +26,6 @@
         }
 
 
-
         public override string ToString()
         {
             var result = string.Empty;

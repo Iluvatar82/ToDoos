@@ -1,6 +1,7 @@
 ﻿using Core.Validation;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using ToDo.Data.ToDoData.Entities.Base;
 
 namespace Framework.Repositories.Base
 {
@@ -93,6 +94,30 @@ namespace Framework.Repositories.Base
                 dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
 
                 dbContext.UpdateRange(items);
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString(), "Error");
+            }
+        }
+
+        public async Task AddOrUpdateAndSaveAsync<T>(params T[] items) where T : DbEntityBase
+        {
+            try
+            {
+                dbContextFactory.NotNull();
+
+                using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                dbContext.NotNull();
+                dbContext.Database.NotNull();
+                dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
+
+                var newItems = items.Where(i => i.Id == Guid.Empty).ToList();
+                var updateItems = items.Where(i => !newItems.Contains(i)).ToList();
+
+                await dbContext.AddRangeAsync(newItems);
+                dbContext.UpdateRange(updateItems);
                 await dbContext.SaveChangesAsync();
             }
             catch (Exception ex)

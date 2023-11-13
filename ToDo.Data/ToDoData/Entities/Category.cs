@@ -1,16 +1,13 @@
 ﻿using Core.Validation;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ToDo.Data.ToDoData.Entities.Base;
 
 namespace ToDo.Data.ToDoData.Entities
 {
     [Table("Category", Schema = "CatalogValues")]
-    public class Category
+    public class Category : DbEntityBase
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid Id { get; set; }
-
         public Guid? UserId { get; set; }
 
         public Guid? ListId { get; set; }

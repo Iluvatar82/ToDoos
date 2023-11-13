@@ -75,18 +75,24 @@
     private DateTime? start;
     private DateTime? end;
 
-    private decimal interval { get => intervalValue.Interval; set { if (Model.Interval == value) return; intervalValue.Interval = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
-    private ScheduleTimeUnit unit { get => intervalValue.Unit; set { if (Model.Unit == value) return; intervalValue.Unit = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
+    private decimal interval { get => intervalValue.Interval; set { if (Model.Interval == value) return; intervalValue.Interval = value; ModelChanged.InvokeAsync(intervalValue); } }
+    private ScheduleTimeUnit unit { get => intervalValue.Unit; set { if (Model.Unit == value) return; intervalValue.Unit = value; ModelChanged.InvokeAsync(intervalValue); } }
 
     [Parameter]
-    public Common.ScheduleInterval Model { get => intervalValue; set { if (value.Interval == intervalValue.Interval) return; intervalValue = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
+    public Common.ScheduleInterval Model { get => intervalValue; set { if (value.Interval == intervalValue.Interval) return; intervalValue = value; ModelChanged.InvokeAsync(value); } }
 
     [Parameter]
-    public DateTime? Start { get => start; set { if (start == value) return; start = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
+    public DateTime? Start { get => start; set { if (start == value) return; start = value; StartChanged.InvokeAsync(value); } }
 
     [Parameter]
-    public DateTime? End { get => end; set { if (end == value) return; end = value; ModelChanged.InvokeAsync((intervalValue, start, end)); } }
+    public DateTime? End { get => end; set { if (end == value) return; end = value; EndChanged.InvokeAsync(value); } }
 
     [Parameter]
-    public EventCallback<(Common.ScheduleInterval Definition, DateTime? Start, DateTime? End)> ModelChanged { get; set; }
+    public EventCallback<Common.ScheduleInterval> ModelChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> StartChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> EndChanged { get; set; }
 }

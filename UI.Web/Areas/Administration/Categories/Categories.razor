@@ -1,11 +1,11 @@
-﻿@page "/administration/categories/"
+﻿@page "/categories/"
 @using System.ComponentModel.DataAnnotations;
 
 @attribute [Authorize(Roles = "Administrator")]
 
 <h4>Kategorien</h4>
 
-@if (allCategories.Any())
+@if (myCategories.Any())
 {
     <table class="table table-bordered table-hover">
         <thead>
@@ -17,9 +17,9 @@
         </thead>
 
         <tbody>
-            @foreach (var category in allCategories)
+            @foreach (var category in myCategories)
             {
-                var currentIndex = allCategories.IndexOf(category);
+                var currentIndex = myCategories.IndexOf(category);
                 <tr class="align-middle">
                     <td @onclick=@(() => BezeichnungEditEnabled = currentIndex)>
                         @if (BezeichnungEditEnabled != currentIndex)
@@ -59,12 +59,19 @@ else
 </div>
 
 @code {
-    private List<Category> allCategories { get; set; } = new List<Category>();
+    private List<Category> myCategories { get; set; } = new List<Category>();
     private int BezeichnungEditEnabled { get; set; } = -1;
 
-    protected override async Task OnInitializedAsync()
+    [CascadingParameter]
+    public IdentityUser? User { get; set; }
+
+    protected override async Task OnParametersSetAsync()
     {
-        allCategories = await CategoryRepository.GetAllCategoriesAsync();
+        if (User == null)
+            return;
+
+        var guidId = Guid.Parse(User.Id);
+        myCategories = await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId);
     }
 
     private async Task UpdateColor(Category category, string color)

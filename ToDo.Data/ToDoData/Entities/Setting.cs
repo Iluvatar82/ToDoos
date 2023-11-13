@@ -1,15 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ToDo.Data.ToDoData.Entities.Base;
 
 namespace ToDo.Data.ToDoData.Entities
 {
     [Table("Setting", Schema = "LiveData")]
-    public class Setting
+    public class Setting : DbEntityBase
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid Id { get; set; }
-
         [Required]
         [ForeignKey("User")]
         public Guid UserId { get; set; }

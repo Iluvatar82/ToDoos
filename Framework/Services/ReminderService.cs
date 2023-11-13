@@ -1,8 +1,10 @@
-﻿using Framework.Repositories;
+﻿using AutoMapper;
+using Framework.DomainModels.Base;
+using Framework.Extensions;
+using Framework.Repositories;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
-using ToDo.Data.Common.Converter;
-using ToDo.Data.Common.Extensions;
+using ToDo.Data.Common;
 using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Services
@@ -13,13 +15,15 @@ namespace Framework.Services
         private readonly UserRepository _userRepository;
         private readonly IdentityRepository _identityRepository;
         private readonly EmailService _emailService;
+        private readonly IMapper _mapper;
 
-        public ReminderService(ItemRepository repository, UserRepository userRepository, IdentityRepository identityRepository, EmailService emailService)
+        public ReminderService(ItemRepository repository, UserRepository userRepository, IdentityRepository identityRepository, EmailService emailService, IMapper mapper)
         {
             _itemRepository = repository;
             _userRepository = userRepository;
             _identityRepository = identityRepository;
             _emailService = emailService;
+            _mapper = mapper;
         }
 
 
@@ -47,7 +51,9 @@ namespace Framework.Services
             var schedules = item.Schedules.ToList();
             var reminders = item.Reminders.ToList();
 
-            var nextScheduleOccurrences = schedules.Select(s => ScheduleDefinitionConverter.Convert(s.ScheduleDefinition).NextOccurrenceAfter(DateTime.Now, s.Start, s.End)).Where(d => d != null).Select(d => d.Value).OrderBy(d => d).ToList();
+            var nextScheduleOccurrences = _mapper.Map<List<Schedule>, List<ScheduleDomainModel>>(schedules)
+                .Select(s => s.ScheduleDefinition.NextOccurrenceAfter(DateTime.Now, s.Start, s.End)).Where(d => d != null).Select(d => d.Value).OrderBy(d => d).ToList();
+
             var existingHangfireJobs = await _itemRepository.GetAllAsync<HangfireJob>(j => j.ToDoItemId == itemId);
             
             foreach (var job in existingHangfireJobs)
@@ -61,7 +67,7 @@ namespace Framework.Services
             {
                 foreach (var reminder in reminders)
                 {
-                    var reminderDefinition = ReminderConverter.Convert(reminder.Definition);
+                    var reminderDefinition = _mapper.Map<string, ReminderDefinition>(reminder.Definition);
                     var nextReminderTime = reminderDefinition.ApplyReminderToOccurrence(nextScheduleOccurrence);
 
                     if (nextReminderTime < DateTime.Now)

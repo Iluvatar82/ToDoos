@@ -137,7 +137,7 @@
     public HubConnection? ListHubConnection { get; set; }
 
     [Parameter]
-    public ToDoItem Model { get; set; } = new ToDoItem();
+    public ToDoItemDomainModel Model { get; set; } = new ToDoItemDomainModel();
 
     [Parameter]
     public bool InactiveMode { get; set; } = false;
@@ -149,13 +149,13 @@
     public Guid ListId { get; set; }
 
     [Parameter]
-    public EventCallback<ToDoItem> OnRemove { get; set; }
+    public EventCallback<ToDoItemDomainModel> OnRemove { get; set; }
 
     [Parameter]
-    public EventCallback<(ToDoItem? Destination, ToDoItem Item)> OnDraggedTo { get; set; }
+    public EventCallback<(ToDoItemDomainModel? Destination, ToDoItemDomainModel Item)> OnDraggedTo { get; set; }
 
     [Parameter]
-    public EventCallback<(ToDoItem? Source, ToDoItem Item)> OnDraggedFrom { get; set; }
+    public EventCallback<(ToDoItemDomainModel? Source, ToDoItemDomainModel Item)> OnDraggedFrom { get; set; }
 
     [Parameter]
     public EventCallback OnDoneChanged { get; set; }
@@ -167,12 +167,12 @@
     public EventCallback<ElementReference> OnReferenced { get; set; }
 
     [Parameter]
-    public EventCallback<(ToDoItem Item, int Movement)> OnOrderChanged { get; set; }
+    public EventCallback<(ToDoItemDomainModel Item, int Movement)> OnOrderChanged { get; set; }
 
     [Parameter]
-    public EventCallback<ToDoItem> OnOrderRemoved { get; set; }
+    public EventCallback<ToDoItemDomainModel> OnOrderRemoved { get; set; }
 
-    private ToDoItem? newSubModel { get; set; } = null;
+    private ToDoItemDomainModel? newSubModel { get; set; } = null;
 
     private bool BezeichnungEditEnabled { get; set; } = false;
     private DateTime? date { get; set; }
@@ -206,11 +206,12 @@
 
     private void CreateNew()
     {
-        newSubModel = new ToDoItem
+        newSubModel = new ToDoItemDomainModel
             {
                 ParentId = Model.Id,
                 CategoryId = Model.CategoryId,
-                ListId = ListId
+                ListId = ListId,
+                IsActive = true
             };
     }
 
@@ -229,7 +230,7 @@
         else
             Model.Done = null;
 
-        await ItemRepository.UpdateAndSaveAsync(Model);
+        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem>(Model));
         await OnDoneChanged.InvokeAsync(Model);
 
         if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
@@ -241,7 +242,7 @@
         var valid = context.Validate();
         if (valid)
         {
-            await ItemRepository.UpdateAndSaveAsync(Model);
+            await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem>(Model));
             BezeichnungEditEnabled = false;
 
             if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
@@ -278,7 +279,7 @@
         else
             Model.IsActive = !Model.IsActive;
 
-        await ItemRepository.UpdateAndSaveAsync(Model);
+        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem>(Model));
 
         StateHasChanged();
         await OnRemove.InvokeAsync(Model);
@@ -287,15 +288,15 @@
             await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
     }
 
-    private void SetActiveStateForAll(ToDoItem item, bool isActive)
+    private void SetActiveStateForAll(ToDoItemDomainModel item, bool isActive)
     {
-        foreach (var childItem in item.Children ?? Enumerable.Empty<ToDoItem>())
+        foreach (var childItem in item.Children)
             SetActiveStateForAll(childItem, isActive);
 
         item.IsActive = isActive;
     }
 
-    private async Task HandleRemove(ToDoItem todoItem)
+    private async Task HandleRemove(ToDoItemDomainModel todoItem)
     {
         Model.Children.Remove(todoItem);
 
@@ -303,7 +304,7 @@
         await OnRemove.InvokeAsync(todoItem);
     }
 
-    private async Task HandleNewChange(ToDoItem? item)
+    private async Task HandleNewChange(ToDoItemDomainModel? item)
     {
         newSubModel = null;
         if (item != null)
@@ -322,13 +323,13 @@
             await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
     }
 
-    private void HandleDragStart(ToDoItem dragItem)
+    private void HandleDragStart(ToDoItemDomainModel dragItem)
     {
         if (Container != null)
             Container.DraggedToDoItem = dragItem;
     }
 
-    private async Task HandleDrop(ToDoItem? dropItem)
+    private async Task HandleDrop(ToDoItemDomainModel? dropItem)
     {
         var item = Container?.DraggedToDoItem;
         item.NotNull();
@@ -340,7 +341,7 @@
 
         item.Parent = dropItem;
         item.ParentId = dropItem?.Id;
-        await ItemRepository.UpdateAndSaveAsync(item);
+        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem>(item));
 
         if (Container != null)
             Container.DraggedToDoItem = null;
@@ -348,7 +349,7 @@
         await HandleDraggedTo(item.Parent, item);
     }
 
-    private async Task HandleDraggedFrom(ToDoItem? source, ToDoItem item)
+    private async Task HandleDraggedFrom(ToDoItemDomainModel? source, ToDoItemDomainModel item)
     {
         if (source != null)
             source.Children.Remove(item);
@@ -358,7 +359,7 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task HandleDraggedTo(ToDoItem? destination, ToDoItem item)
+    private async Task HandleDraggedTo(ToDoItemDomainModel? destination, ToDoItemDomainModel item)
     {
         if (destination != null && !destination.Children.Contains(item))
         {
@@ -376,7 +377,7 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task ChangeChildOrder(ToDoItem itemToMove, int change)
+    private async Task ChangeChildOrder(ToDoItemDomainModel itemToMove, int change)
     {
         if (!Model.Children.Contains(itemToMove))
             return;
@@ -389,12 +390,12 @@
         for(var index = 0; index < Model.Children.Count; index++)
             Model.Children[index].Order = index;
 
-        await ItemRepository.UpdateAndSaveAsync(Model.Children.ToArray());
+        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.Children.ToArray()));
 
         StateHasChanged();
     }
 
-    private async Task RemoveOrder(ToDoItem child)
+    private async Task RemoveOrder(ToDoItemDomainModel child)
     {
         if (!Model.Children.Contains(child))
             return;
@@ -402,7 +403,7 @@
         for (var index = 0; index < Model.Children.Count; index++)
             Model.Children[index].Order = 0;
 
-        await ItemRepository.UpdateAndSaveAsync(Model.Children.ToArray());
+        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.Children.ToArray()));
 
         StateHasChanged();
     }

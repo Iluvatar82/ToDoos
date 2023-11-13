@@ -1,8 +1,11 @@
 ﻿@page "/schedule/{ListId:guid}/{ItemId:guid}"
+
 @using Common = global::ToDo.Data.Common;
 @using Core.Common;
-@using ToDo.Data.Common.Converter;
+@using Framework.DomainModels.Base;
 @using ToDo.Data.Common.Enums;
+@using ToDo.Data.Common;
+@using ToDo.Data.ToDoData.Entities.Base;
 @using UI.Web.Areas.Identity.Pages.Account.Manage;
 
 @inject ReminderService ReminderService
@@ -14,25 +17,23 @@
 
 <div class="row mt-1">
     <div class="btn-group col-3" role="group">
-        <button @onclick=@(() => CreateNew()) class="btn btn-outline-primary">Schedule Hinzufügen</button>
+        <button @onclick=@CreateNew class="btn btn-outline-primary">Schedule Hinzufügen</button>
     </div>
 </div>
 
-@if(Schedules.Any())
+@if (Model.Schedules.Any())
 {
     <table class="table table-bordered mb-0">
         <tbody>
-            @for (int index = 0; index < Schedules.Count; index++)
+            @for (int index = 0; index < Model.Schedules.Count; index++)
             {
                 var currentIndex = index;
-                var schedule = Schedules[currentIndex];
-                if (string.IsNullOrWhiteSpace(schedule.ScheduleDefinition))
+                var schedule = Model.Schedules[currentIndex];
+                if (schedule == null)
                 {
                     InvokeAsync(async () => await RemoveAt(currentIndex, true));
                 }
 
-                var scheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(schedule.ScheduleDefinition);
-                
                 <tr>
                     <td class="align-top py-0" style="border-right-width: 0;">
                         <div class="form-floating col p-0">
@@ -57,15 +58,15 @@
                     @switch (schedule.Type)
                     {
                         case Common.Enums.ScheduleType.Fixed:
-                            <ScheduleFixed_Component Model=@scheduleDefinition.Fixed!.Date ModelChanged=@((value) => FixedValueChanged(schedule, value))></ScheduleFixed_Component>
-                            break;
-
-                        case Common.Enums.ScheduleType.WeekDays:
-                            <ScheduleWeekdays_Component Model=@scheduleDefinition!.WeekDays Start=@schedule.Start End=@schedule.End ModelChanged=@((value) => WeekdaysValueChanged(schedule, value.Definition, value.Start, value.End))></ScheduleWeekdays_Component>
+                            <ScheduleFixed_Component @bind-Model=@schedule.ScheduleDefinition.Fixed!.Date></ScheduleFixed_Component>
                             break;
 
                         case Common.Enums.ScheduleType.Interval:
-                            <ScheduleInterval_Component Model=@scheduleDefinition!.Interval Start=@schedule.Start End=@schedule.End ModelChanged=@((value) => IntervalValueChanged(schedule, value.Definition, value.Start, value.End))></ScheduleInterval_Component>
+                            <ScheduleInterval_Component @bind-Model=@schedule.ScheduleDefinition!.Interval @bind-Start=@schedule.Start @bind-End=@schedule.End></ScheduleInterval_Component>
+                            break;
+
+                        case Common.Enums.ScheduleType.WeekDays:
+                            <ScheduleWeekdays_Component @bind-Model=@schedule.ScheduleDefinition.WeekDays @bind-Start=@schedule.Start @bind-End=@schedule.End></ScheduleWeekdays_Component>
                             break;
                     }
 
@@ -85,24 +86,23 @@
 
 <div class="row mt-1">
     <div class="btn-group col-3" role="group">
-        <button @onclick=@(() => CreateNewReminder()) class="btn btn-outline-primary">Reminder Hinzufügen</button>
+        <button @onclick=@CreateNewReminder class="btn btn-outline-primary">Reminder Hinzufügen</button>
     </div>
 </div>
 
-@if (Reminders.Any())
+@if (Model.Reminders.Any())
 {
     <table class="table table-bordered mb-0">
         <tbody>
-            @for (int index = 0; index < Reminders.Count; index++)
+            @for (int index = 0; index < Model.Reminders.Count; index++)
             {
                 var currentIndex = index;
-                var reminder = Reminders[currentIndex];
-                if (string.IsNullOrWhiteSpace(reminder.Definition))
+                var reminder = Model.Reminders[currentIndex];
+                if (reminder.ReminderDefinition == null)
                 {
                     InvokeAsync(async () => await RemoveAt(currentIndex, false));
                 }
 
-                var reminderDefinition = Common.Converter.ReminderConverter.Convert(reminder.Definition);
                 <tr>
                     <td class="align-top py-0" style="border-right-width: 0;">
                         <div class="form-floating col p-0">
@@ -114,14 +114,14 @@
 
                     <td class="align-top py-0 border-0">
                         <div class="form-floating col p-0">
-                            <input type="number" class="form-control border-0" @bind:get=@reminderDefinition.Value @bind:set=@((decimal newValue) => SetReminderValue(currentIndex, newValue)) id="value" />
+                            <input type="number" class="form-control border-0" @bind:get=@reminder.ReminderDefinition.Value @bind:set=@((decimal newValue) => SetReminderValue(currentIndex, newValue)) id="value" />
                             <label for="value">Wert</label>
                         </div>
                     </td>
 
                     <td class="align-top py-0 border-0">
                         <div class="form-floating col py-0 px-2">
-                            <select @bind:get=@((int)reminderDefinition.Unit) @bind:set=@((int unit) => SetReminderUnit(currentIndex, unit)) class="form-control border-0" id="TypeSelect">
+                            <select @bind:get=@((int)reminder.ReminderDefinition.Unit) @bind:set=@((int unit) => SetReminderUnit(currentIndex, unit)) class="form-control border-0" id="TypeSelect">
                                 <option value="0">Minuten</option>
                                 <option value="1">Stunden</option>
                                 <option value="2">Tage</option>
@@ -153,6 +153,7 @@
     <div class="row mt-3">
         <div class="btn-group col-3" role="group">
             <button type="button" @onclick="NavigateBack" class="btn btn-outline-secondary">Zurück</button>
+            <button type="button" @onclick="Save" class="btn btn-primary">Speichern</button>
         </div>
     </div>
 }
@@ -169,23 +170,24 @@
     public Guid ItemId { get; set; }
 
     [Parameter]
-    public EventCallback SchedulesChanged { get; set; }
+    public ScheduleEditDomainModel Model { get; set; } = new ScheduleEditDomainModel();
 
     [Parameter]
-    public EventCallback RemindersChanged { get; set; }
+    public EventCallback<ScheduleEditDomainModel> ModelChanged { get; set; }
 
     private string Title { get; set; } = "Keine Beschreibung";
-    private List<Schedule> Schedules { get; set; } = new List<Schedule>();
-    private List<ScheduleReminder> Reminders { get; set; } = new List<ScheduleReminder>();
     private decimal DefaultReminderTimeInMinutes { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (ItemId != Guid.Empty && ListId != Guid.Empty)
+        if (ItemId != Guid.Empty)
         {
             Title = (await ItemRepository.GetAsync<ToDoItem>(ItemId))?.Bezeichnung ?? Title;
-            Schedules = await ItemRepository.GetAllAsync<Schedule>(s => s.ToDoItemId == ItemId);
-            Reminders = await ItemRepository.GetAllAsync<ScheduleReminder>(r => r.ToDoItemId == ItemId);
+            var schedules = await ItemRepository.GetAllAsync<Schedule>(s => s.ToDoItemId == ItemId);
+            var reminders = await ItemRepository.GetAllAsync<ScheduleReminder>(r => r.ToDoItemId == ItemId);
+
+            Model.Schedules = Mapper.Map<List<ScheduleDomainModel>>(await ItemRepository.GetAllAsync<Schedule>(s => s.ToDoItemId == ItemId));
+            Model.Reminders = Mapper.Map<List<ScheduleReminderDomainModel>>(await ItemRepository.GetAllAsync<ScheduleReminder>(r => r.ToDoItemId == ItemId));
         }
 
         if (User != null)
@@ -198,7 +200,7 @@
             DefaultReminderTimeInMinutes = reminderValue;
         }
 
-        if (!Schedules.Any() && !Reminders.Any())
+        if (!Model.Schedules.Any() && !Model.Reminders.Any())
             await CreateNewReminder();
     }
 
@@ -207,34 +209,60 @@
         switch (newType)
         {
             case 0:
-                Schedules[index].ScheduleDefinition = Common.ScheduleFixed.Default;
+                Model.Schedules[index].ScheduleDefinition = Mapper.Map<ScheduleDefinition>(Common.ScheduleFixed.Default);
 
                 break;
 
             case 1:
-                Schedules[index].ScheduleDefinition = Common.ScheduleWeekdays.Default;
+                Model.Schedules[index].ScheduleDefinition = Mapper.Map<ScheduleDefinition>(Common.ScheduleWeekdays.Default);
 
                 break;
 
             case 2:
-                Schedules[index].ScheduleDefinition = Common.ScheduleInterval.Default;
+                Model.Schedules[index].ScheduleDefinition = Mapper.Map<ScheduleDefinition>(Common.ScheduleInterval.Default);
 
                 break;
         }
+    }
 
-        await RaiseEventCallbacks(true, false);
+    private async Task CreateNew()
+    {
+        var newSchedule = new ScheduleDomainModel() { ToDoItemId = ItemId, ScheduleDefinition = new ScheduleDefinition() { Fixed = DateTime.Today.AddDays(1) } };
+        Model.Schedules.Add(newSchedule);
+
+        await ModelChanged.InvokeAsync(Model);
+    }
+
+    private async Task CreateNewReminder()
+    {
+        var newReminder = new ScheduleReminderDomainModel() { ToDoItemId = ItemId, ReminderDefinition = new ReminderDefinition() { Value = DefaultReminderTimeInMinutes, Unit = SettingsModel.DefaultReminderUnit } };
+        Model.Reminders.Add(newReminder);
+
+        await ModelChanged.InvokeAsync(Model);
     }
 
     private async Task RemoveAt(int index, bool schedules = true)
     {
-        object toRemove = schedules ? Schedules[index] : Reminders[index];
-        await ItemRepository.RemoveAndSaveAsync(toRemove);
         if (schedules)
-            Schedules.RemoveAt(index);
+            Model.Schedules.RemoveAt(index);
         else
-            Reminders.RemoveAt(index);
+            Model.Reminders.RemoveAt(index);
 
-        await RaiseEventCallbacks(schedules == true, schedules == false);
+        await ModelChanged.InvokeAsync(Model);
+    }
+
+    private async Task SetReminderValue(int index, decimal value)
+    {
+        Model.Reminders[index].ReminderDefinition.Value = value;
+
+        await ModelChanged.InvokeAsync(Model);
+    }
+
+    private async Task SetReminderUnit(int index, int unit)
+    {
+        Model.Reminders[index].ReminderDefinition.Unit = (ScheduleTimeUnit)unit;
+
+        await ModelChanged.InvokeAsync(Model);
     }
 
     private void NavigateBack()
@@ -242,99 +270,14 @@
         NavigationManager.NavigateTo(NavigationManager.BaseUri + $"/list/{ListId}");
     }
 
-    private async Task CreateNew()
+    private async Task Save()
     {
-        var newSchedule = new Schedule() { ToDoItemId = ItemId, ScheduleDefinition = Common.ScheduleFixed.Default };
-        Schedules.Add(newSchedule);
+        var dbSchedules = Mapper.Map<Schedule[]>(Model.Schedules);
+        var dbReminders = Mapper.Map<ScheduleReminder[]>(Model.Reminders);
+        
+        await ItemRepository.AddOrUpdateAndSaveAsync(dbSchedules);
+        await ItemRepository.AddOrUpdateAndSaveAsync(dbReminders);
 
-        if (ListId != Guid.Empty && ListId != Guid.Empty)
-            await ItemRepository.AddAndSaveAsync(newSchedule);
-
-        await RaiseEventCallbacks(true, false);
-    }
-
-    private async Task CreateNewReminder()
-    {
-        var newReminder = new ScheduleReminder() { ToDoItemId = ItemId, Definition = $"{DefaultReminderTimeInMinutes}{SettingsModel.DefaultReminderUnit}" };
-        Reminders.Add(newReminder);
-
-        if (ListId != Guid.Empty && ListId != Guid.Empty)
-            await ItemRepository.AddAndSaveAsync(newReminder);
-
-        await RaiseEventCallbacks(false, true);
-    }
-
-    private async Task SetReminderValue(int index, decimal value)
-    {
-        var definition = ReminderConverter.Convert(Reminders[index].Definition);
-        definition.Value = value;
-        Reminders[index].Definition = ReminderConverter.Convert(definition);
-
-        if (ListId != Guid.Empty && ListId != Guid.Empty)
-            await ItemRepository.UpdateAndSaveAsync(Reminders[index]);
-
-        await RaiseEventCallbacks(false, true);
-    }
-
-    private async Task SetReminderUnit(int index, int unit)
-    {
-        var definition = ReminderConverter.Convert(Reminders[index].Definition);
-        definition.Unit = (ScheduleTimeUnit)unit;
-        Reminders[index].Definition = ReminderConverter.Convert(definition);
-
-        if (ListId != Guid.Empty && ListId != Guid.Empty)
-            await ItemRepository.UpdateAndSaveAsync(Reminders[index]);
-
-        await RaiseEventCallbacks(false, true);
-    }
-
-    private async Task FixedValueChanged(Schedule schedule, DateTime value)
-    {
-        schedule.ScheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(new Common.ScheduleDefinition(){ Fixed = value });
-        if (ListId != Guid.Empty && ListId != Guid.Empty)
-            await ItemRepository.UpdateAndSaveAsync(schedule);
-
-        await RaiseEventCallbacks(true, false);
-    }
-
-    private async Task WeekdaysValueChanged(Schedule schedule, Common.ScheduleWeekdays value, DateTime? start, DateTime? end)
-    {
-        schedule.ScheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(new Common.ScheduleDefinition() { WeekDays = value });
-
-        schedule.Start = start;
-        schedule.End = end;
-
-        if (ListId != Guid.Empty && ListId != Guid.Empty)
-            await ItemRepository.UpdateAndSaveAsync(schedule);
-
-        await RaiseEventCallbacks(true, false);
-    }
-
-    private async Task IntervalValueChanged(Schedule schedule, Common.ScheduleInterval value, DateTime? start, DateTime? end)
-    {
-        schedule.ScheduleDefinition = Common.Converter.ScheduleDefinitionConverter.Convert(new Common.ScheduleDefinition() { Interval = value,  });
-
-        schedule.Start = start;
-        schedule.End = end;
-
-        if (ListId != Guid.Empty && ListId != Guid.Empty)
-            await ItemRepository.UpdateAndSaveAsync(schedule);
-
-        await RaiseEventCallbacks(true, false);
-    }
-
-    private async Task RaiseEventCallbacks(bool schedules, bool reminders)
-    {
-        await InvokeAsync(async () =>
-        {
-            if (schedules)
-                await SchedulesChanged.InvokeAsync(Schedules);
-
-            if (reminders)
-                await RemindersChanged.InvokeAsync(Reminders);
-
-            await ReminderService.UpdateReminders(ItemId);
-            StateHasChanged();
-        });
+        NavigateBack();
     }
 }

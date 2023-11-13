@@ -1,3 +1,4 @@
+using Framework.Converter.Automapper;
 using Framework.Repositories;
 using Framework.Services;
 using Framework.Services.Base;
@@ -51,10 +52,13 @@ namespace UI.Web
             builder.Services.AddSingleton<ReminderService>();
             builder.Services.AddSingleton<EmailService>();
 
+            builder.Services.AddSingleton<DBDomainMapper>();
+
             builder.Services.AddTransient<IEmailSender, EmailSenderWrapper>();
             builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration);
 
             ConfigureHangfireService(builder.Services, connectionString);
+            ConfigureAutoMapper(builder.Services);
 
             var app = builder.Build();
             if (app.Environment.IsDevelopment())
@@ -88,6 +92,7 @@ namespace UI.Web
 
             app.Run();
         }
+
         private static void ConfigureHangfireService(IServiceCollection services, string connectionString)
         {
             services.AddHangfire(configuration => configuration
@@ -97,6 +102,11 @@ namespace UI.Web
                 .UseSqlServerStorage(connectionString));
 
             services.AddHangfireServer();
+        }
+
+        private static void ConfigureAutoMapper(IServiceCollection services)
+        {
+            services.AddAutoMapper(typeof(MapperProfile).Assembly);
         }
     }
 }

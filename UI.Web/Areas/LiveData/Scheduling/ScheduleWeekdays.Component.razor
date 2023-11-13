@@ -92,19 +92,25 @@
     private DateTime? start;
     private DateTime? end;
 
-    private TimeOnly time { get => weekdaysValue.Time; set { weekdaysValue.Time = value; ModelChanged.InvokeAsync((weekdaysValue, start, end)); } }
+    private TimeOnly time { get => weekdaysValue.Time; set { weekdaysValue.Time = value; ModelChanged.InvokeAsync(weekdaysValue); } }
 
     [Parameter]
-    public DateTime? Start { get => start; set { if (start == value) return; start = value; ModelChanged.InvokeAsync((weekdaysValue, start, end)); } }
+    public DateTime? Start { get => start; set { if (start == value) return; start = value; StartChanged.InvokeAsync(value); } }
 
     [Parameter]
-    public DateTime? End { get => end; set { if (end == value) return; end = value; ModelChanged.InvokeAsync((weekdaysValue, start, end)); } }
+    public DateTime? End { get => end; set { if (end == value) return; end = value; EndChanged.InvokeAsync(value); } }
 
     [Parameter]
-    public Common.ScheduleWeekdays Model { get => weekdaysValue; set { if (value.ToString() == weekdaysValue.ToString() || value == null) return; weekdaysValue = value; ModelChanged.InvokeAsync((weekdaysValue, start, end)); } }
+    public Common.ScheduleWeekdays Model { get => weekdaysValue; set { if (value.ToString() == weekdaysValue.ToString() || value == null) return; weekdaysValue = value; ModelChanged.InvokeAsync(value); } }
 
     [Parameter]
-    public EventCallback<(Common.ScheduleWeekdays Definition, DateTime? Start, DateTime? End)> ModelChanged { get; set; }
+    public EventCallback<Common.ScheduleWeekdays> ModelChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> StartChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> EndChanged { get; set; }
 
 
     private Dictionary<string, object>? GetCheckboxAttributes(bool isActive)
@@ -125,6 +131,6 @@
         var value = e.Value as bool?;
         weekdaysValue.Days[index] = value ?? false;
         
-        await ModelChanged.InvokeAsync((weekdaysValue, start, end));
+        await ModelChanged.InvokeAsync(weekdaysValue);
     }
 }

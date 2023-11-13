@@ -1,4 +1,5 @@
-﻿using Framework.Repositories;
+﻿using Framework.Converter.Automapper;
+using Framework.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,10 +26,15 @@ namespace ToDo.Data.MigrationTool
             
             builder.Services.AddHostedService<ConsoleHostedService>();
 
+            ConfigureAutoMapper(builder.Services);
+
             var app = builder.Build();
             app.Run();
+        }
 
-
+        private static void ConfigureAutoMapper(IServiceCollection services)
+        {
+            services.AddAutoMapper(typeof(MapperProfile).Assembly);
         }
     }
 

@@ -1,6 +1,7 @@
-﻿using ToDo.Data.Common.Enums;
+﻿using ToDo.Data.Common;
+using ToDo.Data.Common.Enums;
 
-namespace ToDo.Data.Common.Extensions
+namespace Framework.Extensions
 {
     public static class ScheduleDefinitionExtensions
     {

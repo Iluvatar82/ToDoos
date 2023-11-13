@@ -1,4 +1,7 @@
-﻿@using UI.Web.Areas.LiveData.Scheduling
+﻿@page "/list/{ListId:guid}/item/new"
+
+@using Framework.DomainModels.Base;
+@using UI.Web.Areas.LiveData.Scheduling
 
 <EditForm Model=Model OnSubmit=@SaveNewToDo>
     <DataAnnotationsValidator />
@@ -22,7 +25,7 @@
         </div>
     </div>
 
-    <ScheduleEdit ItemId=Guid.Empty ListId=Guid.Empty SchedulesChanged=@UpdateModelSchedules></ScheduleEdit>
+    <ScheduleEdit ItemId=Guid.Empty ListId=ListId @bind-Model=ScheduleModel></ScheduleEdit>
 
     <div class="row py-3">
         <div class="btn-group col-3" @attributes=@GetMarginLeft() role="group">
@@ -34,22 +37,33 @@
 
 @code {
     [Parameter]
-    public ToDoItem Model { get; set; } = new ToDoItem();
+    public Guid ListId { get; set; } = Guid.Empty;
+
+    [Parameter]
+    public ToDoItemDomainModel Model { get; set; } = new ToDoItemDomainModel();
 
     [Parameter]
     public int Level { get; set; }
 
     [Parameter]
-    public EventCallback<ToDoItem?> OnChange { get; set; }
+    public EventCallback<ToDoItemDomainModel?> OnChange { get; set; }
+
+    [CascadingParameter]
+    public IdentityUser? User { get; set; }
 
     public IEnumerable<Category> _categories { get; set; } = new List<Category>();
 
     private DateTime? timeOfDay { get; set; }
     private DateTime? date { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    private ScheduleEditDomainModel ScheduleModel { get; set; } = new ScheduleEditDomainModel();
+
+    protected override async Task OnParametersSetAsync()
     {
-        _categories = await CategoryRepository.GetAllCategoriesAsync();
+        if (User == null)
+            return;
+
+        _categories = await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == Guid.Parse(User.Id));
     }
 
     private void SetCategoryId(string value)
@@ -87,15 +101,19 @@
         };
     }
 
-    private void UpdateModelSchedules(object? schedules) => Model.Schedules = schedules as List<Schedule> ?? new List<Schedule>();
+    private void UpdateModelSchedules(object? schedules) => Model.Schedules = schedules as List<ScheduleDomainModel> ?? new List<ScheduleDomainModel>();
 
     private async Task SaveNewToDo(EditContext context)
     {
         var valid = context.Validate();
         if (valid)
         {
-            await ItemRepository.AddAndSaveAsync(Model);
-            Model = await ItemRepository.GetItemCompleteAsync(Model.Id) ?? new ToDoItem();
+            Model.Schedules = ScheduleModel.Schedules;
+            Model.Reminders = ScheduleModel.Reminders;
+
+            var dbModel = Mapper.Map<ToDoItem>(Model);
+            await ItemRepository.AddAndSaveAsync(dbModel);
+            Model = Mapper.Map<ToDoItemDomainModel>(dbModel);
 
             await OnChange.InvokeAsync(Model);
         }

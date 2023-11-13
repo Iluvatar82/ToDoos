@@ -142,8 +142,8 @@
 </script>
 
 @code {
-    private ToDoItem? newSubModel = null;
-    private List<ToDoItem> myToDos = new List<ToDoItem>();
+    private ToDoItemDomainModel? newSubModel = null;
+    private List<ToDoItemDomainModel> myToDos = new List<ToDoItemDomainModel>();
     private bool showInactive { get; set; }
     private global::ToDo.Data.ToDoData.Entities.ToDoList? listInformation { get; set; }
     private bool showTwoColumns { get; set; } = false;
@@ -151,7 +151,7 @@
     private List<ElementReference> topLevelReferenceList { get; set; } = new List<ElementReference>();
     private ElementReference currentTopLevelReference { get; set; }
 
-    public ToDoItem? DraggedToDoItem{ get; set; }
+    public ToDoItemDomainModel? DraggedToDoItem { get; set; }
 
     [Parameter]
     public Guid ListId { get; set; }
@@ -234,13 +234,13 @@
     {
         if (ListId == default)
         {
-            myToDos = new List<ToDoItem>();
+            myToDos = new List<ToDoItemDomainModel>();
             return;
         }
 
         if (!showInactive)
         {
-            myToDos = (await ItemRepository.GetAllItemsCompleteAsync(ListId, !showInactive))
+            myToDos = Mapper.Map<List<ToDoItemDomainModel>>(await ItemRepository.GetAllItemsCompleteAsync(ListId, !showInactive))
                 .OrderBy(item => item.Done.HasValue)
                 .ThenBy(item => item.Order)
                 .ThenByDescending(item => item.NextOrLastOccurrence)
@@ -249,7 +249,7 @@
         }
         else
         {
-            var allItems = await ItemRepository.GetAllItemsCompleteAsync(ListId);
+            var allItems = Mapper.Map<List<ToDoItemDomainModel>>(await ItemRepository.GetAllItemsCompleteAsync(ListId));
             myToDos = BuildInactiveItemsFromAll(allItems)
                 .OrderBy(item => item.Done.HasValue)
                 .ThenBy(item => item.Order)
@@ -262,18 +262,19 @@
 
     private void CreateNew()
     {
-        newSubModel = new ToDoItem
+        newSubModel = new ToDoItemDomainModel
             {
                 Parent = null,
                 CategoryId = null,
-                ListId = ListId
+                ListId = ListId,
+                IsActive = true
             };
     }
 
-    private List<ToDoItem> BuildInactiveItemsFromAll(List<ToDoItem> allItems)
+    private List<ToDoItemDomainModel> BuildInactiveItemsFromAll(List<ToDoItemDomainModel> allItems)
     {
         var allInactiveItems = allItems.Where(item => !item.IsActive);
-        var result = new HashSet<ToDoItem>();
+        var result = new HashSet<ToDoItemDomainModel>();
 
         foreach (var inactiveItem in allInactiveItems)
         {
@@ -295,7 +296,7 @@
         return result.ToList();
     }
 
-    private async Task HandleNewChange(ToDoItem? item)
+    private async Task HandleNewChange(ToDoItemDomainModel? item)
     {
         newSubModel = null;
         if (item != null)
@@ -320,7 +321,7 @@
         NavigationManager.NavigateTo(NavigationManager.BaseUri);
     }
 
-    private async Task HandleRemove(ToDoItem todoItem)
+    private async Task HandleRemove(ToDoItemDomainModel todoItem)
     {
         myToDos.Remove(todoItem);
         StateHasChanged();
@@ -329,7 +330,7 @@
             await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
-    private async Task HandleDraggedFrom(ToDoItem source, ToDoItem item)
+    private async Task HandleDraggedFrom(ToDoItemDomainModel source, ToDoItemDomainModel item)
     {
         if (source != null)
             return;
@@ -339,7 +340,7 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task HandleDraggedTo(ToDoItem destination, ToDoItem item)
+    private async Task HandleDraggedTo(ToDoItemDomainModel destination, ToDoItemDomainModel item)
     {
         if (destination != null)
             return;
@@ -358,7 +359,7 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task ChangeChildOrder(ToDoItem itemToMove, int change)
+    private async Task ChangeChildOrder(ToDoItemDomainModel itemToMove, int change)
     {
         if (!myToDos.Contains(itemToMove))
             return;
@@ -371,12 +372,12 @@
         for (var index = 0; index < myToDos.Count; index++)
             myToDos[index].Order = index;
 
-        await ItemRepository.UpdateAndSaveAsync(myToDos.ToArray());
+        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(myToDos));
 
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task RemoveOrder(ToDoItem item)
+    private async Task RemoveOrder(ToDoItemDomainModel item)
     {
         if (!myToDos.Contains(item))
             return;
@@ -384,7 +385,7 @@
         for (var index = 0; index < myToDos.Count; index++)
             myToDos[index].Order = 0;
 
-        await ItemRepository.UpdateAndSaveAsync(myToDos.ToArray());
+        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(myToDos));
 
         await InvokeAsync(StateHasChanged);
     }

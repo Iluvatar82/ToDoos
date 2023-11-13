@@ -1,12 +1,21 @@
-﻿using Core.Validation;
+﻿using AutoMapper;
+using Core.Validation;
+using Framework.Converter.Automapper;
 using System.Text.RegularExpressions;
-using ToDo.Data.Common.Enums;
+using ToDo.Data.Common;
 
-namespace ToDo.Data.Common.Converter
+namespace Framework.Converter
 {
-    public static partial class ScheduleDefinitionConverter
+    public partial class ScheduleDefinitionConverter : DBDomainMapper, 
+        IValueConverter<string, ScheduleDefinition>, IValueConverter<ScheduleDefinition, string>,
+        ITypeConverter<string, ScheduleDefinition>, ITypeConverter<ScheduleDefinition, string>
     {
-        public static ScheduleDefinition Convert(string scheduleDefinitionString)
+        public ScheduleDefinitionConverter(IMapper mapper) : base(mapper)
+        {
+        }
+
+
+        public ScheduleDefinition Convert(string scheduleDefinitionString, ResolutionContext context)
         {
             var result = new ScheduleDefinition();
             if (string.IsNullOrWhiteSpace(scheduleDefinitionString))
@@ -41,7 +50,11 @@ namespace ToDo.Data.Common.Converter
                 case 'i': //Intervall
                     var matchInterval = IntervalRegex().Match(scheduleDefinitionString);
                     if (matchInterval.Success && decimal.TryParse(matchInterval.Groups["interval"].Value, out var interval) && matchInterval.Groups["unit"].Value.Length == 1)
-                        result.Interval = new ScheduleInterval { Interval = interval, Unit = TimeUnitConverter.Convert(matchInterval.Groups["unit"].Value) };
+                    {
+                        result.Interval = new ScheduleInterval();
+                        result.Interval.Interval = interval;
+                        result.Interval.Unit = Mapper.Map(matchInterval.Groups["unit"].Value, result.Interval.Unit);
+                    }
                     break;
 
                 default:
@@ -51,7 +64,7 @@ namespace ToDo.Data.Common.Converter
             return result;
         }
 
-        public static string Convert(ScheduleDefinition scheduleDefinition)
+        public string Convert(ScheduleDefinition scheduleDefinition, ResolutionContext context)
         {
             if (scheduleDefinition?.Fixed != null)
                 return $"d {scheduleDefinition.Fixed}";
@@ -65,6 +78,9 @@ namespace ToDo.Data.Common.Converter
             return string.Empty;
         }
 
+        public ScheduleDefinition Convert(string source, ScheduleDefinition destination, ResolutionContext context) => Convert(source, context);
+        public string Convert(ScheduleDefinition source, string destination, ResolutionContext context) => Convert(source, context);
+
         [GeneratedRegex("d\\s(?<time>.+)")]
         private static partial Regex FixedRegex();
 
@@ -73,6 +89,5 @@ namespace ToDo.Data.Common.Converter
 
         [GeneratedRegex("i\\s(?<interval>\\d*[\\.,]?\\d*)\\s(?<unit>[hdwmy])")]
         private static partial Regex IntervalRegex();
-
     }
 }

@@ -1,6 +1,8 @@
 ﻿@using System.Net.Http
+@using AutoMapper;
 @using Framework.Repositories;
 @using Framework.Services;
+@using Framework.DomainModels;
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
@@ -19,6 +21,8 @@
 
 @inject AuthenticationStateProvider AuthenticationProvider;
 @inject NavigationManager NavigationManager
+
+@inject IMapper Mapper;
 
 @inject CategoryRepository CategoryRepository;
 @inject ItemRepository ItemRepository;

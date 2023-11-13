@@ -1,0 +1,32 @@
+﻿using AutoMapper;
+using Framework.DomainModels;
+using Framework.DomainModels.Base;
+using ToDo.Data.Common;
+using ToDo.Data.Common.Enums;
+using ToDo.Data.ToDoData.Entities;
+
+namespace Framework.Converter.Automapper
+{
+    public class MapperProfile : Profile
+    {
+        public MapperProfile() {
+            CreateMap<string, ScheduleTimeUnit>().ConvertUsing<TimeUnitConverter>();
+            CreateMap<ScheduleTimeUnit, string>().ConvertUsing<TimeUnitConverter>();
+
+            CreateMap<string, ReminderDefinition>().ConvertUsing<ScheduleReminderDefinitionConverter>();
+            CreateMap<ReminderDefinition, string>().ConvertUsing<ScheduleReminderDefinitionConverter>();
+
+            CreateMap<string, ScheduleDefinition>().ConvertUsing<ScheduleDefinitionConverter>();
+            CreateMap<ScheduleDefinition, string>().ConvertUsing<ScheduleDefinitionConverter>();
+
+            CreateMap<ScheduleReminder, ScheduleReminderDomainModel>().ForMember(dest => dest.ReminderDefinition, opt => opt.MapFrom(src => src.Definition));
+            CreateMap<ScheduleReminderDomainModel, ScheduleReminder>().ForMember(dest => dest.Definition, opt => opt.MapFrom(src => src.ReminderDefinition));
+
+            CreateMap<Schedule, ScheduleDomainModel>();
+            CreateMap<ScheduleDomainModel, Schedule>();
+
+            CreateMap<ToDoItem, ToDoItemDomainModel>();
+            CreateMap<ToDoItemDomainModel, ToDoItem>();
+        }
+    }
+}
