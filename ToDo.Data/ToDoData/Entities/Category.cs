@@ -11,6 +11,10 @@ namespace ToDo.Data.ToDoData.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
 
+        public Guid? UserId { get; set; }
+
+        public Guid? ListId { get; set; }
+
         [Required(ErrorMessageResourceName = "RequiredMessage", ErrorMessageResourceType = typeof(ValidationResources))]
         [MinLength(3, ErrorMessageResourceName = "MinLengthMessage", ErrorMessageResourceType = typeof(ValidationResources))]
         public string Bezeichnung { get; set; }

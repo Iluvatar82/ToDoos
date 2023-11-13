@@ -1,12 +1,15 @@
 using Framework.Repositories;
 using Framework.Services;
+using Framework.Services.Base;
 using Hangfire;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using ToDo.Data.Identity;
 using ToDo.Data.ToDoData;
 using UI.Web.Areas.Identity;
+using UI.Web.Areas.Identity.EmailSenderWrapper;
 using UI.Web.Hangfire;
 using UI.Web.Hubs;
 
@@ -47,6 +50,9 @@ namespace UI.Web
 
             builder.Services.AddSingleton<ReminderService>();
             builder.Services.AddSingleton<EmailService>();
+
+            builder.Services.AddTransient<IEmailSender, EmailSenderWrapper>();
+            builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration);
 
             ConfigureHangfireService(builder.Services, connectionString);
 

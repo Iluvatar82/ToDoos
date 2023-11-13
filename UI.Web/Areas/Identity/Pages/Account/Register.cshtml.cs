@@ -5,7 +5,6 @@
 using Framework.Repositories;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -125,6 +124,7 @@ namespace UI.Web.Areas.Identity.Pages.Account
 
                     await _userManager.AddToRoleAsync(user, "User");
                     await _userRepository.AddAndSaveAsync(new ToDoList {  UserId = Guid.Parse(userId), Name = "My first List" });
+                    await _userRepository.AddAndSaveAsync(new Category { Bezeichnung = "Default", RGB_A = "#f8f8f8", Icon = "fa fa-house-chimney-window", UserId = Guid.Parse(userId) });
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

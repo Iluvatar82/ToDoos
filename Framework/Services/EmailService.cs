@@ -1,5 +1,8 @@
 ﻿using Core.Validation;
 using Framework.Services.Base;
+using Microsoft.Extensions.Options;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
@@ -8,48 +11,62 @@ namespace Framework.Services
 {
     public class EmailService : INotificationService
     {
-        private string _sender;
-        private string _password;
-
-
-        public EmailService()
-        { 
-            _sender = ServiceResources.Email_Sender;
-            _password = ServiceResources.Email_Password;
+        public EmailService(IOptions<AuthMessageSenderOptions> optionsAccessor)
+        {
+            Options = optionsAccessor.Value;
         }
+
+        public AuthMessageSenderOptions Options { get; }
 
 
         public async Task SendAsync(string title, string message, MessageType messageType, int? disyplayTime = null, params string[] recipients)
         {
             recipients.NotNull();
             recipients!.Satisfies(r => r.Any());
+            Options.Email?.Sender_Address.NotNullOrEmpty();
 
-            using (var smtpClient = new SmtpClient("smtp.gmail.com", 587))
+            var client = new SendGridClient(Options.SendGridKey);
+            var msg = new SendGridMessage()
             {
-                smtpClient.UseDefaultCredentials = false;
-                smtpClient.Credentials = new NetworkCredential(_sender, _password);
-                smtpClient.EnableSsl = true;
-                smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+                From = new EmailAddress(Options.Email!.Sender_Address, Options.Email!.Sender_Display_Name),
+                Subject = title,
+                PlainTextContent = message,
+                HtmlContent = message
+            };
 
-                var mailBody = new MailMessage
-                {
-                    From = new MailAddress(_sender, "Awesome ToDo's"),
-                    Subject = title,
-                    SubjectEncoding = Encoding.UTF8,
-                    BodyEncoding = Encoding.UTF8,
-                    HeadersEncoding = Encoding.UTF8,
-                    IsBodyHtml = true,
-                    Body = message,
-                    Priority = MailPriority.Normal
-                };
+            foreach (var toEmail in recipients)
+                msg.AddTo(new EmailAddress(toEmail));
 
-                foreach (var recipient in recipients)
-                    mailBody.To.Add(new MailAddress(recipient));
+            msg.SetClickTracking(false, false);
+            await client.SendEmailAsync(msg);
 
-                await smtpClient.SendMailAsync(mailBody);
-            }
+            //using (var smtpClient = new SmtpClient("smtp.gmail.com", 587))
+            //{
+            //    smtpClient.UseDefaultCredentials = false;
+            //    smtpClient.Credentials = new NetworkCredential(_sender, _password);
+            //    smtpClient.EnableSsl = true;
+            //    smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
 
-            await Task.CompletedTask;
+            //    var mailBody = new MailMessage
+            //    {
+            //        From = new MailAddress(_sender, "Awesome ToDo's"),
+            //        Subject = title,
+            //        SubjectEncoding = Encoding.UTF8,
+            //        BodyEncoding = Encoding.UTF8,
+            //        HeadersEncoding = Encoding.UTF8,
+            //        IsBodyHtml = true,
+            //        Body = message,
+            //        Priority = MailPriority.Normal
+            //    };
+
+            //    foreach (var recipient in recipients)
+            //        mailBody.To.Add(new MailAddress(recipient));
+
+            //    await smtpClient.SendMailAsync(mailBody);
+            //}
+
+            //await Task.CompletedTask;
+
         }
     }
 }
