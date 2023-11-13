@@ -2,6 +2,7 @@
 @using Core.Validation;
 @using Framework.Services;
 @using Microsoft.AspNetCore.SignalR.Client;
+@using Framework.Extensions;
 
 <tr @ref=@ItemReference class="bg-opacity-25 align-items-baseline @(Level == 0 ? "top" : string.Empty) @(Model.Done.HasValue ? "bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25" : null)"
     draggable="true" @ondragstart=@(_ => HandleDragStart(Model)) ondragover="event.preventDefault();" @ondrop=@(_ => HandleDrop(Model)) @attributes=@GetRowAttributes()>
@@ -25,23 +26,23 @@
             </div>
         }
 
-        <div class="addChild text-center text-white p-0 position-absolute" @onclick=@CreateNew>
+        <div class="addChild text-center text-white p-0 position-absolute" @onclick=@(() => newSubModel = ToDoItemDomainModel.Create(Model.Id, Model.CategoryId, ListId))>
             <span class="fa fa-plus" aria-hidden="true"></span>
         </div>
 
         <div class="px-2 @((Model.Done.HasValue || Hidden || !Model.IsActive) ? "" : "markToDoDone fade-in-on-hover") p-0">
             @if (Model.Done.HasValue)
             {
-                <span class="text-success" @onclick=@SwapDone><i class="fa fa-check" aria-hidden="true"></i></span>
+                <span class="text-success" @onclick=@DoneChanged><i class="fa fa-check" aria-hidden="true"></i></span>
             }
             else
             {
-                <span class="opacity-25" @onclick=@SwapDone><i class="fa fa-check" aria-hidden="true"></i></span>
+                <span class="opacity-25" @onclick=@DoneChanged><i class="fa fa-check" aria-hidden="true"></i></span>
             }
         </div>
     </td>
 
-    <td class="position-relative" @attributes=@GetPaddingLeft() @onclick=@SetBezeichnungEditEnabled >
+    <td class="position-relative" @attributes=@GetPaddingLeft() @onclick=@BezeichnungEditEnabledChanged>
         @if (!BezeichnungEditEnabled)
         {
             @BezeichnungFragment
@@ -55,7 +56,7 @@
             <EditForm Model=@Model>
                 <DataAnnotationsValidator />
 
-                <input type="text" @bind-value=@Model.Bezeichnung id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleBezeichnungChange(context); }) @onblur=@(() => HandleBezeichnungChange(context)) />
+                <input type="text" @bind-value=@Model.Bezeichnung id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await BezeichnungChanged(context); }) @onblur=@(() => BezeichnungChanged(context)) />
                 <ValidationMessage For=@(() => Model.Bezeichnung) />
             </EditForm>
         }
@@ -82,7 +83,7 @@
     <td class="fixed-w fade-in-on-hover">
         @if (!Hidden)
         {
-            <span class="px-2 fa fa-xmark opacity-25" aria-hidden="true" @onclick=@(() => SwapActive())></span>
+            <span class="px-2 fa fa-xmark opacity-25" aria-hidden="true" @onclick=@(() => ActiveChanged())></span>
         }
         else
         {
@@ -111,6 +112,7 @@
             continue;
 
         <ToDoItem_Component Model=child Level=@(Level + 1) InactiveMode=InactiveMode ListId=ListId
+            OnBezeichnungEditEnabled=@(original => OnBezeichnungEditEnabled.InvokeAsync(original))
             OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item))
             OnDoneChanged=@StateHasChanged OnOrderChanged=@((ci) => ChangeChildOrder(ci.Item, ci.Movement)) OnOrderRemoved=@RemoveOrder></ToDoItem_Component>
     }
@@ -162,7 +164,7 @@
 
     private ElementReference reference;
     public ElementReference ItemReference { get => reference; private set { reference = value; OnReferenced.InvokeAsync(value); } }
-    
+
     [Parameter]
     public EventCallback<ElementReference> OnReferenced { get; set; }
 
@@ -172,9 +174,14 @@
     [Parameter]
     public EventCallback<ToDoItemDomainModel> OnOrderRemoved { get; set; }
 
+    [Parameter]
+    public EventCallback<ToDoItem_Component> OnBezeichnungEditEnabled { get; set; }
+
     private ToDoItemDomainModel? newSubModel { get; set; } = null;
 
-    private bool BezeichnungEditEnabled { get; set; } = false;
+    private bool bezeichnungEditEnabled = false;
+    public bool BezeichnungEditEnabled { get => bezeichnungEditEnabled; set { bezeichnungEditEnabled = value; StateHasChanged(); } }
+
     private DateTime? date { get; set; }
     private DateTime? timeOfDay { get; set; }
     private bool Hidden => InactiveMode && Model.IsActive;
@@ -204,23 +211,20 @@
         base.OnInitialized();
     }
 
-    private void CreateNew()
+    protected override void OnParametersSet()
     {
-        newSubModel = new ToDoItemDomainModel
-            {
-                ParentId = Model.Id,
-                CategoryId = Model.CategoryId,
-                ListId = ListId,
-                IsActive = true
-            };
+        Model.Children.ForEach((dm, i) => dm.Set("OriginalOrder", i));
     }
 
-    private void SetBezeichnungEditEnabled()
+    private async Task BezeichnungEditEnabledChanged()
     {
+        var wasActive = BezeichnungEditEnabled;
         BezeichnungEditEnabled = Model.IsActive && !Hidden;
+        if (!wasActive)
+            await OnBezeichnungEditEnabled.InvokeAsync(this);
     }
 
-    private async Task SwapDone()
+    private async Task DoneChanged()
     {
         if (Hidden || !Model.IsActive)
             return;
@@ -237,20 +241,21 @@
             await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
     }
 
-    private async Task HandleBezeichnungChange(EditContext context)
+    private async Task BezeichnungChanged(EditContext context)
     {
         var valid = context.Validate();
         if (valid)
         {
             await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem>(Model));
             BezeichnungEditEnabled = false;
+            await OnBezeichnungEditEnabled.InvokeAsync(null);
 
             if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
                 await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
         }
     }
 
-    private async Task SwapActive(bool force = false)
+    private async Task ActiveChanged(bool force = false)
     {
         if (Hidden)
             return;
@@ -269,7 +274,7 @@
             </div>
     ;
 
-            PageModal.AcceptActionAsync = async () => await SwapActive(true);
+            PageModal.AcceptActionAsync = async () => await ActiveChanged(true);
 
             PageModal.Show();
             return;
@@ -314,6 +319,7 @@
                 .OrderBy(item => item.Done.HasValue)
                 .ThenBy(item => item.Order)
                 .ThenByDescending(item => item.NextOrLastOccurrence)
+                .ForEach((dm, i) => dm.Set("OriginalOrder", i))
                     .ToList();
         }
 
@@ -390,7 +396,7 @@
         for(var index = 0; index < Model.Children.Count; index++)
             Model.Children[index].Order = index;
 
-        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.Children.ToArray()));
+        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.Children));
 
         StateHasChanged();
     }
@@ -403,7 +409,8 @@
         for (var index = 0; index < Model.Children.Count; index++)
             Model.Children[index].Order = 0;
 
-        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.Children.ToArray()));
+        Model.Children = Model.Children.OrderBy(i => i.Get<int>("OriginalOrder")).ToList();
+        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.Children));
 
         StateHasChanged();
     }

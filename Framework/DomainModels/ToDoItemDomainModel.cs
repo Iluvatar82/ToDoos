@@ -33,8 +33,21 @@ namespace Framework.DomainModels
         public DateTime? NextOrLastOccurrence => Schedules?.NextOccurrenceAfter(DateTime.Now) ?? Schedules?.LastOccurrenceBefore(DateTime.Now);
 
         public List<DateTime> DefaultOccurences => Occurrences(DateTime.Today.AddDays(-7), DateTime.Today.AddDays(7));
-        
+
         public List<DateTime> Occurrences(DateTime from, DateTime to) => Schedules?.GetOccurrences(from, to) ?? new List<DateTime>();
+
+        public IEnumerable<ToDoItemDomainModel> AllDescendents
+        {
+            get
+            {
+                foreach (var child in Children)
+                {
+                    yield return child;
+                    foreach (var descentent in child.AllDescendents)
+                        yield return descentent;
+                }
+            }
+        }
 
 
         public ToDoItemDomainModel()
@@ -43,6 +56,20 @@ namespace Framework.DomainModels
             Children = new List<ToDoItemDomainModel>();
             Schedules = new List<ScheduleDomainModel>();
             Reminders = new List<ScheduleReminderDomainModel>();
+        }
+
+        public static ToDoItemDomainModel Create(Guid? parentId, Guid? categoryId, Guid listId)
+        {
+            var result = new ToDoItemDomainModel
+            {
+                ParentId = parentId,
+                CategoryId = categoryId,
+                ListId = listId,
+                IsActive = true
+            };
+
+            result.Set("OriginalOrder", 0);
+            return result;
         }
 
 

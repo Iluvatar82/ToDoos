@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <ScheduleEdit ItemId=Guid.Empty ListId=ListId @bind-Model=ScheduleModel></ScheduleEdit>
+    <ScheduleEdit ItemId=Guid.Empty ListId=ListId @bind-Model=ScheduleEditModel></ScheduleEdit>
 
     <div class="row py-3">
         <div class="btn-group col-3" @attributes=@GetMarginLeft() role="group">
@@ -56,7 +56,7 @@
     private DateTime? timeOfDay { get; set; }
     private DateTime? date { get; set; }
 
-    private ScheduleEditDomainModel ScheduleModel { get; set; } = new ScheduleEditDomainModel();
+    private ScheduleEditDomainModel ScheduleEditModel { get; set; } = new ScheduleEditDomainModel();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -101,15 +101,13 @@
         };
     }
 
-    private void UpdateModelSchedules(object? schedules) => Model.Schedules = schedules as List<ScheduleDomainModel> ?? new List<ScheduleDomainModel>();
-
     private async Task SaveNewToDo(EditContext context)
     {
         var valid = context.Validate();
         if (valid)
         {
-            Model.Schedules = ScheduleModel.Schedules;
-            Model.Reminders = ScheduleModel.Reminders;
+            Model.Schedules = ScheduleEditModel.Schedules;
+            Model.Reminders = ScheduleEditModel.Reminders;
 
             var dbModel = Mapper.Map<ToDoItem>(Model);
             await ItemRepository.AddAndSaveAsync(dbModel);
