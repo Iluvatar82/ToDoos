@@ -22,5 +22,11 @@ namespace Core.Validation
             if (!satisfies(value))
                 throw new ArgumentException($"Value \"{valueExpression}\" does not satisfy \"{satisfiesExpression}\"");
         }
+
+        public static void Satisfies(Func<bool> satisfies, [CallerArgumentExpression(nameof(satisfies))] string? satisfiesExpression = null)
+        {
+            if (!satisfies())
+                throw new ArgumentException($"\"{satisfiesExpression}\" not satisfied");
+        }
     }
 }

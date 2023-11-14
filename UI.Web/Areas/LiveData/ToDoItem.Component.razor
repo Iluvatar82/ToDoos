@@ -3,9 +3,12 @@
 @using Framework.Services;
 @using Microsoft.AspNetCore.SignalR.Client;
 @using Framework.Extensions;
+@using UI.Web.Services;
+
+@inject ItemStyleService ItemStyleService;
 
 <tr @ref=@ItemReference class="bg-opacity-25 align-items-baseline @(Level == 0 ? "top" : string.Empty) @(Model.Done.HasValue ? "bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25" : null)"
-    draggable="true" @ondragstart=@(_ => HandleDragStart(Model)) ondragover="event.preventDefault();" @ondrop=@(_ => HandleDrop(Model)) @attributes=@GetRowAttributes()>
+    draggable="true" @ondragstart=@(_ => HandleDragStart(Model)) ondragover="event.preventDefault();" @ondrop=@(_ => HandleDrop(Model)) @attributes=@ItemStyleService.GetRowAttributes(Model, Hidden, false)>
     <td class="fixed-w position-relative fade-in-on-hover">
         <div class="moveChild up text-center text-white p-0 position-absolute" @onclick=@(_ => OnOrderChanged.InvokeAsync((Model, -1)))>
             <span class="fa fa-caret-up" aria-hidden="true"></span>
@@ -42,7 +45,7 @@
         </div>
     </td>
 
-    <td class="position-relative" @attributes=@GetPaddingLeft() @onclick=@BezeichnungEditEnabledChanged>
+    <td class="position-relative" @attributes=@ItemStyleService.GetPaddingLeft(Level) @onclick=@BezeichnungEditEnabledChanged>
         @if (!BezeichnungEditEnabled)
         {
             @BezeichnungFragment
@@ -73,11 +76,8 @@
         }
     </td>
 
-    <td class="fixed-w text-end">
-        @if (Model.Category != null)
-        {
-            <span class="px-2 position-relative @Model.Category.Icon" tooltip=@Model.Category.Bezeichnung></span>
-        }
+    <td class="fixed-w fw-normal">
+        <IconSelect OnlyShowIcon=true Selected=@Model.Category?.Bezeichnung SelectedChanged=@CategoryChanged ElementsWithIcons=@Categories.Select(c => (Icon: c.Icon, Element: c.Bezeichnung))></IconSelect>
     </td>
 
     <td class="fixed-w fade-in-on-hover">
@@ -120,7 +120,7 @@
 
 @if(Level == 0)
 {
-    <tr class="todo-item-separator" ondragover="event.preventDefault();" @ondrop=@(_ => HandleDrop(null)) @attributes=@GetRowAttributes(true)>
+    <tr class="todo-item-separator" ondragover="event.preventDefault();" @ondrop=@(_ => HandleDrop(null)) @attributes=@ItemStyleService.GetRowAttributes(Model, Hidden, true)>
         <td colspan="6" class="border-bottom-0"></td>
     </tr>
 }
@@ -137,6 +137,9 @@
 
     [CascadingParameter]
     public HubConnection? ListHubConnection { get; set; }
+
+    [CascadingParameter]
+    public List<Category> Categories { get; set; }
 
     [Parameter]
     public ToDoItemDomainModel Model { get; set; } = new ToDoItemDomainModel();
@@ -187,6 +190,8 @@
     private bool Hidden => InactiveMode && Model.IsActive;
 
     private RenderFragment BezeichnungFragment => (__builder) => __builder.AddMarkupContent(0, ItemContentRenderService.RenderContent(Model.Bezeichnung));
+    private List<(string Icon, string Element)> CategorySelect { get; set; } = new List<(string Icon, string Element)>();
+
     private string OccurrenceString
     {
         get
@@ -211,9 +216,10 @@
         base.OnInitialized();
     }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         Model.Children.ForEach((dm, i) => dm.Set("OriginalOrder", i));
+        CategorySelect = Categories.Select(c => (Icon: c.Icon, Element: c.Bezeichnung)).ToList();
     }
 
     private async Task BezeichnungEditEnabledChanged()
@@ -285,9 +291,22 @@
             Model.IsActive = !Model.IsActive;
 
         await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem>(Model));
-
         StateHasChanged();
+
         await OnRemove.InvokeAsync(Model);
+
+        if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
+            await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
+    }
+
+    private async Task CategoryChanged(string categoryValue)
+    {
+        var selectedCategory = Categories.FirstOrDefault(c => c.Bezeichnung == categoryValue);
+        Model.CategoryId = selectedCategory?.Id;
+        Model.Category = selectedCategory;
+
+        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem>(Model));
+        StateHasChanged();
 
         if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
             await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
@@ -304,8 +323,8 @@
     private async Task HandleRemove(ToDoItemDomainModel todoItem)
     {
         Model.Children.Remove(todoItem);
-
         StateHasChanged();
+
         await OnRemove.InvokeAsync(todoItem);
     }
 
@@ -397,7 +416,6 @@
             Model.Children[index].Order = index;
 
         await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.Children));
-
         StateHasChanged();
     }
 
@@ -411,53 +429,6 @@
 
         Model.Children = Model.Children.OrderBy(i => i.Get<int>("OriginalOrder")).ToList();
         await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.Children));
-
         StateHasChanged();
-    }
-
-    private Dictionary<string, object>? GetRowAttributes(bool noBackground = false)
-    {
-        if (Model.Category == null || Hidden)
-            return null;
-
-        var styleString = noBackground ? "" : $"background: {Model.Category!.RGB_A};";
-        if (Model.Done.HasValue)
-        {
-            styleString = $"color: {UIColorService.GetDoneTextColor(Model.Category!.RGB_A)};";
-            return new Dictionary<string, object>
-            {
-                { "style", styleString }
-            };
-        }
-
-        styleString += $"color: {UIColorService.GetTextColor(Model.Category!.RGB_A)};";
-        return new Dictionary<string, object>
-        {
-            { "style", styleString }
-        };
-    }
-
-    private Dictionary<string, object>? GetPaddingLeft()
-    {
-        return new Dictionary<string, object>
-        {
-            { "style", $"padding-left: {8 + Level * 24}px;" }
-        };
-    }
-
-    private Dictionary<string, object>? GetCheckWidthMargin()
-    {
-        return new Dictionary<string, object>
-        {
-            { "style", $"margin-left: 32px;" }
-        };
-    }
-
-    private Dictionary<string, object>? GetLeftWidth()
-    {
-        return new Dictionary<string, object>
-        {
-            { "style", $"min-width: {Level * 24}px;" }
-        };
     }
 }

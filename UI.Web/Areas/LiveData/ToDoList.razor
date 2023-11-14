@@ -41,57 +41,59 @@
             </div>
         </div>
 
-        @if (newSubModel != null)
-        {
-            <div class="row mt-2">
-                <ToDoNew Model=newSubModel OnChange=@HandleNewChange></ToDoNew>
-            </div>
-        }
-
-        <CascadingValue Value=@this>
-            @if (myToDos.Any() && !showTwoColumns)
+        <CascadingValue Value=@Categories>
+            @if (newSubModel != null)
             {
-                <div class="table-responsive">
-                    <table class="table">
-                        <tbody>
-                            @foreach (var item in myToDos)
-                            {
-                                var index = myToDos.IndexOf(item);
-                                <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId
-                                    OnBezeichnungEditEnabled=@HandleBezeichnungEnabled
-                                    OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item))
-                                    OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))
-                                    OnOrderChanged=@((ci) => ChangeChildOrder(ci.Item, ci.Movement)) OnOrderRemoved=@RemoveOrder></ToDoItem_Component>
-                            }
-                        </tbody>
-                    </table>
+                <div class="row mt-2">
+                    <ToDoNew Model=newSubModel OnChange=@HandleNewChange></ToDoNew>
                 </div>
             }
-            else if (myToDos.Any())
-            {
-                <div class="row" data-masonry='{ "percentPosition": true }'>
-                    @foreach (var item in myToDos)
-                    {
-                        var index = myToDos.IndexOf(item);
-                        <div class="col-sm-6">
-                            <div class="card">
-                                <div class="p-1">
-                                    <table class="table mb-0">
-                                        <tbody>
-                                            <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId 
-                                                OnBezeichnungEditEnabled=@HandleBezeichnungEnabled
-                                                OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item))
-                                                                OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))
-                                                OnOrderChanged=@((ci) => ChangeChildOrder(ci.Item, ci.Movement)) OnOrderRemoved=@RemoveOrder></ToDoItem_Component>
-                                        </tbody>
-                                    </table>
+
+            <CascadingValue Value=@this>
+                @if (myToDos.Any() && !showTwoColumns)
+                {
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                                @foreach (var item in myToDos)
+                                {
+                                    var index = myToDos.IndexOf(item);
+                                    <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId
+                                        OnBezeichnungEditEnabled=@HandleBezeichnungEnabled
+                                        OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item))
+                                        OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))
+                                        OnOrderChanged=@((ci) => ChangeChildOrder(ci.Item, ci.Movement)) OnOrderRemoved=@RemoveOrder></ToDoItem_Component>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else if (myToDos.Any())
+                {
+                    <div class="row" data-masonry='{ "percentPosition": true }'>
+                        @foreach (var item in myToDos)
+                        {
+                            var index = myToDos.IndexOf(item);
+                            <div class="col-sm-6">
+                                <div class="card">
+                                    <div class="p-1">
+                                        <table class="table mb-0">
+                                            <tbody>
+                                                <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId 
+                                                    OnBezeichnungEditEnabled=@HandleBezeichnungEnabled
+                                                    OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item))
+                                                                    OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))
+                                                    OnOrderChanged=@((ci) => ChangeChildOrder(ci.Item, ci.Movement)) OnOrderRemoved=@RemoveOrder></ToDoItem_Component>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    }
-                </div>
-                <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
-            }
+                        }
+                    </div>
+                    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
+                }
+            </CascadingValue>
         </CascadingValue>
     </Authorized>
 </AuthorizeView>
@@ -178,6 +180,9 @@
     [CascadingParameter]
     public HubConnection? ListHubConnection { get; set; }
 
+    [CascadingParameter]
+    public List<Category> Categories { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         ListHubConnection?.On<string>("JoinedList", async (username) =>
@@ -219,9 +224,12 @@
 
         if (User != default)
         {
-            var twoColumnSetting = await SettingRepository.GetSettingAsync(Guid.Parse(User.Id), Settings.TwoColumns);
+            var userId = Guid.Parse(User.Id);
+            var twoColumnSetting = await SettingRepository.GetSettingAsync(userId, Settings.TwoColumns);
             if (twoColumnSetting != null)
                 showTwoColumns = twoColumnSetting.Value.GetBool();
+
+            Categories = await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == userId);
         }
 
         await RetrieveItems();

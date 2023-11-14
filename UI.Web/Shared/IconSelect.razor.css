@@ -1,0 +1,13 @@
+﻿.selected {
+	white-space: nowrap;
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+}
+
+.element {
+
+}
+
+.element:hover {
+	background-color: #f2f2f2;
+}

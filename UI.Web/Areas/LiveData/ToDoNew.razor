@@ -17,7 +17,7 @@
         <div class="col">
             <select @bind:get=@Model.CategoryId?.ToString() @bind:set=@((value) => SetCategoryId(value)) id="category" class="form-control">
                 <option value="" @attributes=@SetSelected(Model.CategoryId, null)>Bitte auswählen...</option>
-                @foreach (var category in _categories ?? Enumerable.Empty<Category>())
+                @foreach (var category in Categories ?? Enumerable.Empty<Category>())
                 {
                     <option value="@category.Id" @attributes=@SetSelected(Model.CategoryId, category.Id)>@category.Bezeichnung</option>
                 }
@@ -35,6 +35,12 @@
     </div>
 </EditForm>
 
+<div class="row">
+    <div class="col-1">
+        <IconSelect Selected="Privat" ElementsWithIcons=@Categories.Select(c => (Icon: c.Icon, Element: c.Bezeichnung))></IconSelect>
+    </div>
+</div>
+
 @code {
     [Parameter]
     public Guid ListId { get; set; } = Guid.Empty;
@@ -51,7 +57,8 @@
     [CascadingParameter]
     public IdentityUser? User { get; set; }
 
-    public IEnumerable<Category> _categories { get; set; } = new List<Category>();
+    [CascadingParameter]
+    public List<Category> Categories { get; set; }
 
     private DateTime? timeOfDay { get; set; }
     private DateTime? date { get; set; }
@@ -62,8 +69,6 @@
     {
         if (User == null)
             return;
-
-        _categories = await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == Guid.Parse(User.Id));
     }
 
     private void SetCategoryId(string value)
@@ -108,6 +113,8 @@
         {
             Model.Schedules = ScheduleEditModel.Schedules;
             Model.Reminders = ScheduleEditModel.Reminders;
+            if (Model.CategoryId != null)
+                Model.Category = Categories.FirstOrDefault(c => c.Id == Model.CategoryId.Value);
 
             var dbModel = Mapper.Map<ToDoItem>(Model);
             await ItemRepository.AddAndSaveAsync(dbModel);

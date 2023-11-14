@@ -1,0 +1,90 @@
+﻿@using Core.Validation;
+
+<div tabindex="0" class="p-1" @onclick=@(_ => HideOptions = false) @onblur=@(_ => HideOptions = true)>
+    <div class="position-relative selected">@SelectedFragment</div>
+    @if (!HideOptions)
+    {
+        <div class="position-absolute bg-white p-1 border border-1" style="z-index: 2;" @onclick:stopPropagation="true" @onclick:preventDefault="true">
+            @foreach (var element in Elements)
+            {
+                <div class="m-1 element" @onclick=@(_ => Select(@element.Text))>@element.Fragment</div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Selected { get; set; }
+
+    [Parameter]
+    public EventCallback<string> SelectedChanged { get; set; }
+
+    [Parameter]
+    public IEnumerable<string>? SimpleElements { get; set; }
+
+    [Parameter]
+    public IEnumerable<(string Icon, string Element)>? ElementsWithIcons { get; set; }
+
+    [Parameter]
+    public bool OnlyShowIcon { get; set; } = false;
+
+    private RenderFragment SelectedFragment { get; set; }
+    private bool HideOptions { get; set; } = true;
+    private List<(RenderFragment Fragment, string Text)> Elements { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(Selected))
+            Selected = "bitte auswählen";
+
+        Validator.Satisfies(() => SimpleElements?.Any() == true || ElementsWithIcons?.Any() == true);
+
+        Elements = new List<(RenderFragment Fragment, string Text)>();
+        SelectedFragment = GetSelectedFragment(Selected);
+
+        if (SimpleElements?.Any() == true)
+        { 
+            foreach (var element in SimpleElements)
+                Elements.Add(((builder) => builder.AddContent(0, element), element));
+        }
+        else
+        {
+            foreach (var element in ElementsWithIcons!)
+            {
+                RenderFragment elementRenderFragment = @<span class="@element.Icon" aria-hidden="true" style="width: 24px;"></span>;
+                elementRenderFragment += @<span> @element.Element</span>;
+
+                Elements.Add((elementRenderFragment, element.Element));
+            }
+        }
+        base.OnParametersSet();
+    }
+
+    private RenderFragment GetSelectedFragment(string element)
+    {
+        if (SimpleElements?.Contains(element) == true)
+            return @<span>element</span>;
+        else
+        {
+            var elementWithIcon = ElementsWithIcons!.FirstOrDefault(ewi => ewi.Element == element);
+            if (elementWithIcon == default)
+                return@<span>&ensp;</span>;
+
+            RenderFragment fragment =@<span class="@elementWithIcon.Icon" aria-hidden="true" style="width: 24px;"></span>;
+            if (!OnlyShowIcon)
+                fragment +=@<span> @elementWithIcon.Element</span>;
+
+            return fragment;
+        }
+    }
+
+    private async void Select(string element)
+    {
+        Selected = element;
+        await SelectedChanged.InvokeAsync(element);
+
+        SelectedFragment = GetSelectedFragment(Selected);
+        HideOptions = true;
+    }
+}

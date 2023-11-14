@@ -13,6 +13,7 @@ using UI.Web.Areas.Identity;
 using UI.Web.Areas.Identity.EmailSenderWrapper;
 using UI.Web.Hangfire;
 using UI.Web.Hubs;
+using UI.Web.Services;
 
 namespace UI.Web
 {
@@ -49,6 +50,7 @@ namespace UI.Web
 
             builder.Services.AddTransient<IdentityRepository>();
 
+            builder.Services.AddTransient<ItemStyleService>();
             builder.Services.AddSingleton<ReminderService>();
             builder.Services.AddSingleton<EmailService>();
 
