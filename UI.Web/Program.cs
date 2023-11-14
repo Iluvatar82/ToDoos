@@ -1,3 +1,5 @@
+using AutoMapper.EquivalencyExpression;
+using AutoMapper;
 using Framework.Converter.Automapper;
 using Framework.Repositories;
 using Framework.Services;
@@ -26,7 +28,7 @@ namespace UI.Web
             var connectionString = builder.Configuration.GetConnectionString("DBConnection") ?? throw new InvalidOperationException("Connection string 'DBConnection' not found.");
 
             builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
-            builder.Services.AddDbContextFactory<ToDoDBContext>(options => options.UseSqlServer(connectionString));
+            builder.Services.AddDbContextFactory<ToDoDBContext>(options => options.UseSqlServer(connectionString).EnableSensitiveDataLogging());
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
   
             
@@ -34,10 +36,8 @@ namespace UI.Web
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
-
 
             builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             builder.Services.AddScoped<ToastNotificationService>();
@@ -51,8 +51,9 @@ namespace UI.Web
             builder.Services.AddTransient<IdentityRepository>();
 
             builder.Services.AddTransient<ItemStyleService>();
-            builder.Services.AddSingleton<ReminderService>();
-            builder.Services.AddSingleton<EmailService>();
+            builder.Services.AddTransient<ItemDragDropService>();
+            builder.Services.AddTransient<ReminderService>();
+            builder.Services.AddTransient<EmailService>();
 
             builder.Services.AddSingleton<DBDomainMapper>();
 
@@ -108,7 +109,13 @@ namespace UI.Web
 
         private static void ConfigureAutoMapper(IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(MapperProfile).Assembly);
+            //services.AddAutoMapper(typeof(MapperProfile).Assembly);
+
+            services.AddAutoMapper((serviceProvider, automapper) =>
+            {
+                automapper.AddCollectionMappers();
+                automapper.UseEntityFrameworkCoreModel<ToDoDBContext>(serviceProvider);
+            }, typeof(ToDoDBContext).Assembly, typeof(MapperProfile).Assembly);
         }
     }
 }

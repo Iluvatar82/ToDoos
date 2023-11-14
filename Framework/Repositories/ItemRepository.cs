@@ -17,10 +17,7 @@ namespace Framework.Repositories
 
         public async Task<List<ToDoItem>> GetAllItemsCompleteAsync(Guid listId, bool? isActive = null)
         {
-            dbContextFactory.NotNull();
-
             using var dbContext = await dbContextFactory.CreateDbContextAsync();
-
             dbContext.NotNull();
             dbContext!.ToDoItems.NotNull();
 
@@ -32,10 +29,7 @@ namespace Framework.Repositories
 
         public async Task<ToDoItem?> GetItemCompleteAsync(Guid itemId)
         {
-            dbContextFactory.NotNull();
-
             using var dbContext = await dbContextFactory.CreateDbContextAsync();
-
             dbContext.NotNull();
             dbContext!.ToDoItems.NotNull();
 

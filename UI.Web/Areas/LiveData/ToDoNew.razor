@@ -118,7 +118,6 @@
 
             var dbModel = Mapper.Map<ToDoItem>(Model);
             await ItemRepository.AddAndSaveAsync(dbModel);
-            Model = Mapper.Map<ToDoItemDomainModel>(dbModel);
 
             await OnChange.InvokeAsync(Model);
         }

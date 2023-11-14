@@ -1,4 +1,6 @@
-﻿using Core.Validation;
+﻿using AutoMapper;
+using Core.Validation;
+using Framework.DomainModels.Base;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using ToDo.Data.ToDoData.Entities.Base;
@@ -18,8 +20,7 @@ namespace Framework.Repositories.Base
 
         public async Task<List<T>> GetAllAsync<T>() where T : class
         {
-
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext =  await dbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
             dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -29,7 +30,6 @@ namespace Framework.Repositories.Base
 
         public async Task<List<T>> GetAllAsync<T>(Func<T, bool> filterFunc) where T : class
         {
-
             using var dbContext = await dbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
@@ -40,8 +40,6 @@ namespace Framework.Repositories.Base
 
         public async Task<T?> GetAsync<T>(Guid id) where T : class
         {
-            dbContextFactory.NotNull();
-
             using var dbContext = await dbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
@@ -52,8 +50,6 @@ namespace Framework.Repositories.Base
 
         public async Task<T?> GetAsync<T>(string id) where T : class
         {
-            dbContextFactory.NotNull();
-
             using var dbContext = await dbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
@@ -66,8 +62,6 @@ namespace Framework.Repositories.Base
         {
             try
             {
-                dbContextFactory.NotNull();
-
                 using var dbContext = await dbContextFactory.CreateDbContextAsync();
                 dbContext.NotNull();
                 dbContext.Database.NotNull();
@@ -82,12 +76,10 @@ namespace Framework.Repositories.Base
             }
         }
 
-        public async Task UpdateAndSaveAsync<T>(params T[] items) where T : class
+        public async Task UpdateAndSaveAsync<T>(params T[] items) where T : DbEntityBase
         {
             try
             {
-                dbContextFactory.NotNull();
-
                 using var dbContext = await dbContextFactory.CreateDbContextAsync();
                 dbContext.NotNull();
                 dbContext.Database.NotNull();
@@ -106,8 +98,6 @@ namespace Framework.Repositories.Base
         {
             try
             {
-                dbContextFactory.NotNull();
-
                 using var dbContext = await dbContextFactory.CreateDbContextAsync();
                 dbContext.NotNull();
                 dbContext.Database.NotNull();
@@ -130,8 +120,6 @@ namespace Framework.Repositories.Base
         {
             try
             {
-                dbContextFactory.NotNull();
-
                 using var dbContext = await dbContextFactory.CreateDbContextAsync();
                 dbContext.NotNull();
                 dbContext.Database.NotNull();

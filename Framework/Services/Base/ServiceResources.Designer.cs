@@ -88,6 +88,15 @@ namespace Framework.Services.Base {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 255, 164, 164, 164 ähnelt.
+        /// </summary>
+        internal static string DarkBackgroundTextColor {
+            get {
+                return ResourceManager.GetString("DarkBackgroundTextColor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 255, 88, 88, 88 ähnelt.
         /// </summary>
         internal static string DarkTextColor {

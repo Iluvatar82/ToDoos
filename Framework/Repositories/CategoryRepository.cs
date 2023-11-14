@@ -9,17 +9,14 @@ namespace Framework.Repositories
     public class CategoryRepository : RepositoryBase<ToDoDBContext>
     {
         public CategoryRepository(IDbContextFactory<ToDoDBContext> dbContextFactory)
-            :base(dbContextFactory)
+            : base(dbContextFactory)
         {
         }
 
 
         public async Task<List<Category>> GetAllCategoriesAsync(Func<Category, bool>? filterFunc = null)
         {
-            dbContextFactory.NotNull();
-
             using var dbContext = await dbContextFactory.CreateDbContextAsync();
-
             dbContext.NotNull();
             dbContext!.ToDoItems.NotNull();
 

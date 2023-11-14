@@ -26,7 +26,11 @@ namespace Framework.Converter.Automapper
             CreateMap<ScheduleDomainModel, Schedule>();
 
             CreateMap<ToDoItem, ToDoItemDomainModel>();
-            CreateMap<ToDoItemDomainModel, ToDoItem>();
+            CreateMap<ToDoItemDomainModel, ToDoItem>()
+                .ForMember(dest => dest.Parent, opt => opt.Ignore())
+                .ForMember(dest => dest.Children, opt => opt.Ignore())
+                .ForMember(dest => dest.Category, opt => opt.Ignore());
+            ;
         }
     }
 }

@@ -6,9 +6,11 @@
 @using UI.Web.Services;
 
 @inject ItemStyleService ItemStyleService;
+@inject ItemDragDropService ItemDragDropService;
 
 <tr @ref=@ItemReference class="bg-opacity-25 align-items-baseline @(Level == 0 ? "top" : string.Empty) @(Model.Done.HasValue ? "bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25" : null)"
-    draggable="true" @ondragstart=@(_ => HandleDragStart(Model)) ondragover="event.preventDefault();" @ondrop=@(_ => HandleDrop(Model)) @attributes=@ItemStyleService.GetRowAttributes(Model, Hidden, false)>
+    draggable="true" @ondragstart=@(_ => ItemDragDropService.HandleDragStart(Container, Model)) ondragover="event.preventDefault();" @ondrop=@(_ => ItemDragDropService.HandleDrop(Container, Model, OnDraggedFrom, OnDraggedTo, StateHasChanged))
+    @attributes=@ItemStyleService.GetRowAttributes(Model, Hidden, false)>
     <td class="fixed-w position-relative fade-in-on-hover">
         <div class="moveChild up text-center text-white p-0 position-absolute" @onclick=@(_ => OnOrderChanged.InvokeAsync((Model, -1)))>
             <span class="fa fa-caret-up" aria-hidden="true"></span>
@@ -77,7 +79,7 @@
     </td>
 
     <td class="fixed-w fw-normal">
-        <IconSelect OnlyShowIcon=true Selected=@Model.Category?.Bezeichnung SelectedChanged=@CategoryChanged ElementsWithIcons=@Categories.Select(c => (Icon: c.Icon, Element: c.Bezeichnung))></IconSelect>
+        <IconSelect OnlyShowIcon=true Selected=@Model.Category?.Bezeichnung BackgroundColor=@UIColorService.GetSimpleBackgroundColor(Model.Category?.RGB_A) SelectedChanged=@CategoryChanged ElementsWithIcons=@Categories.Select(c => (Icon: c.Icon, Element: c.Bezeichnung))></IconSelect>
     </td>
 
     <td class="fixed-w fade-in-on-hover">
@@ -111,16 +113,16 @@
         if (InactiveMode && !child.VisuallyDeactivated && child.IsActive)
             continue;
 
-        <ToDoItem_Component Model=child Level=@(Level + 1) InactiveMode=InactiveMode ListId=ListId
+        <ToDoItem_Component Model=child Level=@(Level + 1) InactiveMode=InactiveMode ListId=ListId TopLevel=@TopLevel
             OnBezeichnungEditEnabled=@(original => OnBezeichnungEditEnabled.InvokeAsync(original))
-            OnRemove=@HandleRemove OnDraggedFrom=@(info => HandleDraggedFrom(info.Source, info.Item)) OnDraggedTo=@(info => HandleDraggedTo(info.Destination, info.Item))
+                            OnRemove=@HandleRemove OnDraggedFrom=@(info => ItemDragDropService.HandleDraggedFrom(info.Source, info.Item, OnDraggedFrom, StateHasChanged)) OnDraggedTo=@(info => ItemDragDropService.HandleDraggedTo(info.Destination, info.Item, OnDraggedTo, StateHasChanged))
             OnDoneChanged=@StateHasChanged OnOrderChanged=@((ci) => ChangeChildOrder(ci.Item, ci.Movement)) OnOrderRemoved=@RemoveOrder></ToDoItem_Component>
     }
 }
 
 @if(Level == 0)
 {
-    <tr class="todo-item-separator" ondragover="event.preventDefault();" @ondrop=@(_ => HandleDrop(null)) @attributes=@ItemStyleService.GetRowAttributes(Model, Hidden, true)>
+    <tr class="todo-item-separator" ondragover="event.preventDefault();" @ondrop=@(_ => ItemDragDropService.HandleDrop(Container, null, OnDraggedFrom, OnDraggedTo, StateHasChanged)) @attributes=@ItemStyleService.GetRowAttributes(Model, Hidden, true)>
         <td colspan="6" class="border-bottom-0"></td>
     </tr>
 }
@@ -140,6 +142,9 @@
 
     [CascadingParameter]
     public List<Category> Categories { get; set; }
+
+    [Parameter]
+    public List<ToDoItemDomainModel> TopLevel { get; set; } = new List<ToDoItemDomainModel>();
 
     [Parameter]
     public ToDoItemDomainModel Model { get; set; } = new ToDoItemDomainModel();
@@ -348,60 +353,6 @@
             await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
     }
 
-    private void HandleDragStart(ToDoItemDomainModel dragItem)
-    {
-        if (Container != null)
-            Container.DraggedToDoItem = dragItem;
-    }
-
-    private async Task HandleDrop(ToDoItemDomainModel? dropItem)
-    {
-        var item = Container?.DraggedToDoItem;
-        item.NotNull();
-
-        if (dropItem == item || dropItem == item!.Parent)
-            return;
-
-        await HandleDraggedFrom(item.Parent, item);
-
-        item.Parent = dropItem;
-        item.ParentId = dropItem?.Id;
-        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem>(item));
-
-        if (Container != null)
-            Container.DraggedToDoItem = null;
-
-        await HandleDraggedTo(item.Parent, item);
-    }
-
-    private async Task HandleDraggedFrom(ToDoItemDomainModel? source, ToDoItemDomainModel item)
-    {
-        if (source != null)
-            source.Children.Remove(item);
-        else
-            await OnDraggedFrom.InvokeAsync((source, item));
-
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task HandleDraggedTo(ToDoItemDomainModel? destination, ToDoItemDomainModel item)
-    {
-        if (destination != null && !destination.Children.Contains(item))
-        {
-            destination.Children.Add(item);
-            destination.Children = Model.Children
-                .OrderBy(item => item.Done.HasValue)
-                .ThenBy(item => item.Order)
-                .ThenByDescending(item => item.NextOrLastOccurrence)
-                   .Where(item => item.Parent == null)
-                   .ToList();
-        }
-        else
-            await OnDraggedTo.InvokeAsync((destination, item));
-
-        await InvokeAsync(StateHasChanged);
-    }
-
     private async Task ChangeChildOrder(ToDoItemDomainModel itemToMove, int change)
     {
         if (!Model.Children.Contains(itemToMove))
@@ -428,6 +379,7 @@
             Model.Children[index].Order = 0;
 
         Model.Children = Model.Children.OrderBy(i => i.Get<int>("OriginalOrder")).ToList();
+
         await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.Children));
         StateHasChanged();
     }

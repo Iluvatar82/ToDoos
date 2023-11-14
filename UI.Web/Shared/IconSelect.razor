@@ -1,10 +1,11 @@
 ﻿@using Core.Validation;
 
+
 <div tabindex="0" class="p-1" @onclick=@(_ => HideOptions = false) @onblur=@(_ => HideOptions = true)>
     <div class="position-relative selected">@SelectedFragment</div>
     @if (!HideOptions)
     {
-        <div class="position-absolute bg-white p-1 border border-1" style="z-index: 2;" @onclick:stopPropagation="true" @onclick:preventDefault="true">
+        <div class="position-absolute p-1 border border-1 options" style="z-index: 2; background-color: @BackgroundColor;" @onclick:stopPropagation="true" @onclick:preventDefault="true">
             @foreach (var element in Elements)
             {
                 <div class="m-1 element" @onclick=@(_ => Select(@element.Text))>@element.Fragment</div>
@@ -28,6 +29,9 @@
 
     [Parameter]
     public bool OnlyShowIcon { get; set; } = false;
+
+    [Parameter]
+    public string BackgroundColor { get; set; } = "white";
 
     private RenderFragment SelectedFragment { get; set; }
     private bool HideOptions { get; set; } = true;

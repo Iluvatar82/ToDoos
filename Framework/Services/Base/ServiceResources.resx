@@ -126,6 +126,9 @@
   <data name="ContentRenderService_WebLinkRegex" xml:space="preserve">
     <value>(?&lt;name&gt;\[.+?\])?(?&lt;link&gt;(?:http[s]:\/\/|www).+?)(?:\s|$)</value>
   </data>
+  <data name="DarkBackgroundTextColor" xml:space="preserve">
+    <value>255, 164, 164, 164</value>
+  </data>
   <data name="DarkTextColor" xml:space="preserve">
     <value>255, 88, 88, 88</value>
   </data>
