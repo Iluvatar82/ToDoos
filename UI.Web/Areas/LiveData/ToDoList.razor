@@ -61,8 +61,8 @@
                                 {
                                     var index = myToDos.IndexOf(item);
                                     <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId TopLevel=@myToDos
-                                        OnBezeichnungEditEnabled=@HandleBezeichnungEnabled
-                                                        OnRemove=@HandleRemove OnDraggedFrom=@(info => ItemDragDropService.HandleDraggedFrom(info.Source, info.Item, null, StateHasChanged)) OnDraggedTo=@(info => ItemDragDropService.HandleDraggedTo(info.Destination, info.Item, null, StateHasChanged))
+                                        OnBezeichnungEditEnabled=@HandleBezeichnungEnabled OnRemove=@HandleRemove
+                                                        OnDraggedFrom=@(async info => { myToDos = ItemDragDropService.HandleDraggedFrom(myToDos, info.Source, info.Item); await InvokeAsync(StateHasChanged); }) OnDraggedTo=@(async info => { myToDos = ItemDragDropService.HandleDraggedTo(myToDos, info.Destination, info.Item); await InvokeAsync(StateHasChanged); })
                                         OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))
                                         OnOrderChanged=@((ci) => ChangeChildOrder(ci.Item, ci.Movement)) OnOrderRemoved=@RemoveOrder></ToDoItem_Component>
                                 }
@@ -82,9 +82,9 @@
                                         <table class="table mb-0">
                                             <tbody>
                                                 <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId  TopLevel=@myToDos
-                                                    OnBezeichnungEditEnabled=@HandleBezeichnungEnabled
-                                                                    OnRemove=@HandleRemove OnDraggedFrom=@(info => ItemDragDropService.HandleDraggedFrom(info.Source, info.Item, null, StateHasChanged)) OnDraggedTo=@(info => ItemDragDropService.HandleDraggedTo(info.Destination, info.Item, null, StateHasChanged))
-                                                                    OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))
+                                                    OnBezeichnungEditEnabled=@HandleBezeichnungEnabled OnRemove=@HandleRemove
+                                                                    OnDraggedFrom=@(async info => { myToDos = ItemDragDropService.HandleDraggedFrom(myToDos, info.Source, info.Item); await InvokeAsync(StateHasChanged); }) OnDraggedTo=@(async info => { myToDos = ItemDragDropService.HandleDraggedTo(myToDos, info.Destination, info.Item); await InvokeAsync(StateHasChanged); })
+                                                    OnDoneChanged=@StateHasChanged OnReferenced=@(reference => topLevelReferenceList.Add(reference))
                                                     OnOrderChanged=@((ci) => ChangeChildOrder(ci.Item, ci.Movement)) OnOrderRemoved=@RemoveOrder></ToDoItem_Component>
                                             </tbody>
                                         </table>
@@ -347,34 +347,34 @@
             await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     }
 
-    // private async Task HandleDraggedFrom(ToDoItemDomainModel source, ToDoItemDomainModel item)
-    // {
-    //     if (source != null)
-    //         return;
+    private async Task HandleDraggedFrom(ToDoItemDomainModel source, ToDoItemDomainModel item)
+    {
+        if (source != null)
+            return;
 
-    //     myToDos.Remove(item);
+        myToDos.Remove(item);
 
-    //     await InvokeAsync(StateHasChanged);
-    // }
+        await InvokeAsync(StateHasChanged);
+    }
 
-    // private async Task HandleDraggedTo(ToDoItemDomainModel destination, ToDoItemDomainModel item)
-    // {
-    //     if (destination != null)
-    //         return;
+    private async Task HandleDraggedTo(ToDoItemDomainModel destination, ToDoItemDomainModel item)
+    {
+        if (destination != null)
+            return;
 
-    //     if (!myToDos.Contains(item))
-    //     {
-    //         myToDos.Add(item);
-    //         myToDos = myToDos
-    //             .OrderBy(item => item.Done.HasValue)
-    //             .ThenBy(item => item.Order)
-    //             .ThenByDescending(item => item.NextOrLastOccurrence)
-    //             .ForEach((dm, index) => dm.Set("OriginalOrder", index))
-    //                .ToList();
-    //     }
+        if (!myToDos.Contains(item))
+        {
+            myToDos.Add(item);
+            myToDos = myToDos
+                .OrderBy(item => item.Done.HasValue)
+                .ThenBy(item => item.Order)
+                .ThenByDescending(item => item.NextOrLastOccurrence)
+                .ForEach((dm, index) => dm.Set("OriginalOrder", index))
+                   .ToList();
+        }
 
-    //     await InvokeAsync(StateHasChanged);
-    // }
+        await InvokeAsync(StateHasChanged);
+    }
 
     private ToDoItem_Component? currentEditItemComponent = null;
     private async Task HandleBezeichnungEnabled(ToDoItem_Component? component)

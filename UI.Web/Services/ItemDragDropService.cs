@@ -72,52 +72,39 @@ namespace UI.Web.Services
                     .ForEach((dm, index) => dm.Set("OriginalOrder", index))
                 .ToList();
             }
-
+            
             if (onDraggedTo != null)
                 await onDraggedTo.Value.InvokeAsync((destination, item));
 
             updateAction?.Invoke();
+        }
 
+        public List<ToDoItemDomainModel> HandleDraggedFrom(List<ToDoItemDomainModel> elements, ToDoItemDomainModel? source, ToDoItemDomainModel item)
+        {
+            if (source != null)
+                return elements;
 
+            elements.Remove(item);
+            return elements;
+        }
 
+        public List<ToDoItemDomainModel> HandleDraggedTo(List<ToDoItemDomainModel> elements, ToDoItemDomainModel? destination, ToDoItemDomainModel item)
+        {
+            if (destination != null)
+                return elements;
 
-            //private async Task HandleDraggedTo(ToDoItemDomainModel destination, ToDoItemDomainModel item)
-            //{
-            //    if (destination != null)
-            //        return;
+            if (!elements.Contains(item))
+            {
+                elements.Add(item);
+                elements = elements
+                    .OrderBy(item => item.Done.HasValue)
+                    .ThenBy(item => item.Order)
+                    .ThenByDescending(item => item.NextOrLastOccurrence)
+                    .ForEach((dm, index) => dm.Set("OriginalOrder", index))
+                       .ToList();
+            }
 
-            //    if (!myToDos.Contains(item))
-            //    {
-            //        myToDos.Add(item);
-            //        myToDos = myToDos
-            //            .OrderBy(item => item.Done.HasValue)
-            //            .ThenBy(item => item.Order)
-            //            .ThenByDescending(item => item.NextOrLastOccurrence)
-            //            .ForEach((dm, index) => dm.Set("OriginalOrder", index))
-            //               .Where(item => item.Parent == null)
-            //               .ToList();
-            //    }
-
-            //    await InvokeAsync(StateHasChanged);
-            //}
-
-            //private async Task HandleDraggedTo(ToDoItemDomainModel? destination, ToDoItemDomainModel item)
-            //{
-            //    if (destination != null && !destination.Children.Contains(item))
-            //    {
-            //        destination.Children.Add(item);
-            //        destination.Children = Model.Children
-            //            .OrderBy(item => item.Done.HasValue)
-            //            .ThenBy(item => item.Order)
-            //            .ThenByDescending(item => item.NextOrLastOccurrence)
-            //               .Where(item => item.Parent == null)
-            //               .ToList();
-            //    }
-            //    else
-            //        await OnDraggedTo.InvokeAsync((destination, item));
-
-            //    await InvokeAsync(StateHasChanged);
-            //}
+            return elements;
         }
     }
 }
