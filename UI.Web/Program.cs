@@ -52,6 +52,7 @@ namespace UI.Web
 
             builder.Services.AddTransient<ItemStyleService>();
             builder.Services.AddTransient<ItemDragDropService>();
+            builder.Services.AddTransient<ItemHandlerService>();
             builder.Services.AddTransient<ReminderService>();
             builder.Services.AddTransient<EmailService>();
 

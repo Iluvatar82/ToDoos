@@ -7,6 +7,7 @@
 
 @inject ItemStyleService ItemStyleService;
 @inject ItemDragDropService ItemDragDropService;
+@inject ItemHandlerService ItemHandlerService;
 
 <tr @ref=@ItemReference class="bg-opacity-25 align-items-baseline @(Level == 0 ? "top" : string.Empty) @(Model.Done.HasValue ? "bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25" : null)"
     draggable="true" @ondragstart=@(_ => ItemDragDropService.HandleDragStart(Container, Model)) ondragover="event.preventDefault();" @ondrop=@(_ => ItemDragDropService.HandleDrop(Container, Model, OnDraggedFrom, OnDraggedTo, StateHasChanged))
@@ -31,7 +32,7 @@
             </div>
         }
 
-        <div class="addChild text-center text-white p-0 position-absolute" @onclick=@(() => newSubModel = ToDoItemDomainModel.Create(Model.Id, Model.CategoryId, ListId))>
+        <div class="addChild text-center text-white p-0 position-absolute" @onclick=@(() => newItemModel = ToDoItemDomainModel.Create(Model.Id, Model.CategoryId, ListId))>
             <span class="fa fa-plus" aria-hidden="true"></span>
         </div>
 
@@ -96,11 +97,11 @@
 
 @if (Model.IsActive && !Hidden)
 {
-    @if (newSubModel != null)
+    @if (newItemModel != null)
     {
         <tr>
             <td colspan="5">
-                <ToDoNew Model=newSubModel Level=@(Level + 1) OnChange=@HandleNewChange></ToDoNew>
+                <ToDoNew Model=newItemModel Level=@(Level + 1) OnChange=@(async item => Model.Children = await ItemHandlerService.HandleNewChange(Model.Children, item, UpdateNotifyAction))></ToDoNew>
             </td>
         </tr>
     }
@@ -115,8 +116,12 @@
 
         <ToDoItem_Component Model=child Level=@(Level + 1) InactiveMode=InactiveMode ListId=ListId TopLevel=@TopLevel
             OnBezeichnungEditEnabled=@(original => OnBezeichnungEditEnabled.InvokeAsync(original))
-                            OnRemove=@HandleRemove OnDraggedFrom=@(info => ItemDragDropService.HandleDraggedFrom(info.Source, info.Item, OnDraggedFrom, StateHasChanged)) OnDraggedTo=@(info => ItemDragDropService.HandleDraggedTo(info.Destination, info.Item, OnDraggedTo, StateHasChanged))
-            OnDoneChanged=@StateHasChanged OnOrderChanged=@((ci) => ChangeChildOrder(ci.Item, ci.Movement)) OnOrderRemoved=@RemoveOrder></ToDoItem_Component>
+            OnRemove=@(async item => await ItemHandlerService.HandleRemove(Model.Children, item, OnRemove, StateHasChanged))
+            OnDraggedFrom=@(info => ItemDragDropService.HandleDraggedFrom(info.Source, info.Item, OnDraggedFrom, StateHasChanged))
+            OnDraggedTo=@(info => ItemDragDropService.HandleDraggedTo(info.Destination, info.Item, OnDraggedTo, StateHasChanged))
+            OnDoneChanged=@StateHasChanged
+            OnOrderChanged=@(async (ci) => await ItemHandlerService.ChangeChildOrder(Model.Children, ci.Item, ci.Movement, StateHasChanged))
+            OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(Model.Children, item, StateHasChanged))></ToDoItem_Component>
     }
 }
 
@@ -185,18 +190,15 @@
     [Parameter]
     public EventCallback<ToDoItem_Component> OnBezeichnungEditEnabled { get; set; }
 
-    private ToDoItemDomainModel? newSubModel { get; set; } = null;
+    private ToDoItemDomainModel? newItemModel { get; set; } = null;
 
     private bool bezeichnungEditEnabled = false;
     public bool BezeichnungEditEnabled { get => bezeichnungEditEnabled; set { bezeichnungEditEnabled = value; StateHasChanged(); } }
-
     private DateTime? date { get; set; }
     private DateTime? timeOfDay { get; set; }
     private bool Hidden => InactiveMode && Model.IsActive;
-
     private RenderFragment BezeichnungFragment => (__builder) => __builder.AddMarkupContent(0, ItemContentRenderService.RenderContent(Model.Bezeichnung));
     private List<(string Icon, string Element)> CategorySelect { get; set; } = new List<(string Icon, string Element)>();
-
     private string OccurrenceString
     {
         get
@@ -211,6 +213,13 @@
             return result;
         }
     }
+    private Action UpdateNotifyAction => async () =>
+    {
+        newItemModel = null;
+        StateHasChanged();
+        if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
+            await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
+    };
 
 
     protected override void OnInitialized()
@@ -323,64 +332,5 @@
             SetActiveStateForAll(childItem, isActive);
 
         item.IsActive = isActive;
-    }
-
-    private async Task HandleRemove(ToDoItemDomainModel todoItem)
-    {
-        Model.Children.Remove(todoItem);
-        StateHasChanged();
-
-        await OnRemove.InvokeAsync(todoItem);
-    }
-
-    private async Task HandleNewChange(ToDoItemDomainModel? item)
-    {
-        newSubModel = null;
-        if (item != null)
-        {
-            Model.Children.Add(item);
-            Model.Children = Model.Children
-                .OrderBy(item => item.Done.HasValue)
-                .ThenBy(item => item.Order)
-                .ThenByDescending(item => item.NextOrLastOccurrence)
-                .ForEach((dm, i) => dm.Set("OriginalOrder", i))
-                    .ToList();
-        }
-
-        StateHasChanged();
-
-        if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
-            await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
-    }
-
-    private async Task ChangeChildOrder(ToDoItemDomainModel itemToMove, int change)
-    {
-        if (!Model.Children.Contains(itemToMove))
-            return;
-
-        var currentIndex = Model.Children.IndexOf(itemToMove);
-        Model.Children.Remove(itemToMove);
-        var newIndex = Math.Clamp(currentIndex + change, 0, Model.Children.Count);
-        Model.Children.Insert(newIndex, itemToMove);
-
-        for(var index = 0; index < Model.Children.Count; index++)
-            Model.Children[index].Order = index;
-
-        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.Children));
-        StateHasChanged();
-    }
-
-    private async Task RemoveOrder(ToDoItemDomainModel child)
-    {
-        if (!Model.Children.Contains(child))
-            return;
-
-        for (var index = 0; index < Model.Children.Count; index++)
-            Model.Children[index].Order = 0;
-
-        Model.Children = Model.Children.OrderBy(i => i.Get<int>("OriginalOrder")).ToList();
-
-        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.Children));
-        StateHasChanged();
     }
 }

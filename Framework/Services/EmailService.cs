@@ -49,7 +49,7 @@ namespace Framework.Services
 
             //    var mailBody = new MailMessage
             //    {
-            //        From = new MailAddress(_sender, "Awesome ToDo's"),
+            //        From = new MailAddress(_sender, "ToDoos.net"),
             //        Subject = title,
             //        SubjectEncoding = Encoding.UTF8,
             //        BodyEncoding = Encoding.UTF8,

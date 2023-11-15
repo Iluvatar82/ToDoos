@@ -11,7 +11,13 @@ namespace Framework.DomainModels.Base
         private dynamic AddedValues { get; set; } = new ExpandoObject();
 
         public void Set<T>(string name, T value) => (AddedValues as ExpandoObject).TryAdd(name, value);
-        public T Get<T>(string name) => (T)((AddedValues as IDictionary<string, object>)[name]);
+        public T Get<T>(string name)
+        {
+            var dict = AddedValues as IDictionary<string, object>;
+            if (dict!.TryGetValue(name, out var value))
+                return (T)value;
 
+            return default;
+        }
     }
 }
