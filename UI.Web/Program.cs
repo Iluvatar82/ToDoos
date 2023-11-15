@@ -92,7 +92,7 @@ namespace UI.Web
             app.MapControllers();
             app.MapBlazorHub();
             app.MapHub<GroupListUpdateHub>(GroupListUpdateHub.HubUrl);
-            app.MapFallbackToPage("/_Host");
+            app.MapFallbackToPage("/Index");
 
             app.Run();
         }
