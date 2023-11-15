@@ -5,7 +5,7 @@
 
 <h4>Kategorien</h4>
 
-@if (myCategories.Any())
+@if (AllCategories.Any())
 {
     <table class="table table-bordered table-hover">
         <thead>
@@ -17,9 +17,9 @@
         </thead>
 
         <tbody>
-            @foreach (var category in myCategories)
+            @foreach (var category in AllCategories)
             {
-                var currentIndex = myCategories.IndexOf(category);
+                var currentIndex = AllCategories.IndexOf(category);
                 <tr class="align-middle">
                     <td @onclick=@(() => BezeichnungEditEnabled = currentIndex)>
                         @if (BezeichnungEditEnabled != currentIndex)
@@ -59,19 +59,27 @@ else
 </div>
 
 @code {
-    private List<Category> myCategories { get; set; } = new List<Category>();
+    private List<Category> AllCategories { get; set; } = new List<Category>();
     private int BezeichnungEditEnabled { get; set; } = -1;
+
+    [Parameter]
+    public Guid? ListId { get; set; }
 
     [CascadingParameter]
     public IdentityUser? User { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (User == null)
+        if (User == null && ListId == null)
             return;
 
-        var guidId = Guid.Parse(User.Id);
-        myCategories = await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId);
+        if (ListId != null)
+            AllCategories = await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId);
+        else
+        {
+            var guidId = Guid.Parse(User.Id);
+            AllCategories = await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId);
+        }
     }
 
     private async Task UpdateColor(Category category, string color)

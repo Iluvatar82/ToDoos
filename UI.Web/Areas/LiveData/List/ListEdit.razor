@@ -1,6 +1,7 @@
 ﻿@page "/list/edit/{ListId:guid}"
 @using Core.Validation;
 @using Microsoft.AspNetCore.Identity;
+@using UI.Web.Areas.Administration.Categories
 
 <AuthorizeView>
     <NotAuthorized>
@@ -63,6 +64,11 @@
                 }
             </div>
         </div>
+
+        @if(!list.IsUserList)
+        {
+            <Categories ListId=@list.Id></Categories>
+        }
 
         <div class="row">
             <div class="btn-group col-3" role="group">

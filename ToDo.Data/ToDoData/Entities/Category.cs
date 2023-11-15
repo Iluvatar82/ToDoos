@@ -5,7 +5,7 @@ using ToDo.Data.ToDoData.Entities.Base;
 
 namespace ToDo.Data.ToDoData.Entities
 {
-    [Table("Category", Schema = "CatalogValues")]
+    [Table("Category", Schema = "LiveData")]
     public class Category : DbEntityBase
     {
         public Guid? UserId { get; set; }

@@ -5,7 +5,7 @@ using ToDo.Data.ToDoData.Entities.Base;
 
 namespace ToDo.Data.ToDoData.Entities
 {
-    [Table("UserGroup", Schema = "LiveValues")]
+    [Table("UserGroup", Schema = "LiveData")]
     public class UserGroup : DbEntityBase
     {
         [Required(ErrorMessageResourceName = "RequiredMessage", ErrorMessageResourceType = typeof(ValidationResources))]

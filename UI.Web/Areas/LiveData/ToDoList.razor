@@ -24,7 +24,7 @@
     </NotAuthorized>
 
     <Authorized>
-        <h4>@listInformation?.Name
+        <h4>@listEntity?.Name
             <span @onclick=@(() =>NavigationManager.NavigateTo(NavigationManager.BaseUri + $"list/edit/{ListId}"))><i class="fa-solid fa-gears small ms-2"></i></span>
         </h4>
 
@@ -48,53 +48,53 @@
             @if (newItemModel != null)
             {
                 <div class="row mt-2">
-                    <ToDoNew Model=newItemModel OnChange=@(async item => myToDos = await ItemHandlerService.HandleNewChange(myToDos, item, UpdateNotifyAction))></ToDoNew>
+                    <ToDoNew Model=newItemModel OnChange=@(async item => topLevelItems = await ItemHandlerService.HandleNewChange(topLevelItems, item, UpdateNotifyAction))></ToDoNew>
                 </div>
             }
 
             <CascadingValue Value=@this>
-                @if (myToDos.Any() && !showTwoColumns)
+                @if (topLevelItems.Any() && !showTwoColumns)
                 {
                     <div class="table-responsive">
                         <table class="table">
                             <tbody>
-                                @foreach (var item in myToDos)
+                                @foreach (var item in topLevelItems)
                                 {
-                                    var index = myToDos.IndexOf(item);
-                                    <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId TopLevel=@myToDos
+                                    var index = topLevelItems.IndexOf(item);
+                                    <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId TopLevel=@topLevelItems
                                         OnBezeichnungEditEnabled=@HandleBezeichnungEnabled
-                                        OnRemove=@(async item => await ItemHandlerService.HandleRemove(myToDos, item, null, UpdateNotifyAction))
-                                        OnDraggedFrom=@(async info => { myToDos = ItemDragDropService.HandleDraggedFrom(myToDos, info.Source, info.Item); await InvokeAsync(StateHasChanged); }) 
-                                        OnDraggedTo=@(async info => { myToDos = ItemDragDropService.HandleDraggedTo(myToDos, info.Destination, info.Item); await InvokeAsync(StateHasChanged); })
+                                        OnRemove=@(async item => await ItemHandlerService.HandleRemove(topLevelItems, item, null, UpdateNotifyAction))
+                                        OnDraggedFrom=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedFrom(topLevelItems, info.Source, info.Item); await InvokeAsync(StateHasChanged); }) 
+                                        OnDraggedTo=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedTo(topLevelItems, info.Destination, info.Item); await InvokeAsync(StateHasChanged); })
                                         OnDoneChanged=@StateHasChanged 
                                         OnReferenced=@(reference => topLevelReferenceList.Add(reference))
-                                        OnOrderChanged=@(async (ci) => await ItemHandlerService.ChangeChildOrder(myToDos, ci.Item, ci.Movement, StateHasChanged))
-                                        OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(myToDos, item, StateHasChanged))></ToDoItem_Component>
+                                        OnOrderChanged=@(async (ci) => await ItemHandlerService.ChangeChildOrder(topLevelItems, ci.Item, ci.Movement, StateHasChanged))
+                                        OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(topLevelItems, item, StateHasChanged))></ToDoItem_Component>
                                 }
                             </tbody>
                         </table>
                     </div>
                 }
-                else if (myToDos.Any())
+                else if (topLevelItems.Any())
                 {
                     <div class="row" data-masonry='{ "percentPosition": true }'>
-                        @foreach (var item in myToDos)
+                        @foreach (var item in topLevelItems)
                         {
-                            var index = myToDos.IndexOf(item);
+                            var index = topLevelItems.IndexOf(item);
                             <div class="col-sm-6">
                                 <div class="card">
                                     <div class="p-1">
                                         <table class="table mb-0">
                                             <tbody>
-                                                <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId  TopLevel=@myToDos
+                                                <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId  TopLevel=@topLevelItems
                                                     OnBezeichnungEditEnabled=@HandleBezeichnungEnabled 
-                                                    OnRemove=@(async item => await ItemHandlerService.HandleRemove(myToDos, item, null, UpdateNotifyAction))
-                                                    OnDraggedFrom=@(async info => { myToDos = ItemDragDropService.HandleDraggedFrom(myToDos, info.Source, info.Item); await InvokeAsync(StateHasChanged); }) 
-                                                    OnDraggedTo=@(async info => { myToDos = ItemDragDropService.HandleDraggedTo(myToDos, info.Destination, info.Item); await InvokeAsync(StateHasChanged); })
+                                                    OnRemove=@(async item => await ItemHandlerService.HandleRemove(topLevelItems, item, null, UpdateNotifyAction))
+                                                    OnDraggedFrom=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedFrom(topLevelItems, info.Source, info.Item); await InvokeAsync(StateHasChanged); }) 
+                                                    OnDraggedTo=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedTo(topLevelItems, info.Destination, info.Item); await InvokeAsync(StateHasChanged); })
                                                     OnDoneChanged=@StateHasChanged 
                                                     OnReferenced=@(reference => topLevelReferenceList.Add(reference))
-                                                    OnOrderChanged=@(async (ci) => await ItemHandlerService.ChangeChildOrder(myToDos, ci.Item, ci.Movement, StateHasChanged))
-                                                    OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(myToDos, item, StateHasChanged))></ToDoItem_Component>
+                                                    OnOrderChanged=@(async (ci) => await ItemHandlerService.ChangeChildOrder(topLevelItems, ci.Item, ci.Movement, StateHasChanged))
+                                                    OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(topLevelItems, item, StateHasChanged))></ToDoItem_Component>
                                             </tbody>
                                         </table>
                                     </div>
@@ -171,9 +171,9 @@
 
 @code {
     private ToDoItemDomainModel? newItemModel = null;
-    private List<ToDoItemDomainModel> myToDos { get; set; } = new List<ToDoItemDomainModel>();
+    private List<ToDoItemDomainModel> topLevelItems { get; set; } = new List<ToDoItemDomainModel>();
     private bool showInactive { get; set; }
-    private global::ToDo.Data.ToDoData.Entities.ToDoList? listInformation { get; set; }
+    private global::ToDo.Data.ToDoData.Entities.ToDoList? listEntity { get; set; }
     private bool showTwoColumns { get; set; } = false;
     private Action UpdateNotifyAction => async () =>
     {
@@ -246,18 +246,23 @@
             var twoColumnSetting = await SettingRepository.GetSettingAsync(userId, Settings.TwoColumns);
             if (twoColumnSetting != null)
                 showTwoColumns = twoColumnSetting.Value.GetBool();
-
-            Categories = await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == userId);
         }
 
         await RetrieveItems();
         await base.OnParametersSetAsync();
 
-        listInformation = await UserRepository.GetListAsync(ListId);
-        if (!listInformation.IsUserList && ListHubConnection != null && User != default)
+        listEntity = await UserRepository.GetListAsync(ListId);
+        if (!listEntity.IsUserList && ListHubConnection != null && User != default)
             await ListHubConnection.SendAsync("JoinedGroupList", ListId, User);
 
-        await ToastService.SendAsync("Liste geöffnet", $"Liste <b>{listInformation.Name}</b> wurde geöffnet!", Framework.Services.Base.MessageType.Info);
+        if (!listEntity.IsUserList)
+            Categories = await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId);
+        else if (User != default)
+            Categories = await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == Guid.Parse(User.Id));
+        else
+            Categories = new List<Category>();
+
+        await ToastService.SendAsync("Liste geöffnet", $"Liste <b>{listEntity.Name}</b> wurde geöffnet!", Framework.Services.Base.MessageType.Info);
 
         previousListId = ListId;
     }
@@ -275,22 +280,22 @@
     {
         if (ListId == default)
         {
-            myToDos = new List<ToDoItemDomainModel>();
+            topLevelItems = new List<ToDoItemDomainModel>();
             return;
         }
 
         if (!showInactive)
         {
-            myToDos = Mapper.Map<List<ToDoItemDomainModel>>(await ItemRepository.GetAllItemsCompleteAsync(ListId, !showInactive))
+            topLevelItems = Mapper.Map<List<ToDoItemDomainModel>>(await ItemRepository.GetAllItemsCompleteAsync(ListId, !showInactive))
                                 .Where(item => item.Parent == null).ToList();
 
-            myToDos = ItemHandlerService.Order(myToDos);
+            topLevelItems = ItemHandlerService.Order(topLevelItems);
         }
         else
         {
             var allItems = Mapper.Map<List<ToDoItemDomainModel>>(await ItemRepository.GetAllItemsCompleteAsync(ListId));
-            myToDos = BuildInactiveItemsFromAll(allItems);
-            myToDos = ItemHandlerService.Order(myToDos);
+            topLevelItems = BuildInactiveItemsFromAll(allItems);
+            topLevelItems = ItemHandlerService.Order(topLevelItems);
         }
 
         topLevelReferenceList = new List<ElementReference>();
