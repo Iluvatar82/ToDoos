@@ -25,13 +25,13 @@ namespace UI.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            var connectionString = builder.Configuration.GetConnectionString("DBConnection") ?? throw new InvalidOperationException("Connection string 'DBConnection' not found.");
+            var connectionName = IsDevelopment() ? "DBConnection_Local" : "DBConnection";
+            var connectionString = builder.Configuration.GetConnectionString(connectionName) ?? throw new InvalidOperationException("Connection string 'DBConnection' not found.");
 
             builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
             builder.Services.AddDbContextFactory<ToDoDBContext>(options => options.UseSqlServer(connectionString).EnableSensitiveDataLogging());
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
   
-            
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -117,6 +117,11 @@ namespace UI.Web
                 automapper.AddCollectionMappers();
                 automapper.UseEntityFrameworkCoreModel<ToDoDBContext>(serviceProvider);
             }, typeof(ToDoDBContext).Assembly, typeof(MapperProfile).Assembly);
+        }
+
+        private static bool IsDevelopment()
+        {
+            return string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "development", StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }

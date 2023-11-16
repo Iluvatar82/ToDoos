@@ -12,12 +12,13 @@ namespace ToDo.Data.MigrationTool
 {
     internal class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             var builder = Host.CreateApplicationBuilder(args);
 
-            var connectionString = builder.Configuration.GetConnectionString("DBConnection") ?? throw new InvalidOperationException("Connection string 'DBConnection' not found.");
-            
+            var connectionName = IsDevelopment() ? "DBConnection_Local" : "DBConnection";
+            var connectionString = builder.Configuration.GetConnectionString(connectionName) ?? throw new InvalidOperationException("Connection string 'DBConnection' not found.");
+
             builder.Services.AddDbContextFactory<ToDoDBContext>(options => options.UseSqlServer(connectionString));
             builder.Services.AddTransient<ItemRepository>();
 
@@ -35,6 +36,11 @@ namespace ToDo.Data.MigrationTool
         private static void ConfigureAutoMapper(IServiceCollection services)
         {
             services.AddAutoMapper(typeof(MapperProfile).Assembly);
+        }
+
+        private static bool IsDevelopment()
+        {
+            return string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "development", StringComparison.InvariantCultureIgnoreCase);
         }
     }
 
