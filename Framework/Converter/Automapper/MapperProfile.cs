@@ -30,7 +30,6 @@ namespace Framework.Converter.Automapper
                 .ForMember(dest => dest.Parent, opt => opt.Ignore())
                 .ForMember(dest => dest.Children, opt => opt.Ignore())
                 .ForMember(dest => dest.Category, opt => opt.Ignore());
-            ;
         }
     }
 }

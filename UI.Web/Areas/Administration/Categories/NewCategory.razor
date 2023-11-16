@@ -1,4 +1,4 @@
-﻿@page "/administration/categories/new/"
+﻿@page "/administration/categories/new/{BackTo}"
 @using System.ComponentModel.DataAnnotations;
 @attribute [Authorize(Roles = "Administrator")]
 
@@ -39,9 +39,23 @@
 @code {
     private Category _newCategory = new Category { Bezeichnung = string.Empty };
 
+    [Parameter]
+    public string BackTo { get; set; }
+
+    [CascadingParameter]
+    public IdentityUser? User { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        
+    }
+
     private void NavigateBack()
     {
-        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+        if (Guid.TryParse(BackTo, out var listId))
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + "list/edit/" + listId);
+        else
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + BackTo + "/");
     }
 
     private async Task SaveNewCategory(EditContext context)
@@ -49,8 +63,13 @@
         var valid = context.Validate();
         if (valid)
         {
+            if (Guid.TryParse(BackTo, out var listId))
+                _newCategory.ListId = listId;
+            else
+                _newCategory.UserId = Guid.Parse(User!.Id);
+
             await CategoryRepository.AddAndSaveAsync(_newCategory);
-            NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+            NavigateBack();
         }
     }
 }

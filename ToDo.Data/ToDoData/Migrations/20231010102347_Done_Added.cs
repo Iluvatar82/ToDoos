@@ -15,7 +15,7 @@ namespace ToDo.Data.Migrations
                 schema: "LiveData",
                 table: "ToDoItem",
                 type: "bit",
-                nullable: false,
+                nullable: true,
                 defaultValue: false);
         }
 

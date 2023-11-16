@@ -1,7 +1,6 @@
 ﻿@page "/categories/"
 @using System.ComponentModel.DataAnnotations;
-
-@attribute [Authorize(Roles = "Administrator")]
+@using Core.Validation
 
 <h4>Kategorien</h4>
 
@@ -13,6 +12,7 @@
                 <th scope="col">Bezeichnung</th>
                 <th scope="col">Icon</th>
                 <th scope="col">Farbe</th>
+                <th scope="col"></th>
             </tr>
         </thead>
 
@@ -36,11 +36,17 @@
                             </EditForm>
                         }
                     </td>
-                    <td class="p-0 icon-column">
+
+                    <td class="p-0 small-column">
                         <IconsBrowser Selected=@category.Icon IconDisplayOnly=true SelectedChanged=@(async (icon) => await IconChanged(category, icon)) />
                     </td>
+
                     <td class="p-0">
                         <input type="color" @bind-value=category.RGB_A class="w-100" @onblur=@(() => UpdateColor(category, category.RGB_A)) />
+                    </td>
+
+                    <td class="p-0 small-column">
+                        <span class="px-2 fa fa-xmark opacity-25" aria-hidden="true" @onclick=@(async () => await RemoveCategory(currentIndex))></span>
                     </td>
                 </tr>
             }
@@ -59,11 +65,13 @@ else
 </div>
 
 @code {
-    private List<Category> AllCategories { get; set; } = new List<Category>();
     private int BezeichnungEditEnabled { get; set; } = -1;
 
     [Parameter]
     public Guid? ListId { get; set; }
+
+    [Parameter]
+    public List<Category> AllCategories { get; set; } = new List<Category>();
 
     [CascadingParameter]
     public IdentityUser? User { get; set; }
@@ -74,10 +82,13 @@ else
             return;
 
         if (ListId != null)
-            AllCategories = await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId);
+        {
+            if (!AllCategories.Any())
+                AllCategories = await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId);
+        }
         else
         {
-            var guidId = Guid.Parse(User.Id);
+            var guidId = Guid.Parse(User!.Id);
             AllCategories = await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId);
         }
     }
@@ -104,8 +115,20 @@ else
         await ItemRepository.UpdateAndSaveAsync(changedCategory);
     }
 
+    private async Task RemoveCategory(int index)
+    {
+        //TODO Check einbauen (ob Items mit der Category existieren)
+        index.Satisfies(i => i < AllCategories.Count);
+
+        await ItemRepository.RemoveAndSaveAsync(AllCategories[index]);
+        AllCategories.RemoveAt(index);
+    }
+
     private void NavigateToNew()
     {
-        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/categories/new");
+        if (ListId != null)
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + $"administration/categories/new/{ListId}");
+        else
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/categories/new/categories");
     }
 }

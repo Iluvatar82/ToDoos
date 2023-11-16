@@ -30,29 +30,33 @@ namespace ToDo.Data.Migrations
                 schema: "LiveData",
                 table: "ToDoItem");
 
-            migrationBuilder.AlterColumn<DateTime>(
+            migrationBuilder.DropColumn(
+                name: "Done",
+                schema: "LiveData",
+                table: "ToDoItem");
+
+            migrationBuilder.AddColumn<Guid>(
                 name: "Done",
                 schema: "LiveData",
                 table: "ToDoItem",
                 type: "datetime2",
-                nullable: true,
-                oldClrType: typeof(bool),
-                oldType: "bit");
+                nullable: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<bool>(
+            migrationBuilder.DropColumn(
+                name: "Done",
+                schema: "LiveData",
+                table: "ToDoItem");
+
+            migrationBuilder.AddColumn<Guid>(
                 name: "Done",
                 schema: "LiveData",
                 table: "ToDoItem",
-                type: "bit",
-                nullable: false,
-                defaultValue: false,
-                oldClrType: typeof(DateTime),
-                oldType: "datetime2",
-                oldNullable: true);
+                type: "datetime2",
+                nullable: false);
 
             migrationBuilder.AddColumn<Guid>(
                 name: "ImportanceId",

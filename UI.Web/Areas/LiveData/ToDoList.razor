@@ -1,4 +1,5 @@
 ﻿@page "/list/{ListId:guid}"
+
 @using System.Security.Claims;
 @using Core.Common;
 @using Framework.Converter;
@@ -116,7 +117,8 @@
     window.allowKeyboardNavigation = true;
 
     document.onkeypress = function (e) {
-        if (e.key == "j" && allowKeyboardNavigation) {
+        var isNewItemAdding = document.querySelectorAll('.newItem').length > 0;
+        if (e.key == "j" && allowKeyboardNavigation && !isNewItemAdding) {
             let topLevelElements = document.querySelectorAll(window.topLevelSelector);
             currentIndex++;
             if (currentIndex >= topLevelElements.length)
@@ -136,7 +138,7 @@
                         document.querySelectorAll('.top-row')[0].getBoundingClientRect().height,
                 });
         }
-        else if (e.key == "k" && allowKeyboardNavigation) {
+        else if (e.key == "k" && allowKeyboardNavigation && !isNewItemAdding) {
             let topLevelElements = document.querySelectorAll(window.topLevelSelector);
             currentIndex--;
             if (currentIndex < 0)
@@ -160,7 +162,6 @@
 
 
     allowKeyNavigation = function (value) {
-        debugger;
         allowKeyboardNavigation = value;
         if (value == false && currentElement != null) { 
             currentElement.classList.remove('active');

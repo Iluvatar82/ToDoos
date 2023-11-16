@@ -36,6 +36,16 @@ namespace Framework.DomainModels
 
         public List<DateTime> Occurrences(DateTime from, DateTime to) => Schedules?.GetOccurrences(from, to) ?? new List<DateTime>();
 
+
+        public IEnumerable<ToDoItemDomainModel> SelfAndAllDescendents
+        {
+            get
+            {
+                yield return this;
+                foreach (var descendent in AllDescendents)
+                    yield return descendent;
+            }
+        }
         public IEnumerable<ToDoItemDomainModel> AllDescendents
         {
             get

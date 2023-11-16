@@ -1,5 +1,7 @@
 ﻿@page "/list/edit/{ListId:guid}"
+
 @using Core.Validation;
+@using Framework.Extensions;
 @using Microsoft.AspNetCore.Identity;
 @using UI.Web.Areas.Administration.Categories
 
@@ -22,7 +24,7 @@
                 <EditForm Model=@list Context="editContext">
                     <DataAnnotationsValidator />
 
-                    <input type="text" @bind-value=@list.Name id="name" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await SaveList(editContext); }) @onblur=@(async () => await SaveList(editContext)) />
+                    <input type="text" @bind-value=@list.Name id="name" class="form-control" @onkeyup=@((KeyboardEventArgs key) => { if(key.Code == "Enter") ChangeBezeichnung(editContext); }) @onblur=@(() => ChangeBezeichnung(editContext)) />
                     <ValidationMessage For=@(() => list.Name) />
                 </EditForm>
             }
@@ -67,13 +69,15 @@
 
         @if(!list.IsUserList)
         {
-            <Categories ListId=@list.Id></Categories>
+            <hr />
+            <Categories ListId=@list.Id AllCategories=@listCategories></Categories>
         }
 
-        <div class="row">
+        <hr />
+        <div class="row mt-3">
             <div class="btn-group col-3" role="group">
                 <button type="button" @onclick=@NavigateBack class="btn btn-outline-secondary">Zurück</button>
-                <button type="submit" @onclick=@(async () => { await SaveList(); NavigateBack(); }) class="btn btn-outline-primary">Speichern</button>
+                <button type="submit" @onclick=@(async () => await SaveList()) class="btn btn-outline-primary">Speichern</button>
             </div>
         </div>
     </Authorized>
@@ -84,7 +88,7 @@
     private List<IdentityUser>? IdentitiesInGroup;
     private bool nameChange { get; set; } = false;
     private ToDoList list { get; set; } = new ToDoList();
-
+    private List<Category> listCategories { get; set; } = new List<Category>();
     private bool isUserList{ get; set; }
 
     private Guid? selectedUserGroupIdField;
@@ -93,8 +97,7 @@
         set
         {
             selectedUserGroupIdField = value;
-
-            list.GroupId = selectedUserGroupId;
+            list.GroupId = value;
 
             InvokeAsync(async () => await GetUsersInGroup());
         }
@@ -116,7 +119,13 @@
         list = (await ListRepository.GetAsync<ToDoList>(ListId))!;
         isUserList = list.IsUserList;
         if (!isUserList)
+        {
             selectedUserGroupId = list.GroupId;
+            listCategories = await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId);
+            if (!listCategories.Any())
+                listCategories = (await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId))
+                    .ForEach((c, i) => { c.Id = Guid.Empty; c.UserId = null; c.ListId = ListId; }).ToList();
+        }
     }
 
     private void SwitchUserGroupList()
@@ -133,8 +142,6 @@
 
         list.UserId = isUserList ? Guid.Parse(User.Id) : null;
         list.GroupId = selectedUserGroupId;
-
-        StateHasChanged();
     }
 
     private async Task GetUsersInGroup()
@@ -142,27 +149,30 @@
         if (selectedUserGroupId == null)
         {
             IdentitiesInGroup = null;
-
-            StateHasChanged();
             return;
         }
 
         var allUsersInGroup = await UserRepository.GetAllUsersForGroupAsync(selectedUserGroupId.Value);
         IdentitiesInGroup = await IdentityRepository.GetUsersByIdAsync(allUsersInGroup.Select(ug => ug.UserId.ToString()));
-
         StateHasChanged();
     }
 
-    private async Task SaveList(EditContext? context = null)
+    private void ChangeBezeichnung(EditContext? context = null)
     {
         var valid = context?.Validate() ?? true;
         if (valid)
         {
-            await ListRepository.UpdateAndSaveAsync(list);
             nameChange = false;
-
-            StateHasChanged();
         }
+    }
+
+    private async Task SaveList()
+    {
+        await ListRepository.UpdateAndSaveAsync(list);
+        if (!isUserList)
+            CategoryRepository.AddOrUpdateAndSaveAsync(listCategories.ToArray());
+
+        NavigateBack();
     }
 
     private void NavigateBack()

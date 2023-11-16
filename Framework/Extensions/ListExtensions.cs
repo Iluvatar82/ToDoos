@@ -6,7 +6,7 @@
         {
             var enumerator = enumerable.GetEnumerator();
             var index = 0;
-            while(enumerator.MoveNext())
+            while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
                 action(current, index++);

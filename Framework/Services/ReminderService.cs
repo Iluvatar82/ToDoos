@@ -51,7 +51,7 @@ namespace Framework.Services
             var schedules = item.Schedules.ToList();
             var reminders = item.Reminders.ToList();
 
-            var nextScheduleOccurrences = _mapper.Map<List<Schedule>, List<ScheduleDomainModel>>(schedules)
+            var nextScheduleOccurrences = _mapper.Map<List<ScheduleDomainModel>>(schedules)
                 .Select(s => s.ScheduleDefinition.NextOccurrenceAfter(DateTime.Now, s.Start, s.End)).Where(d => d != null).Select(d => d.Value).OrderBy(d => d).ToList();
 
             var existingHangfireJobs = await _itemRepository.GetAllAsync<HangfireJob>(j => j.ToDoItemId == itemId);
@@ -67,7 +67,7 @@ namespace Framework.Services
             {
                 foreach (var reminder in reminders)
                 {
-                    var reminderDefinition = _mapper.Map<string, ReminderDefinition>(reminder.Definition);
+                    var reminderDefinition = _mapper.Map<ReminderDefinition>(reminder.Definition);
                     var nextReminderTime = reminderDefinition.ApplyReminderToOccurrence(nextScheduleOccurrence);
 
                     if (nextReminderTime < DateTime.Now)

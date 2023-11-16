@@ -3,10 +3,12 @@
 @using Framework.DomainModels.Base;
 @using UI.Web.Areas.LiveData.Scheduling
 
+@inject ReminderService ReminderService
+
 <EditForm Model=Model OnSubmit=@SaveNewToDo>
     <DataAnnotationsValidator />
 
-    <div class="row bg-opacity-25">
+    <div class="newItem row bg-opacity-25">
         <div class="d-flex col-8" @attributes=@GetMarginLeft()>
             <div class="col">
                 <input type="text" @bind-value=Model.Bezeichnung id="bezeichnung" class="form-control" />
@@ -119,6 +121,9 @@
             var dbModel = Mapper.Map<ToDoItem>(Model);
             await ItemRepository.AddAndSaveAsync(dbModel);
             Model.Id = dbModel.Id;
+
+            if (Model.Schedules.Any() && Model.Reminders.Any())
+                await ReminderService.UpdateReminders(Model.Id);
 
             await OnChange.InvokeAsync(Model);
         }

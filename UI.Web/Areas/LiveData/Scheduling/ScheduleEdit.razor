@@ -278,6 +278,8 @@
         await ItemRepository.AddOrUpdateAndSaveAsync(dbSchedules);
         await ItemRepository.AddOrUpdateAndSaveAsync(dbReminders);
 
+        await ReminderService.UpdateReminders(ItemId);
+ 
         NavigateBack();
     }
 }

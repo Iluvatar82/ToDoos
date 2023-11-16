@@ -304,7 +304,7 @@
         else
             Model.IsActive = !Model.IsActive;
 
-        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem>(Model));
+        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.SelfAndAllDescendents));
         StateHasChanged();
 
         await OnRemove.InvokeAsync(Model);

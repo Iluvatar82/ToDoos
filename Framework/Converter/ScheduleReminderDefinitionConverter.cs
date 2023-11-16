@@ -2,6 +2,7 @@
 using Framework.Converter.Automapper;
 using System.Text.RegularExpressions;
 using ToDo.Data.Common;
+using ToDo.Data.Common.Enums;
 
 namespace Framework.Converter
 {
@@ -24,7 +25,7 @@ namespace Framework.Converter
             if (decimal.TryParse(match.Groups["value"].Value, out var value) && match.Groups["unit"].Value.Length == 1)
             {
                 result.Value = value;
-                Mapper.Map(match.Groups["unit"].Value, result.Unit);
+                result.Unit = Mapper.Map<ScheduleTimeUnit>(match.Groups["unit"].Value);
             }
 
             return result;

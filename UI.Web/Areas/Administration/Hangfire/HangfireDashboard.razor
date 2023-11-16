@@ -5,11 +5,30 @@
 <iframe src=@HangFireUrl style="width: 100%; height: 900px;"></iframe>
 
 <script>
-    function RemoveBackToAppLink() {
+    window.onload = function () {
         var iframeElement = document.querySelectorAll("iframe")[0];
-        var elementToRemove = iframeElement.contentWindow.document.querySelectorAll(".navbar-right")[0];
-        if (elementToRemove != null)
-            elementToRemove.remove();
+        iframeElement.onload = function () {
+            RemoveBackToAppLink(100, 10);
+        };
+    };
+
+    function RemoveBackToAppLink(numTries, delay) {
+        var iframeElement = document.querySelectorAll("iframe")[0];
+        var counter = 0;
+        var loopInterval = setInterval(() =>
+        {
+            if (counter >= numTries)
+                clearInterval(loopInterval);
+
+            var elementToRemove = iframeElement.contentWindow.document.querySelectorAll(".navbar-right")[0];
+            if (elementToRemove != null)
+            {
+                elementToRemove.remove();
+                clearInterval(loopInterval);
+            }
+
+            counter++;
+        }, delay);
     }
 </script>
 
@@ -23,9 +42,7 @@
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {
-        await Task.Delay(100);
-        await JS.InvokeVoidAsync("RemoveBackToAppLink");
-
+        await JS.InvokeVoidAsync("RemoveBackToAppLink", 100, 10);
         await base.OnAfterRenderAsync(firstRender);
     }
 }
