@@ -25,7 +25,7 @@ namespace UI.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            var connectionName = IsDevelopment() ? "DBConnection_Local" : "DBConnection";
+            var connectionName = IsDevelopment() && false ? "DBConnection_Local" : "DBConnection";
             var connectionString = builder.Configuration.GetConnectionString(connectionName) ?? throw new InvalidOperationException("Connection string 'DBConnection' not found.");
 
             builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.UseSqlServer(connectionString));

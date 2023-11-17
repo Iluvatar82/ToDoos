@@ -76,7 +76,7 @@ namespace Framework.Services
                     //EmailBuilder-Service implementieren und hier vorlagern
                     //Save JobIDs in new Table
                     var newJob = BackgroundJob.Schedule(() => _emailService.SendAsync("Erinnerung",
-                        $"<div style='font-weight:bold'>\"{item.Bezeichnung}\"!</div><div>Sollte bis <span style='font-weight:bold'>{nextScheduleOccurrence.ToShortDateString()}</span> um <span style='font-weight:bold'>{nextScheduleOccurrence.ToShortTimeString()}!</span> erledigt werden.</div>",
+                        $"<div style='font-weight:bold'>\"{item.Bezeichnung}\"!</div><div>Bitte bis <span style='font-weight:bold'>{nextScheduleOccurrence.ToShortDateString()}</span> um <span style='font-weight:bold'>{nextScheduleOccurrence.ToShortTimeString()}!</span> erledigen.</div>",
                         Base.MessageType.Info, null, userEmails.ToArray()), nextReminderTime);
 
                     newJobIds.Add(newJob);
