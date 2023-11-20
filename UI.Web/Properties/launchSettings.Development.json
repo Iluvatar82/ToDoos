@@ -28,10 +28,10 @@
         "WSL": {
             "commandName": "WSL2",
             "launchBrowser": true,
-            "launchUrl": "https://localhost:7163/",
+            "launchUrl": "https://localhost:7163/todos/",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Release",
-                "ASPNETCORE_URLS": "https://localhost:7163/;http://localhost:5169/"
+                "ASPNETCORE_URLS": "https://localhost:7163/todos/;http://localhost:5169/todos/"
             },
             "distributionName": ""
         }
@@ -40,7 +40,7 @@
         "windowsAuthentication": false,
         "anonymousAuthentication": true,
         "iisExpress": {
-            "applicationUrl": "http://localhost:28604/",
+            "applicationUrl": "http://localhost:28604/todos/",
             "sslPort": 44369
         }
     }

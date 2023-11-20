@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Properties\launchSettings.Development.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="appsettings.json~RFf32d21c.TMP" />
     <None Remove="Areas\Administration\Administration.razor~RF1a4ba506.TMP" />
     <None Remove="Areas\LiveData\Group\ToDoListsIndex.razor.css" />
@@ -16,7 +20,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <_WebToolingArtifacts Remove="Properties\launchSettings.Development.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Areas\LiveData\ToDoListsIndex.razor.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Properties\launchSettings.Development.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
