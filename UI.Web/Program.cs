@@ -61,7 +61,7 @@ namespace UI.Web
             builder.Services.AddTransient<IEmailSender, EmailSenderWrapper>();
             builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration);
 
-            builder.Services.AddAntiforgery(af => af.SuppressXFrameOptionsHeader = true);
+            //builder.Services.AddAntiforgery(af => af.SuppressXFrameOptionsHeader = true);
             builder.Services.AddCors();
 
             ConfigureHangfireService(builder.Services, connectionString);
