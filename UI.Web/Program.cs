@@ -97,7 +97,7 @@ namespace UI.Web
             app.MapHub<GroupListUpdateHub>(GroupListUpdateHub.HubUrl);
             app.MapFallbackToPage("/_Host");
 
-            app.UseCors(c => c.AllowCredentials().AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+            app.UseCors(c => c.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
             app.Run();
         }
