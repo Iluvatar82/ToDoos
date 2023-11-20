@@ -200,7 +200,7 @@
     public HubConnection? ListHubConnection { get; set; }
 
     [CascadingParameter]
-    public List<Category> Categories { get; set; }
+    public List<Category> Categories { get; set; } = new List<Category>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -339,6 +339,13 @@
             currentEditItemComponent.BezeichnungEditEnabled = false;
 
         currentEditItemComponent = component;
-        await JS.InvokeVoidAsync("allowKeyNavigation", component == null);
+        try
+        {
+            await JS.InvokeVoidAsync("allowKeyNavigation", component == null);
+        }
+        catch(Exception ex)
+        {
+            //ToDo
+        }
     }
 }

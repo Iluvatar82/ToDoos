@@ -16,7 +16,7 @@
 
 @code {
     [Parameter]
-    public string Selected { get; set; }
+    public string Selected { get; set; } = string.Empty;
 
     [Parameter]
     public EventCallback<string> SelectedChanged { get; set; }
@@ -33,9 +33,9 @@
     [Parameter]
     public string BackgroundColor { get; set; } = "white";
 
-    private RenderFragment SelectedFragment { get; set; }
+    private RenderFragment SelectedFragment { get; set; } = @<span>&ensp;</span>;
     private bool HideOptions { get; set; } = true;
-    private List<(RenderFragment Fragment, string Text)> Elements { get; set; }
+    private List<(RenderFragment Fragment, string Text)> Elements { get; set; } = new List<(RenderFragment Fragment, string Text)>();
 
     protected override void OnParametersSet()
     {

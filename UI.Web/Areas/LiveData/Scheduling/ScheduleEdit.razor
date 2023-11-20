@@ -2,6 +2,7 @@
 
 @using Common = global::ToDo.Data.Common;
 @using Core.Common;
+@using Core.Validation
 @using Framework.DomainModels.Base;
 @using ToDo.Data.Common.Enums;
 @using ToDo.Data.Common;
@@ -114,7 +115,7 @@
 
                     <td class="align-top py-0 border-0">
                         <div class="form-floating col p-0">
-                            <input type="number" class="form-control border-0" @bind:get=@reminder.ReminderDefinition.Value @bind:set=@((decimal newValue) => SetReminderValue(currentIndex, newValue)) id="value" />
+                            <input type="number" class="form-control border-0" @bind:get=@reminder.ReminderDefinition!.Value @bind:set=@((decimal newValue) => SetReminderValue(currentIndex, newValue)) id="value" />
                             <label for="value">Wert</label>
                         </div>
                     </td>
@@ -204,7 +205,7 @@
             await CreateNewReminder();
     }
 
-    private async Task ChangeTo(int index, int newType)
+    private void ChangeTo(int index, int newType)
     {
         switch (newType)
         {

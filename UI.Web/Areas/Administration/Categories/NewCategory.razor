@@ -40,7 +40,7 @@
     private Category _newCategory = new Category { Bezeichnung = string.Empty };
 
     [Parameter]
-    public string BackTo { get; set; }
+    public string BackTo { get; set; } = string.Empty;
 
     [CascadingParameter]
     public IdentityUser? User { get; set; }

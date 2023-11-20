@@ -170,7 +170,7 @@
     {
         await ListRepository.UpdateAndSaveAsync(list);
         if (!isUserList)
-            CategoryRepository.AddOrUpdateAndSaveAsync(listCategories.ToArray());
+            await CategoryRepository.AddOrUpdateAndSaveAsync(listCategories.ToArray());
 
         NavigateBack();
     }

@@ -13,6 +13,6 @@ namespace ToDo.Data.ToDoData.Entities
 
         [Required]
         [ForeignKey("Job")]
-        public string JobId { get; set; }
+        public string JobId { get; set; } = string.Empty;
     }
 }

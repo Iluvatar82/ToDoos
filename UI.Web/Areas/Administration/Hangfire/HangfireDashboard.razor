@@ -33,16 +33,24 @@
 </script>
 
 @code {
-    private string HangFireUrl { get; set; }
+    private string HangFireUrl { get; set; } = string.Empty;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         HangFireUrl = NavigationManager.BaseUri + "hangfire";
     }
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {
-        await JS.InvokeVoidAsync("RemoveBackToAppLink", 100, 10);
+        try
+        {
+            await JS.InvokeVoidAsync("RemoveBackToAppLink", 100, 10);
+        }
+        catch (Exception ex)
+        {
+            //ToDo
+        }
+
         await base.OnAfterRenderAsync(firstRender);
     }
 }

@@ -60,14 +60,14 @@
     public IdentityUser? User { get; set; }
 
     [CascadingParameter]
-    public List<Category> Categories { get; set; }
+    public List<Category> Categories { get; set; } = new List<Category>();
 
     private DateTime? timeOfDay { get; set; }
     private DateTime? date { get; set; }
 
     private ScheduleEditDomainModel ScheduleEditModel { get; set; } = new ScheduleEditDomainModel();
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
         if (User == null)
             return;

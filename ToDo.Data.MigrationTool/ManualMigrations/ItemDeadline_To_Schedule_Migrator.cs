@@ -25,9 +25,11 @@ namespace ToDo.Data.MigrationTool.ManualMigrations
         {
             var items = await _itemRepository.GetAllAsync<ToDoItem>();
             var mappeItems = Mapper.Map<List<ToDoItem>, List<ToDoItemDomainModel>>(items);
+            var mapper = new Mapper(null);
             foreach (var item in mappeItems.Where(i => i.NextOrLastOccurrence.HasValue))
             {
-                var newSchedule = new Schedule() { ToDoItemId = item.Id, ScheduleDefinition = new ScheduleDefinitionConverter(null).Convert(new ScheduleDefinition() { Fixed = item.NextOrLastOccurrence }, null) };
+
+                var newSchedule = new Schedule() { ToDoItemId = item.Id, ScheduleDefinition = new ScheduleDefinitionConverter(mapper).Convert(new ScheduleDefinition() { Fixed = item.NextOrLastOccurrence }, null) };
                 await _itemRepository.AddAndSaveAsync(newSchedule);
             }
         }

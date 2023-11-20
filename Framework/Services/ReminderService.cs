@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Core.Validation;
 using Framework.DomainModels.Base;
 using Framework.Extensions;
 using Framework.Repositories;
@@ -40,7 +41,12 @@ namespace Framework.Services
             var userIDs = list.UserId is not null ? new [] { list.UserId.Value }.ToList() : (await _userRepository.GetAllUsersForGroupAsync(list.GroupId!.Value)).Select(u => u.UserId).ToList();
             var userEmails = new List<string>();
             if (list.UserId is not null)
-                userEmails.Add((await _identityRepository.GetAsync<IdentityUser>(list.UserId.Value.ToString())).Email);
+            {
+                var identityUser = await _identityRepository.GetAsync<IdentityUser>(list.UserId.Value.ToString());
+                identityUser?.Email.NotNull();
+
+                userEmails.Add(identityUser!.Email!);
+            }
             else
             {
                 var groupUserIds = (await _userRepository.GetAllUsersForGroupAsync(list.GroupId!.Value)).Select(u => u.UserId.ToString()).ToList();
@@ -52,7 +58,7 @@ namespace Framework.Services
             var reminders = item.Reminders.ToList();
 
             var nextScheduleOccurrences = _mapper.Map<List<ScheduleDomainModel>>(schedules)
-                .Select(s => s.ScheduleDefinition.NextOccurrenceAfter(DateTime.Now, s.Start, s.End)).Where(d => d != null).Select(d => d.Value).OrderBy(d => d).ToList();
+                .Select(s => s.ScheduleDefinition.NextOccurrenceAfter(DateTime.Now, s.Start, s.End)).Where(d => d != null).Select(d => d!.Value).OrderBy(d => d).ToList();
 
             var existingHangfireJobs = await _itemRepository.GetAllAsync<HangfireJob>(j => j.ToDoItemId == itemId);
             

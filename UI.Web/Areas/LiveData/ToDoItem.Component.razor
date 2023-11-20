@@ -134,7 +134,7 @@
 
 @code {
     [CascadingParameter]
-    ToDoList? Container { get; set; }
+    ToDoList Container { get; set; } = new ToDoList();
 
     [CascadingParameter]
     public Modal? PageModal { get; set; }
@@ -146,7 +146,7 @@
     public HubConnection? ListHubConnection { get; set; }
 
     [CascadingParameter]
-    public List<Category> Categories { get; set; }
+    public List<Category> Categories { get; set; } = new List<Category>();
 
     [Parameter]
     public List<ToDoItemDomainModel> TopLevel { get; set; } = new List<ToDoItemDomainModel>();
@@ -230,7 +230,7 @@
         base.OnInitialized();
     }
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
         Model.Children.ForEach((dm, i) => dm.Set("OriginalOrder", i));
         CategorySelect = Categories.Select(c => (Icon: c.Icon, Element: c.Bezeichnung)).ToList();

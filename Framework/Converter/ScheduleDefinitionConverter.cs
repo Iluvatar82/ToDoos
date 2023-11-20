@@ -15,7 +15,7 @@ namespace Framework.Converter
         }
 
 
-        public ScheduleDefinition Convert(string scheduleDefinitionString, ResolutionContext context)
+        public ScheduleDefinition Convert(string scheduleDefinitionString, ResolutionContext? context)
         {
             var result = new ScheduleDefinition();
             if (string.IsNullOrWhiteSpace(scheduleDefinitionString))
@@ -64,7 +64,7 @@ namespace Framework.Converter
             return result;
         }
 
-        public string Convert(ScheduleDefinition scheduleDefinition, ResolutionContext context)
+        public string Convert(ScheduleDefinition scheduleDefinition, ResolutionContext? context)
         {
             if (scheduleDefinition?.Fixed != null)
                 return $"d {scheduleDefinition.Fixed}";
@@ -78,8 +78,8 @@ namespace Framework.Converter
             return string.Empty;
         }
 
-        public ScheduleDefinition Convert(string source, ScheduleDefinition destination, ResolutionContext context) => Convert(source, context);
-        public string Convert(ScheduleDefinition source, string destination, ResolutionContext context) => Convert(source, context);
+        public ScheduleDefinition Convert(string source, ScheduleDefinition destination, ResolutionContext? context) => Convert(source, context);
+        public string Convert(ScheduleDefinition source, string destination, ResolutionContext? context) => Convert(source, context);
 
         [GeneratedRegex("d\\s(?<time>.+)")]
         private static partial Regex FixedRegex();

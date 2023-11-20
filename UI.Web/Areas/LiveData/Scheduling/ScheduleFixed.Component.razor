@@ -32,7 +32,7 @@
     private DateTime dateValue;
     private DateOnly date { get => DateOnly.FromDateTime(dateValue); set => Model = value.ToDateTime(time); }
     private TimeOnly time { get => TimeOnly.FromDateTime(dateValue); set => Model = date.ToDateTime(value); }
-    
+
     [Parameter]
     public DateTime Model { get => dateValue; set { if (value == dateValue) return; dateValue = value; ModelChanged.InvokeAsync(value); } }
 

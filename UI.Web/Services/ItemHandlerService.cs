@@ -47,7 +47,7 @@ namespace UI.Web.Services
             }
 
             updateAction.Invoke();
-            return elements;
+            return await Task.FromResult(elements);
         }
 
         public async Task ChangeChildOrder(List<ToDoItemDomainModel> elements, ToDoItemDomainModel itemToMove, int change, Action updateAction)
