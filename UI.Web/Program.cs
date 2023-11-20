@@ -1,5 +1,5 @@
-using AutoMapper.EquivalencyExpression;
 using AutoMapper;
+using AutoMapper.EquivalencyExpression;
 using Framework.Converter.Automapper;
 using Framework.Repositories;
 using Framework.Services;
@@ -110,8 +110,6 @@ namespace UI.Web
 
         private static void ConfigureAutoMapper(IServiceCollection services)
         {
-            //services.AddAutoMapper(typeof(MapperProfile).Assembly);
-
             services.AddAutoMapper((serviceProvider, automapper) =>
             {
                 automapper.AddCollectionMappers();
@@ -120,8 +118,6 @@ namespace UI.Web
         }
 
         private static bool IsDevelopment()
-        {
-            return string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "development", StringComparison.InvariantCultureIgnoreCase);
-        }
+            => string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "development", StringComparison.InvariantCultureIgnoreCase);
     }
 }
