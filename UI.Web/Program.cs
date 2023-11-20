@@ -61,6 +61,9 @@ namespace UI.Web
             builder.Services.AddTransient<IEmailSender, EmailSenderWrapper>();
             builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration);
 
+            builder.Services.AddAntiforgery(af => af.SuppressXFrameOptionsHeader = true);
+            builder.Services.AddCors();
+
             ConfigureHangfireService(builder.Services, connectionString);
             ConfigureAutoMapper(builder.Services);
 
@@ -93,6 +96,8 @@ namespace UI.Web
             app.MapBlazorHub();
             app.MapHub<GroupListUpdateHub>(GroupListUpdateHub.HubUrl);
             app.MapFallbackToPage("/_Host");
+
+            app.UseCors(c => c.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
             app.Run();
         }
