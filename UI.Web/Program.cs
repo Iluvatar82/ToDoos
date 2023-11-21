@@ -61,10 +61,10 @@ namespace UI.Web
             builder.Services.AddTransient<ItemDragDropService>();
             builder.Services.AddTransient<ItemHandlerService>();
             builder.Services.AddTransient<ReminderService>();
-            builder.Services.AddTransient<EmailService>();
 
             builder.Services.AddSingleton<DBDomainMapper>();
 
+            builder.Services.AddTransient<EmailService>();
             builder.Services.AddTransient<IEmailSender, EmailSenderWrapper>();
 
             AddEmailSenderSecrets(builder);
@@ -140,8 +140,9 @@ namespace UI.Web
             var client = new SecretClient(new Uri(keyVaultUrl!), new ClientSecretCredential(tenantId, clientId, clientSecret));
 
             var authMessageSenderOptions = new AuthMessageSenderOptions();
-            authMessageSenderOptions.SendGridKey = client.GetSecret("SendGridKey").Value.Value;
-            builder.Services.AddSingleton(authMessageSenderOptions);
+            var sendGridKey = client.GetSecret("SendGridKey").Value.Value;
+
+            builder.Services.Configure<AuthMessageSenderOptions>(options => options.SendGridKey = sendGridKey);
         }
 
         private static bool IsDevelopment()
