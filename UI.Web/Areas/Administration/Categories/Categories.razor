@@ -31,14 +31,14 @@
                             <EditForm Model=@category>
                                 <DataAnnotationsValidator />
 
-                                <input type="text" @bind-value=category.Bezeichnung id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await HandleBezeichnungChange(context, category); }) @onblur=@(() => HandleBezeichnungChange(context, category)) />
+                                <input type="text" @bind-value=category.Bezeichnung id="bezeichnung" class="form-control" @onkeyup=@((KeyboardEventArgs key) => { if(key.Code == "Enter") HandleBezeichnungChange(context, category); }) @onblur=@(() => HandleBezeichnungChange(context, category)) />
                                 <ValidationMessage For=@(() => category.Bezeichnung) />
                             </EditForm>
                         }
                     </td>
 
                     <td class="p-0 small-column">
-                        <IconsBrowser Selected=@category.Icon IconDisplayOnly=true SelectedChanged=@(async (icon) => await IconChanged(category, icon)) />
+                        <IconsBrowser Selected=@category.Icon IconDisplayOnly=true SelectedChanged=@((icon) => IconChanged(category, icon)) />
                     </td>
 
                     <td class="p-0">
@@ -46,7 +46,7 @@
                     </td>
 
                     <td class="p-0 small-column">
-                        <span class="px-2 fa fa-xmark opacity-25" aria-hidden="true" @onclick=@(async () => await RemoveCategory(currentIndex))></span>
+                        <span class="px-2 fa fa-xmark opacity-25" aria-hidden="true" @onclick=@(() => RemoveCategory(currentIndex))></span>
                     </td>
                 </tr>
             }
@@ -61,6 +61,10 @@ else
 <div class="row">
     <div class="btn-group col-3" role="group">
         <button @onclick=@NavigateToNew class="btn btn-outline-primary">Hinzufügen</button>
+        @if (ListId == null)
+        {
+            <button type="button" @onclick="Save" class="btn btn-primary">Speichern</button>
+        }
     </div>
 </div>
 
@@ -71,10 +75,15 @@ else
     public Guid? ListId { get; set; }
 
     [Parameter]
-    public List<Category> AllCategories { get; set; } = new List<Category>();
+    public List<CategoryDomainModel> AllCategories { get; set; } = new List<CategoryDomainModel>();
 
     [CascadingParameter]
     public IdentityUser? User { get; set; }
+
+    public List<CategoryDomainModel> EntitiesToRemove { get; set; } = new List<CategoryDomainModel>();
+
+    [Parameter]
+    public EventCallback<CategoryDomainModel> OnRemoved { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -84,44 +93,44 @@ else
         if (ListId != null)
         {
             if (!AllCategories.Any())
-                AllCategories = await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId);
+                AllCategories = Mapper.Map<List<CategoryDomainModel>>(await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId));
         }
         else
         {
             var guidId = Guid.Parse(User!.Id);
-            AllCategories = await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId);
+            AllCategories = Mapper.Map<List<CategoryDomainModel>>(await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId));
         }
     }
 
-    private async Task UpdateColor(Category category, string color)
+    private void UpdateColor(CategoryDomainModel category, string color)
     {
         category.RGB_A = color;
-        await CategoryRepository.UpdateAndSaveAsync(category);
     }
 
-    private async Task HandleBezeichnungChange(EditContext context, Category changedCategory)
+    private void HandleBezeichnungChange(EditContext context, CategoryDomainModel changedCategory)
     {
         var valid = context.Validate();
         if (valid)
-        {
-            await ItemRepository.UpdateAndSaveAsync(changedCategory);
             BezeichnungEditEnabled = -1;
-        }
     }
 
-    private async Task IconChanged(Category changedCategory, string icon)
+    private void IconChanged(CategoryDomainModel changedCategory, string icon)
     {
         changedCategory.Icon = icon;
-        await ItemRepository.UpdateAndSaveAsync(changedCategory);
     }
 
-    private async Task RemoveCategory(int index)
+    private async void RemoveCategory(int index)
     {
         //TODO Check einbauen (ob Items mit der Category existieren)
         index.Satisfies(i => i < AllCategories.Count);
 
-        await ItemRepository.RemoveAndSaveAsync(AllCategories[index]);
+        var toRemove = AllCategories[index];
+        if (toRemove.Id != Guid.Empty)
+            EntitiesToRemove.Add(toRemove);
+
         AllCategories.RemoveAt(index);
+
+        await OnRemoved.InvokeAsync(toRemove);
     }
 
     private void NavigateToNew()
@@ -130,5 +139,13 @@ else
             NavigationManager.NavigateTo(NavigationManager.BaseUri + $"administration/categories/new/{ListId}");
         else
             NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/categories/new/categories");
+    }
+
+    private async Task Save()
+    {
+        if (EntitiesToRemove.Any())
+            await ItemRepository.RemoveAndSaveAsync(Mapper.Map<Category[]>(EntitiesToRemove));
+
+        await ItemRepository.AddOrUpdateAndSaveAsync(Mapper.Map<Category[]>(AllCategories));
     }
 }

@@ -200,7 +200,7 @@
     public HubConnection? ListHubConnection { get; set; }
 
     [CascadingParameter]
-    public List<Category> Categories { get; set; } = new List<Category>();
+    public List<CategoryDomainModel> Categories { get; set; } = new List<CategoryDomainModel>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -257,11 +257,11 @@
             await ListHubConnection.SendAsync("JoinedGroupList", ListId, User);
 
         if (!listEntity.IsUserList)
-            Categories = await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId);
+            Categories = Mapper.Map<List<CategoryDomainModel>>(await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId));
         else if (User != default)
-            Categories = await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == Guid.Parse(User.Id));
+            Categories = Mapper.Map<List<CategoryDomainModel>>(await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == Guid.Parse(User.Id)));
         else
-            Categories = new List<Category>();
+            Categories = new List<CategoryDomainModel>();
 
         await ToastService.SendAsync("Liste geöffnet", $"Liste <b>{listEntity.Name}</b> wurde geöffnet!", Framework.Services.Base.MessageType.Info);
 

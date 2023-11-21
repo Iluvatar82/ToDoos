@@ -19,7 +19,7 @@
         <div class="col">
             <select @bind:get=@Model.CategoryId?.ToString() @bind:set=@((value) => SetCategoryId(value)) id="category" class="form-control">
                 <option value="" @attributes=@SetSelected(Model.CategoryId, null)>Bitte auswählen...</option>
-                @foreach (var category in Categories ?? Enumerable.Empty<Category>())
+                @foreach (var category in Categories ?? Enumerable.Empty<CategoryDomainModel>())
                 {
                     <option value="@category.Id" @attributes=@SetSelected(Model.CategoryId, category.Id)>@category.Bezeichnung</option>
                 }
@@ -60,7 +60,7 @@
     public IdentityUser? User { get; set; }
 
     [CascadingParameter]
-    public List<Category> Categories { get; set; } = new List<Category>();
+    public List<CategoryDomainModel> Categories { get; set; } = new List<CategoryDomainModel>();
 
     private DateTime? timeOfDay { get; set; }
     private DateTime? date { get; set; }

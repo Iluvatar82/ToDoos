@@ -70,7 +70,7 @@
         @if(!list.IsUserList)
         {
             <hr />
-            <Categories ListId=@list.Id AllCategories=@listCategories></Categories>
+            <Categories ListId=@list.Id AllCategories=@listCategories OnRemoved=@HandleRemoveCategory></Categories>
         }
 
         <hr />
@@ -88,7 +88,8 @@
     private List<IdentityUser>? IdentitiesInGroup;
     private bool nameChange { get; set; } = false;
     private ToDoList list { get; set; } = new ToDoList();
-    private List<Category> listCategories { get; set; } = new List<Category>();
+    private List<CategoryDomainModel> listCategories { get; set; } = new List<CategoryDomainModel>();
+    private List<CategoryDomainModel> listCategoriesToRemove { get; set; } = new List<CategoryDomainModel>();
     private bool isUserList{ get; set; }
 
     private Guid? selectedUserGroupIdField;
@@ -121,10 +122,12 @@
         if (!isUserList)
         {
             selectedUserGroupId = list.GroupId;
-            listCategories = await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId);
+            listCategories = Mapper.Map<List<CategoryDomainModel>>(await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId));
             if (!listCategories.Any())
-                listCategories = (await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId))
+            {
+                listCategories = Mapper.Map<List<CategoryDomainModel>>(await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId))
                     .ForEach((c, i) => { c.Id = Guid.Empty; c.UserId = null; c.ListId = ListId; }).ToList();
+            }
         }
     }
 
@@ -161,16 +164,25 @@
     {
         var valid = context?.Validate() ?? true;
         if (valid)
-        {
             nameChange = false;
-        }
+    }
+
+    private void HandleRemoveCategory(CategoryDomainModel category)
+    {
+        if (category.Id != Guid.Empty)
+            listCategoriesToRemove.Add(category);
     }
 
     private async Task SaveList()
     {
         await ListRepository.UpdateAndSaveAsync(list);
         if (!isUserList)
-            await CategoryRepository.AddOrUpdateAndSaveAsync(listCategories.ToArray());
+        {
+            if (listCategoriesToRemove.Any())
+                await ItemRepository.RemoveAndSaveAsync(Mapper.Map<Category[]>(listCategoriesToRemove));
+
+            await CategoryRepository.AddOrUpdateAndSaveAsync(Mapper.Map<Category[]>(listCategories));
+        }
 
         NavigateBack();
     }

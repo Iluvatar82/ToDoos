@@ -37,7 +37,7 @@
 
 
 @code {
-    private Category _newCategory = new Category { Bezeichnung = string.Empty };
+    private CategoryDomainModel _newCategory = new CategoryDomainModel { Bezeichnung = string.Empty };
 
     [Parameter]
     public string BackTo { get; set; } = string.Empty;
@@ -68,7 +68,7 @@
             else
                 _newCategory.UserId = Guid.Parse(User!.Id);
 
-            await CategoryRepository.AddAndSaveAsync(_newCategory);
+            await CategoryRepository.AddAndSaveAsync(Mapper.Map<Category>(_newCategory));
             NavigateBack();
         }
     }

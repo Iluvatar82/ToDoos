@@ -1,6 +1,5 @@
 ﻿using Framework.DomainModels.Base;
 using Framework.Extensions;
-using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.DomainModels
 {
@@ -9,7 +8,7 @@ namespace Framework.DomainModels
         public string Bezeichnung { get; set; }
 
         public Guid? CategoryId { get; set; }
-        public Category? Category { get; set; }
+        public CategoryDomainModel? Category { get; set; }
 
         public int Order { get; set; }
 

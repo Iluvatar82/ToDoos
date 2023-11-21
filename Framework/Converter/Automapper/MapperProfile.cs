@@ -28,6 +28,9 @@ namespace Framework.Converter.Automapper
             CreateMap<UserGroup, UserGroupDomainModel>();
             CreateMap<UserGroupDomainModel, UserGroup>();
 
+            CreateMap<Category, CategoryDomainModel>();
+            CreateMap<CategoryDomainModel, Category>();
+
             CreateMap<ToDoItem, ToDoItemDomainModel>();
             CreateMap<ToDoItemDomainModel, ToDoItem>()
                 .ForMember(dest => dest.Parent, opt => opt.Ignore())
