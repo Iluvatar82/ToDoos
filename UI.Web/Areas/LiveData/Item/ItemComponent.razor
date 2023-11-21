@@ -3,6 +3,7 @@
 @using Framework.Services;
 @using Microsoft.AspNetCore.SignalR.Client;
 @using Framework.Extensions;
+@using UI.Web.Areas.LiveData.List
 @using UI.Web.Services;
 
 @inject ItemStyleService ItemStyleService;
@@ -101,7 +102,7 @@
     {
         <tr>
             <td colspan="5">
-                <ToDoNew Model=newItemModel Level=@(Level + 1) OnChange=@(async item => Model.Children = await ItemHandlerService.HandleNewChange(Model.Children, item, UpdateNotifyAction))></ToDoNew>
+                <ItemNewComponent Model=newItemModel Level=@(Level + 1) OnChange=@(async item => Model.Children = await ItemHandlerService.HandleNewChange(Model.Children, item, UpdateNotifyAction))></ItemNewComponent>
             </td>
         </tr>
     }
@@ -114,14 +115,14 @@
         if (InactiveMode && !child.VisuallyDeactivated && child.IsActive)
             continue;
 
-        <ToDoItem_Component Model=child Level=@(Level + 1) InactiveMode=InactiveMode ListId=ListId TopLevel=@TopLevel
+        <ItemComponent Model=child Level=@(Level + 1) InactiveMode=InactiveMode ListId=ListId TopLevel=@TopLevel
             OnBezeichnungEditEnabled=@(original => OnBezeichnungEditEnabled.InvokeAsync(original))
             OnRemove=@(async item => await ItemHandlerService.HandleRemove(Model.Children, item, OnRemove, StateHasChanged))
             OnDraggedFrom=@(info => ItemDragDropService.HandleDraggedFrom(info.Source, info.Item, OnDraggedFrom, StateHasChanged))
             OnDraggedTo=@(info => ItemDragDropService.HandleDraggedTo(info.Destination, info.Item, OnDraggedTo, StateHasChanged))
             OnDoneChanged=@StateHasChanged
             OnOrderChanged=@(async (ci) => await ItemHandlerService.ChangeChildOrder(Model.Children, ci.Item, ci.Movement, StateHasChanged))
-            OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(Model.Children, item, StateHasChanged))></ToDoItem_Component>
+            OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(Model.Children, item, StateHasChanged))></ItemComponent>
     }
 }
 
@@ -134,7 +135,7 @@
 
 @code {
     [CascadingParameter]
-    ToDoList Container { get; set; } = new ToDoList();
+    ListComponent Container { get; set; } = new ListComponent();
 
     [CascadingParameter]
     public Modal? PageModal { get; set; }
@@ -188,7 +189,7 @@
     public EventCallback<ToDoItemDomainModel> OnOrderRemoved { get; set; }
 
     [Parameter]
-    public EventCallback<ToDoItem_Component> OnBezeichnungEditEnabled { get; set; }
+    public EventCallback<ItemComponent> OnBezeichnungEditEnabled { get; set; }
 
     private ToDoItemDomainModel? newItemModel { get; set; } = null;
 

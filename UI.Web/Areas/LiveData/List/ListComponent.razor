@@ -7,6 +7,7 @@
 @using Framework.Services;
 @using Framework.Extensions;
 @using Microsoft.AspNetCore.SignalR.Client;
+@using UI.Web.Areas.LiveData.Item
 @using UI.Web.Hubs;
 @using UI.Web.Services;
 
@@ -49,7 +50,7 @@
             @if (newItemModel != null)
             {
                 <div class="row mt-2">
-                    <ToDoNew Model=newItemModel OnChange=@(async item => topLevelItems = await ItemHandlerService.HandleNewChange(topLevelItems, item, UpdateNotifyAction))></ToDoNew>
+                    <ItemNewComponent Model=newItemModel OnChange=@(async item => topLevelItems = await ItemHandlerService.HandleNewChange(topLevelItems, item, UpdateNotifyAction))></ItemNewComponent>
                 </div>
             }
 
@@ -62,7 +63,7 @@
                                 @foreach (var item in topLevelItems)
                                 {
                                     var index = topLevelItems.IndexOf(item);
-                                    <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId TopLevel=@topLevelItems
+                                    <ItemComponent Model=item Level=0 InactiveMode=@showInactive ListId=ListId TopLevel=@topLevelItems
                                         OnBezeichnungEditEnabled=@HandleBezeichnungEnabled
                                         OnRemove=@(async item => await ItemHandlerService.HandleRemove(topLevelItems, item, null, UpdateNotifyAction))
                                         OnDraggedFrom=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedFrom(topLevelItems, info.Source, info.Item); await InvokeAsync(StateHasChanged); }) 
@@ -70,7 +71,7 @@
                                         OnDoneChanged=@StateHasChanged 
                                         OnReferenced=@(reference => topLevelReferenceList.Add(reference))
                                         OnOrderChanged=@(async (ci) => await ItemHandlerService.ChangeChildOrder(topLevelItems, ci.Item, ci.Movement, StateHasChanged))
-                                        OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(topLevelItems, item, StateHasChanged))></ToDoItem_Component>
+                                        OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(topLevelItems, item, StateHasChanged))></ItemComponent>
                                 }
                             </tbody>
                         </table>
@@ -87,7 +88,7 @@
                                     <div class="p-1">
                                         <table class="table mb-0">
                                             <tbody>
-                                                <ToDoItem_Component Model=item Level=0 InactiveMode=@showInactive ListId=ListId  TopLevel=@topLevelItems
+                                                <ItemComponent Model=item Level=0 InactiveMode=@showInactive ListId=ListId TopLevel=@topLevelItems
                                                     OnBezeichnungEditEnabled=@HandleBezeichnungEnabled 
                                                     OnRemove=@(async item => await ItemHandlerService.HandleRemove(topLevelItems, item, null, UpdateNotifyAction))
                                                     OnDraggedFrom=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedFrom(topLevelItems, info.Source, info.Item); await InvokeAsync(StateHasChanged); }) 
@@ -95,7 +96,7 @@
                                                     OnDoneChanged=@StateHasChanged 
                                                     OnReferenced=@(reference => topLevelReferenceList.Add(reference))
                                                     OnOrderChanged=@(async (ci) => await ItemHandlerService.ChangeChildOrder(topLevelItems, ci.Item, ci.Movement, StateHasChanged))
-                                                    OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(topLevelItems, item, StateHasChanged))></ToDoItem_Component>
+                                                    OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(topLevelItems, item, StateHasChanged))></ItemComponent>
                                             </tbody>
                                         </table>
                                     </div>
@@ -332,8 +333,8 @@
         NavigationManager.NavigateTo(NavigationManager.BaseUri);
     }
 
-    private ToDoItem_Component? currentEditItemComponent = null;
-    private async Task HandleBezeichnungEnabled(ToDoItem_Component? component)
+    private ItemComponent? currentEditItemComponent = null;
+    private async Task HandleBezeichnungEnabled(ItemComponent? component)
     {
         if (currentEditItemComponent != null)
             currentEditItemComponent.BezeichnungEditEnabled = false;

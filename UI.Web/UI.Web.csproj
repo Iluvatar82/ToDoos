@@ -24,10 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Areas\LiveData\ToDoListsIndex.razor.css" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="Properties\launchSettings.Development.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>

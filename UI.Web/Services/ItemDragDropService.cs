@@ -5,6 +5,7 @@ using Framework.Extensions;
 using Framework.Repositories;
 using Microsoft.AspNetCore.Components;
 using ToDo.Data.ToDoData.Entities;
+using UI.Web.Areas.LiveData.List;
 
 namespace UI.Web.Services
 {
@@ -20,13 +21,13 @@ namespace UI.Web.Services
         }
 
 
-        public void HandleDragStart(Areas.LiveData.ToDoList container, ToDoItemDomainModel dragItem)
+        public void HandleDragStart(ListComponent container, ToDoItemDomainModel dragItem)
         {
             if (container != null)
                 container.DraggedToDoItem = dragItem;
         }
 
-        public async Task HandleDrop(Areas.LiveData.ToDoList container, ToDoItemDomainModel? dropItem,
+        public async Task HandleDrop(ListComponent container, ToDoItemDomainModel? dropItem,
             EventCallback<(ToDoItemDomainModel?, ToDoItemDomainModel)> onDraggedFrom, EventCallback<(ToDoItemDomainModel?, ToDoItemDomainModel)> onDraggedTo,
             Action updateAction)
         {
