@@ -21,7 +21,7 @@
                 <EditForm Model=@name Context="editContext">
                     <DataAnnotationsValidator />
 
-                    <input type="text" @bind-value=@name id="name" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await SaveGroup(editContext); }) @onblur=@(async () => await SaveGroup(editContext)) />
+                    <input type="text" @bind-value=@name id="name" class="form-control" @onkeyup=@((KeyboardEventArgs key) => { if(key.Code == "Enter") SaveGroup(editContext); }) @onblur=@(() => SaveGroup(editContext)) />
                     <ValidationMessage For=@(() => name) />
                 </EditForm>
             }
@@ -40,7 +40,7 @@
                                         <span class="fw-bold text-black ms-2">@userInformation.Identity.UserName [@userInformation.Identity.Email]</span>
                                     </div>
 
-                                    <span id="removeUserButton" class="me-2 p-2" @onclick=@(async () => await RemoveUser(@userInformation.Group))>
+                                    <span id="removeUserButton" class="me-2 p-2" @onclick=@(async () => RemoveUser(@userInformation.Group))>
                                         <i class="fa fa-xmark text-secondary align-self-center" aria-hidden="true"></i>
                                     </span>
                                 </div>
@@ -71,13 +71,15 @@
         <div class="row">
             <div class="btn-group col-3" role="group">
                 <button type="button" @onclick=@NavigateBack class="btn btn-outline-secondary">Zurück</button>
+                <button type="button" @onclick="Save" class="btn btn-primary">Speichern</button>
             </div>
         </div>
     </Authorized>
 </AuthorizeView>
 
 @code {
-    private List<(UserGroup Group, IdentityUser Identity)> usersInformation = new List<(UserGroup Group, IdentityUser Identity)>();
+    private List<(UserGroupDomainModel Group, IdentityUser Identity)> usersInformation = new List<(UserGroupDomainModel Group, IdentityUser Identity)>();
+    private List<UserGroupDomainModel> EntitiesToRemove { get; set; } = new List<UserGroupDomainModel>();
     private string name { get; set; } = string.Empty;
     private string userId { get; set; } = string.Empty;
     private bool nameChange { get; set; } = false;
@@ -89,10 +91,10 @@
     protected override async Task OnInitializedAsync()
     {
         allIdentities = await IdentityRepository.GetAllIdentities();
-        var userGroups = await UserRepository.GetAllUsersForGroupAsync(GroupId);
+        var userGroups = Mapper.Map<UserGroupDomainModel[]>(await UserRepository.GetAllUsersForGroupAsync(GroupId));
         var identities = allIdentities.Where(i => userGroups.Any(u => u.UserId.ToString() == i.Id)).ToList();
 
-        userGroups.Satisfies(g => g.Count == identities.Count);
+        userGroups.Satisfies(g => g.Length == identities.Count);
         userGroups.Satisfies(g => g.All(u => identities.Any(i => i.Id == u.UserId.ToString())));
         identities.Satisfies(i => i.All(u => userGroups.Any(g => g.UserId.ToString(name) == u.Id)));
 
@@ -105,40 +107,41 @@
         name = usersInformation.FirstOrDefault().Group.Name ?? "Kein Gruppenname vergeben";
     }
 
-    private async Task AddUser()
+    private void AddUser()
     {
         if (string.IsNullOrWhiteSpace(userId))
             return;
 
         var identity = allIdentities.First(i => i.Id == userId);
 
-        var newUserGroup = new UserGroup
+        var newUserGroup = new UserGroupDomainModel
         {
             Name = name,
             UserId = Guid.Parse(identity.Id),
             GroupId = GroupId
         };
 
-        await UserRepository.AddAndSaveAsync(newUserGroup);
         usersInformation.Add((newUserGroup, identity));
 
         userId = string.Empty;
         StateHasChanged();
 
-        await SaveGroup();
+        SaveGroup();
     }
 
-    private async Task RemoveUser(UserGroup user)
+    private void RemoveUser(UserGroupDomainModel user)
     {
-        await UserRepository.RemoveAndSaveAsync(user);
-
         var removedUserInformation = usersInformation.FirstOrDefault(ui => ui.Group == user);
+
+        if (removedUserInformation.Group.Id != Guid.Empty)
+            EntitiesToRemove.Add(removedUserInformation.Group);
+
         usersInformation.Remove(removedUserInformation);
 
         StateHasChanged();
     }
 
-    private async Task SaveGroup(EditContext? context = null)
+    private void SaveGroup(EditContext? context = null)
     {
         var valid = context?.Validate() ?? true;
         if (valid)
@@ -146,7 +149,6 @@
             var allGroups = usersInformation.Select(ui => ui.Group).ToList();
             allGroups.ForEach(u => u.Name = name);
 
-            await UserRepository.UpdateAndSaveAsync(allGroups.ToArray());
             nameChange = false;
         }
     }
@@ -154,5 +156,15 @@
     private void NavigateBack()
     {
         NavigationManager.NavigateTo(NavigationManager.BaseUri + "group/");
+    }
+
+    private async Task Save()
+    {
+        if (EntitiesToRemove.Any())
+            await ItemRepository.RemoveAndSaveAsync(Mapper.Map<UserGroup[]>(EntitiesToRemove));
+
+        await ItemRepository.AddOrUpdateAndSaveAsync(Mapper.Map<UserGroup[]>(usersInformation.Select(info => info.Group)));
+
+        NavigateBack();
     }
 }

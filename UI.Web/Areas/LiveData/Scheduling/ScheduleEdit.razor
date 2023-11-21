@@ -172,6 +172,7 @@
 
     [Parameter]
     public ScheduleEditDomainModel Model { get; set; } = new ScheduleEditDomainModel();
+    private ScheduleEditDomainModel EntitiesToRemove { get; set; } = new ScheduleEditDomainModel();
 
     [Parameter]
     public EventCallback<ScheduleEditDomainModel> ModelChanged { get; set; }
@@ -245,9 +246,19 @@
     private async Task RemoveAt(int index, bool schedules = true)
     {
         if (schedules)
+        {
+            if (Model.Schedules[index].Id != Guid.Empty)
+                EntitiesToRemove.Schedules.Add(Model.Schedules[index]);
+
             Model.Schedules.RemoveAt(index);
+        }
         else
+        { 
+            if (Model.Reminders[index].Id != Guid.Empty)
+                EntitiesToRemove.Reminders.Add(Model.Reminders[index]);
+
             Model.Reminders.RemoveAt(index);
+        }
 
         await ModelChanged.InvokeAsync(Model);
     }
@@ -273,11 +284,14 @@
 
     private async Task Save()
     {
-        var dbSchedules = Mapper.Map<Schedule[]>(Model.Schedules);
-        var dbReminders = Mapper.Map<ScheduleReminder[]>(Model.Reminders);
-        
-        await ItemRepository.AddOrUpdateAndSaveAsync(dbSchedules);
-        await ItemRepository.AddOrUpdateAndSaveAsync(dbReminders);
+        if (EntitiesToRemove.Schedules.Any())
+            await ItemRepository.RemoveAndSaveAsync(Mapper.Map<Schedule[]>(EntitiesToRemove.Schedules));
+
+        if (EntitiesToRemove.Reminders.Any())
+            await ItemRepository.RemoveAndSaveAsync(Mapper.Map<ScheduleReminder[]>(EntitiesToRemove.Reminders));
+
+        await ItemRepository.AddOrUpdateAndSaveAsync(Mapper.Map<Schedule[]>(Model.Schedules));
+        await ItemRepository.AddOrUpdateAndSaveAsync(Mapper.Map<ScheduleReminder[]>(Model.Reminders));
 
         await ReminderService.UpdateReminders(ItemId);
  

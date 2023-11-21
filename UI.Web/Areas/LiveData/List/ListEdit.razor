@@ -84,7 +84,7 @@
 </AuthorizeView>
 
 @code {
-    private List<UserGroup> userGroups = new List<UserGroup>();
+    private List<UserGroupDomainModel> userGroups = new List<UserGroupDomainModel>();
     private List<IdentityUser>? IdentitiesInGroup;
     private bool nameChange { get; set; } = false;
     private ToDoList list { get; set; } = new ToDoList();
@@ -115,7 +115,7 @@
             return;
 
         var guidId = Guid.Parse(User.Id);
-        userGroups = await UserRepository.GetAllGroupsAsync(guidId);
+        userGroups = Mapper.Map<List<UserGroupDomainModel>>(await UserRepository.GetAllGroupsAsync(guidId));
         list = (await ListRepository.GetAsync<ToDoList>(ListId))!;
         isUserList = list.IsUserList;
         if (!isUserList)

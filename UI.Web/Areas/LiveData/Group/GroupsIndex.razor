@@ -51,8 +51,8 @@
 </table>
 
 @code {
-    private List<UserGroup> myGroups { get; set; } = new List<UserGroup>();
-    private UserGroup newGroup = new UserGroup { GroupId = Guid.NewGuid() };
+    private List<UserGroupDomainModel> myGroups { get; set; } = new List<UserGroupDomainModel>();
+    private UserGroupDomainModel newGroup = new UserGroupDomainModel { GroupId = Guid.NewGuid() };
 
     [CascadingParameter]
     public Modal? PageModal { get; set; }
@@ -66,7 +66,7 @@
             return;
 
         var guidId = Guid.Parse(User.Id);
-        myGroups = await UserRepository.GetAllGroupsAsync(guidId);
+        myGroups = Mapper.Map<List<UserGroupDomainModel>>(await UserRepository.GetAllGroupsAsync(guidId));
     }
 
     private async Task SaveNewGroup(EditContext context)
@@ -77,18 +77,18 @@
             var guidId = Guid.Parse(User.Id);
             newGroup.UserId = guidId;
 
-            await UserRepository.AddAndSaveAsync(newGroup);
+            await UserRepository.AddAndSaveAsync(Mapper.Map<UserGroup>(newGroup));
 
             myGroups.Add(newGroup);
 
-            newGroup = new UserGroup { GroupId = Guid.NewGuid() };
+            newGroup = new UserGroupDomainModel { GroupId = Guid.NewGuid() };
             StateHasChanged();
         }
     }
 
-    private async Task RemoveGroup(UserGroup group, bool force = false)
+    private async Task RemoveGroup(UserGroupDomainModel group, bool force = false)
     {
-        var allUsers = (await UserRepository.GetAllUsersForGroupAsync(group.GroupId)).ToArray();
+        var allUsers = Mapper.Map<UserGroupDomainModel[]>((await UserRepository.GetAllUsersForGroupAsync(group.GroupId)));
         if (allUsers.Any() && !force)
         {
             PageModal.NotNull();
@@ -108,7 +108,7 @@
             return;
         }
 
-        await UserRepository.RemoveAndSaveAsync(allUsers);
+        await UserRepository.RemoveAndSaveAsync(Mapper.Map<UserGroup[]>(allUsers));
 
         myGroups.Remove(group);
 
