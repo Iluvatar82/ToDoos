@@ -1,5 +1,7 @@
-using AutoMapper;
+﻿using AutoMapper;
 using AutoMapper.EquivalencyExpression;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using Framework.Converter.Automapper;
 using Framework.Repositories;
 using Framework.Services;
@@ -64,7 +66,8 @@ namespace UI.Web
             builder.Services.AddSingleton<DBDomainMapper>();
 
             builder.Services.AddTransient<IEmailSender, EmailSenderWrapper>();
-            builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration);
+
+            AddEmailSenderSecrets(builder);
 
             builder.Services.AddAntiforgery(af => af.SuppressXFrameOptionsHeader = true);
             builder.Services.AddCors();
@@ -125,6 +128,20 @@ namespace UI.Web
                 automapper.AddCollectionMappers();
                 automapper.UseEntityFrameworkCoreModel<ToDoDBContext>(serviceProvider);
             }, typeof(ToDoDBContext).Assembly, typeof(MapperProfile).Assembly);
+        }
+
+        private static void AddEmailSenderSecrets(WebApplicationBuilder builder)
+        {
+            var keyVaultUrl = builder.Configuration.GetValue<string>("AzureKeyVault:AzureKeyVaultURL");
+            var clientId = builder.Configuration.GetValue<string>("AzureKeyVault:AzureClientId");
+            var clientSecret = builder.Configuration.GetValue<string>("AzureKeyVault:AzureClientSecret");
+            var tenantId = builder.Configuration.GetValue<string>("AzureKeyVault:AzureClientTenantId");
+            
+            var client = new SecretClient(new Uri(keyVaultUrl!), new ClientSecretCredential(tenantId, clientId, clientSecret), new SecretClientOptions() {  DisableChallengeResourceVerification = true });
+
+            var authMessageSenderOptions = new AuthMessageSenderOptions();
+            authMessageSenderOptions.SendGridKey = client.GetSecret("SendGridKey").Value.Value;
+            builder.Services.AddSingleton(authMessageSenderOptions);
         }
 
         private static bool IsDevelopment()
