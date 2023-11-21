@@ -139,10 +139,14 @@ namespace UI.Web
             
             var client = new SecretClient(new Uri(keyVaultUrl!), new ClientSecretCredential(tenantId, clientId, clientSecret));
 
-            var authMessageSenderOptions = new AuthMessageSenderOptions();
-            var sendGridKey = client.GetSecret("SendGridKey").Value.Value;
-
-            builder.Services.Configure<AuthMessageSenderOptions>(options => options.SendGridKey = sendGridKey);
+            builder.Services.Configure<AuthMessageSenderOptions>(options => {
+                options.SendGridKey = client.GetSecret("SendGridKey").Value.Value;
+                options.Email = new Email()
+                {
+                    Sender_Address = client.GetSecret("EmailSenderAddress").Value.Value,
+                    Sender_Display_Name = client.GetSecret("EmailSenderDisplayName").Value.Value
+                };
+            });
         }
 
         private static bool IsDevelopment()
