@@ -31,6 +31,9 @@ namespace Framework.Converter.Automapper
             CreateMap<Category, CategoryDomainModel>();
             CreateMap<CategoryDomainModel, Category>();
 
+            CreateMap<ToDoList, ToDoListDomainModel>();
+            CreateMap<ToDoListDomainModel, ToDoList>();
+
             CreateMap<ToDoItem, ToDoItemDomainModel>();
             CreateMap<ToDoItemDomainModel, ToDoItem>()
                 .ForMember(dest => dest.Parent, opt => opt.Ignore())

@@ -26,7 +26,7 @@
 
 
 @code {
-    private ToDoList newList = new ToDoList { Name = string.Empty };
+    private ToDoListDomainModel newList = new ToDoListDomainModel { Name = string.Empty };
 
     [CascadingParameter]
     public IdentityUser? User { get; set; }
@@ -39,7 +39,10 @@
             var guidId = Guid.Parse(User!.Id);
             newList.UserId = guidId;
 
-            await UserRepository.AddAndSaveAsync(newList);
+            var dbList = Mapper.Map<global::ToDo.Data.ToDoData.Entities.ToDoList>(newList);
+            await UserRepository.AddAndSaveAsync(dbList);
+            newList.Id = dbList.Id;
+
             NavigationManager.NavigateTo(NavigationManager.BaseUri + "list/" + newList.Id, true);
         }
     }

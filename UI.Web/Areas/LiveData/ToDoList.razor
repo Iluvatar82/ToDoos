@@ -174,7 +174,7 @@
     private ToDoItemDomainModel? newItemModel = null;
     private List<ToDoItemDomainModel> topLevelItems { get; set; } = new List<ToDoItemDomainModel>();
     private bool showInactive { get; set; }
-    private global::ToDo.Data.ToDoData.Entities.ToDoList? listEntity { get; set; }
+    private ToDoListDomainModel? listEntity { get; set; }
     private bool showTwoColumns { get; set; } = false;
     private Action UpdateNotifyAction => async () =>
     {
@@ -252,7 +252,7 @@
         await RetrieveItems();
         await base.OnParametersSetAsync();
 
-        listEntity = await UserRepository.GetListAsync(ListId);
+        listEntity = Mapper.Map<ToDoListDomainModel>(await UserRepository.GetListAsync(ListId));
         if (!listEntity.IsUserList && ListHubConnection != null && User != default)
             await ListHubConnection.SendAsync("JoinedGroupList", ListId, User);
 

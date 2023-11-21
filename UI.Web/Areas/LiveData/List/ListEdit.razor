@@ -87,7 +87,7 @@
     private List<UserGroupDomainModel> userGroups = new List<UserGroupDomainModel>();
     private List<IdentityUser>? IdentitiesInGroup;
     private bool nameChange { get; set; } = false;
-    private ToDoList list { get; set; } = new ToDoList();
+    private ToDoListDomainModel list { get; set; } = new ToDoListDomainModel();
     private List<CategoryDomainModel> listCategories { get; set; } = new List<CategoryDomainModel>();
     private List<CategoryDomainModel> listCategoriesToRemove { get; set; } = new List<CategoryDomainModel>();
     private bool isUserList{ get; set; }
@@ -117,7 +117,7 @@
 
         var guidId = Guid.Parse(User.Id);
         userGroups = Mapper.Map<List<UserGroupDomainModel>>(await UserRepository.GetAllGroupsAsync(guidId));
-        list = (await ListRepository.GetAsync<ToDoList>(ListId))!;
+        list = Mapper.Map<ToDoListDomainModel>(await ListRepository.GetAsync<ToDoList>(ListId))!;
         isUserList = list.IsUserList;
         if (!isUserList)
         {
@@ -175,7 +175,7 @@
 
     private async Task SaveList()
     {
-        await ListRepository.UpdateAndSaveAsync(list);
+        await ListRepository.UpdateAndSaveAsync(Mapper.Map<ToDoList>(list));
         if (!isUserList)
         {
             if (listCategoriesToRemove.Any())

@@ -56,7 +56,7 @@
 
 
 @code {
-    private List<global::ToDo.Data.ToDoData.Entities.ToDoList> myLists { get; set; } = new List<global::ToDo.Data.ToDoData.Entities.ToDoList>();
+    private List<ToDoListDomainModel> myLists { get; set; } = new List<ToDoListDomainModel>();
 
     [CascadingParameter]
     public Modal? PageModal { get; set; }
@@ -70,10 +70,10 @@
             return;
 
         var guidId = Guid.Parse(User.Id);
-        myLists = await UserRepository.GetAllListsAsync(guidId);
+        myLists = Mapper.Map<List<ToDoListDomainModel>>(await UserRepository.GetAllListsAsync(guidId));
     }
 
-    private async Task RemoveList(global::ToDo.Data.ToDoData.Entities.ToDoList list, bool force = false)
+    private async Task RemoveList(ToDoListDomainModel list, bool force = false)
     {
         var flatItems = (await ItemRepository.GetAllItemsCompleteAsync(list.Id)).ToArray();
         if (flatItems.Any() && !force)
@@ -96,7 +96,7 @@
         }
 
         await ItemRepository.RemoveAndSaveAsync(flatItems);
-        await UserRepository.RemoveAndSaveAsync(list);
+        await UserRepository.RemoveAndSaveAsync(Mapper.Map<global::ToDo.Data.ToDoData.Entities.ToDoList>(list));
 
         NavigationManager.NavigateTo(NavigationManager.BaseUri, true);
     }

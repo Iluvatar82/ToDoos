@@ -64,7 +64,7 @@
 @code {
     private bool collapseNavMenu = true;
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-    private List<global::ToDo.Data.ToDoData.Entities.ToDoList> allLists { get; set; } = new List<global::ToDo.Data.ToDoData.Entities.ToDoList>();
+    private List<ToDoListDomainModel> allLists { get; set; } = new List<ToDoListDomainModel>();
 
     [CascadingParameter]
     public IdentityUser? User { get; set; }
@@ -75,7 +75,7 @@
             return;
 
         var guidId = Guid.Parse(User.Id);
-        allLists = await UserRepository.GetAllListsAsync(guidId);
+        allLists = Mapper.Map<List<ToDoListDomainModel>>(await UserRepository.GetAllListsAsync(guidId));
     }
 
     private void ToggleNavMenu()
