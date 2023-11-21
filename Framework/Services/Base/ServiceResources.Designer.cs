@@ -79,6 +79,15 @@ namespace Framework.Services.Base {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (?&lt;name&gt;\[[\w\s]+\]){0,1}\s?(?&lt;number&gt;(?:\+|0{1,2})(?:[-\/\s]?\d+)+) ähnelt.
+        /// </summary>
+        internal static string ContentRenderService_TelLinkRegex {
+            get {
+                return ResourceManager.GetString("ContentRenderService_TelLinkRegex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (?&lt;name&gt;\[.+?\])?(?&lt;link&gt;(?:http[s]:\/\/|www).+?)(?:\s|$) ähnelt.
         /// </summary>
         internal static string ContentRenderService_WebLinkRegex {
