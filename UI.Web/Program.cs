@@ -137,7 +137,7 @@ namespace UI.Web
             var clientSecret = builder.Configuration.GetValue<string>("AzureKeyVault:AzureClientSecret");
             var tenantId = builder.Configuration.GetValue<string>("AzureKeyVault:AzureClientTenantId");
             
-            var client = new SecretClient(new Uri(keyVaultUrl!), new ClientSecretCredential(tenantId, clientId, clientSecret), new SecretClientOptions() {  DisableChallengeResourceVerification = true });
+            var client = new SecretClient(new Uri(keyVaultUrl!), new ClientSecretCredential(tenantId, clientId, clientSecret));
 
             var authMessageSenderOptions = new AuthMessageSenderOptions();
             authMessageSenderOptions.SendGridKey = client.GetSecret("SendGridKey").Value.Value;
