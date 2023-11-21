@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UI.Web.Areas.Identity.Pages.Account
 {
-    [IgnoreAntiforgeryToken(Order = 1001)]
+    //[IgnoreAntiforgeryToken(Order = 1001)]
     public class LoginModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
