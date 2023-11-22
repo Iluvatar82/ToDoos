@@ -1,4 +1,4 @@
-﻿namespace ToDo.Data.Common.Enums
+﻿namespace Framework.DomainModels.Common.Enums
 {
     public enum ScheduleType : int
     {

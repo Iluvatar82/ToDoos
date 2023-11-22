@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Core.Validation;
 using Framework.DomainModels.Base;
+using Framework.DomainModels.Common;
 using Framework.Extensions;
 using Framework.Repositories;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
-using ToDo.Data.Common;
 using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Services

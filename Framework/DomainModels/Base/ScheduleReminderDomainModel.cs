@@ -1,4 +1,4 @@
-﻿using ToDo.Data.Common;
+﻿using Framework.DomainModels.Common;
 
 namespace Framework.DomainModels.Base
 {

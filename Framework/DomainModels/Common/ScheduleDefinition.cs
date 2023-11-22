@@ -1,4 +1,4 @@
-﻿namespace ToDo.Data.Common
+﻿namespace Framework.DomainModels.Common
 {
     public class ScheduleDefinition
     {

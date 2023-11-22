@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Core.Validation;
 using Framework.Converter.Automapper;
+using Framework.DomainModels.Common;
 using System.Text.RegularExpressions;
-using ToDo.Data.Common;
 
 namespace Framework.Converter
 {

@@ -1,5 +1,5 @@
-﻿using ToDo.Data.Common;
-using ToDo.Data.Common.Enums;
+﻿using Framework.DomainModels.Common;
+using Framework.DomainModels.Common.Enums;
 
 namespace Framework.Extensions
 {

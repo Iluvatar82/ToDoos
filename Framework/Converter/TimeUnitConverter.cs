@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Framework.Converter.Automapper;
-using ToDo.Data.Common.Enums;
+using Framework.DomainModels.Common.Enums;
 
 namespace Framework.Converter
 {

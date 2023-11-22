@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Framework.DomainModels;
 using Framework.DomainModels.Base;
-using ToDo.Data.Common;
-using ToDo.Data.Common.Enums;
+using Framework.DomainModels.Common;
+using Framework.DomainModels.Common.Enums;
 using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Converter.Automapper

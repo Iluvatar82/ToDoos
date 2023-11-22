@@ -1,6 +1,6 @@
-﻿using ToDo.Data.Common.Enums;
+﻿using Framework.DomainModels.Common.Enums;
 
-namespace ToDo.Data.Common
+namespace Framework.DomainModels.Common
 {
     public class ScheduleInterval
     {

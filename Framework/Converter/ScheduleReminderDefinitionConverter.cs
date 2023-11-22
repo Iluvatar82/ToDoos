@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Framework.Converter.Automapper;
+using Framework.DomainModels.Common;
+using Framework.DomainModels.Common.Enums;
 using System.Text.RegularExpressions;
-using ToDo.Data.Common;
-using ToDo.Data.Common.Enums;
 
 namespace Framework.Converter
 {

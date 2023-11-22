@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Framework.Converter;
 using Framework.DomainModels;
+using Framework.DomainModels.Common;
 using Framework.Repositories;
-using ToDo.Data.Common;
 using ToDo.Data.ToDoData.Entities;
 
 namespace ToDo.Data.MigrationTool.ManualMigrations
