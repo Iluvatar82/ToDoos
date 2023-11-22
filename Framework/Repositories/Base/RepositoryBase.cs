@@ -76,7 +76,7 @@ namespace Framework.Repositories.Base
             }
         }
 
-        public async Task UpdateAndSaveAsync<T>(params T[] items) where T : DbEntityBase
+        public async Task UpdateAndSaveAsync<T>(params T[] items) where T : class
         {
             try
             {
@@ -94,7 +94,7 @@ namespace Framework.Repositories.Base
             }
         }
 
-        public async Task AddOrUpdateAndSaveAsync<T>(params T[] items) where T : DbEntityBase
+        public async Task AddOrUpdateAndSaveAsync<T>(params T[] items) where T : class
         {
             try
             {
@@ -103,8 +103,10 @@ namespace Framework.Repositories.Base
                 dbContext.Database.NotNull();
                 dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
 
-                var newItems = items.Where(i => i.Id == Guid.Empty).ToList();
-                var updateItems = items.Where(i => !newItems.Contains(i)).ToList();
+                var dbItems = items.Cast<DbEntityBase>().ToList();
+
+                var newItems = dbItems.Where(i => i.Id == Guid.Empty).Cast<T>().ToList();
+                var updateItems = dbItems.Where(i => i.Id != Guid.Empty).Cast<T>().ToList();
 
                 await dbContext.AddRangeAsync(newItems);
                 dbContext.UpdateRange(updateItems);

@@ -39,5 +39,13 @@ namespace Framework.Converter
                 _ => throw new ArgumentOutOfRangeException($"The Type {typeof(T).FullName} ist not recognized or not handled correctly!"),
             };
         }
+
+        public List<object> MapToList(IEnumerable<object> enumerable) => enumerable.Select(Map).ToList();
+
+        public object[] MapToArray(IEnumerable<object> enumerable) => enumerable.Select(Map).ToArray();
+
+        public List<T> MapToList<T>(IEnumerable<object> enumerable) where T : class => enumerable.Select(Map).Cast<T>().ToList();
+
+        public T[] MapToArray<T>(IEnumerable<object> enumerable) where T : class => enumerable.Select(Map).Cast<T>().ToArray();
     }
 }

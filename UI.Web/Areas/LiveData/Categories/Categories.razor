@@ -93,12 +93,12 @@ else
         if (ListId != null)
         {
             if (!AllCategories.Any())
-                AllCategories = Mapper.Map<List<CategoryDomainModel>>(await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId));
+                AllCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId)).ToList();
         }
         else
         {
             var guidId = Guid.Parse(User!.Id);
-            AllCategories = Mapper.Map<List<CategoryDomainModel>>(await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId));
+            AllCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId)).ToList();
         }
     }
 
@@ -144,8 +144,8 @@ else
     private async Task Save()
     {
         if (EntitiesToRemove.Any())
-            await ItemRepository.RemoveAndSaveAsync(Mapper.Map<Category[]>(EntitiesToRemove));
+            await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove));
 
-        await ItemRepository.AddOrUpdateAndSaveAsync(Mapper.Map<Category[]>(AllCategories));
+        await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(AllCategories));
     }
 }
