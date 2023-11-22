@@ -1,22 +1,21 @@
-﻿using AutoMapper;
-using Core.Validation;
+﻿using Core.Validation;
+using Framework.Converter;
 using Framework.DomainModels;
 using Framework.Extensions;
 using Framework.Repositories;
 using Microsoft.AspNetCore.Components;
-using ToDo.Data.ToDoData.Entities;
 using UI.Web.Areas.LiveData.List;
 
 namespace UI.Web.Services
 {
     public class ItemDragDropService
     {
-        private IMapper _mapper { get; set; }
+        private ModelMapper _modelMapper { get; set; }
         private ItemRepository _itemRepository { get; set; }
 
-        public ItemDragDropService(IMapper mapper, ItemRepository itemRepository)
+        public ItemDragDropService(ModelMapper modelMapper, ItemRepository itemRepository)
         {
-            _mapper = mapper;
+            _modelMapper = modelMapper;
             _itemRepository = itemRepository;
         }
 
@@ -41,7 +40,7 @@ namespace UI.Web.Services
 
             item.Parent = dropItem;
             item.ParentId = dropItem?.Id;
-            await _itemRepository.UpdateAndSaveAsync(_mapper.Map<ToDoItem>(item));
+            await _itemRepository.UpdateAndSaveAsync(_modelMapper.Map(item));
 
             if (container != null)
                 container.DraggedToDoItem = null;

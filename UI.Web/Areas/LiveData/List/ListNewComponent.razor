@@ -39,9 +39,7 @@
             var guidId = Guid.Parse(User!.Id);
             newList.UserId = guidId;
 
-            var dbList = Mapper.Map<ToDoList>(newList);
-            await UserRepository.AddAndSaveAsync(dbList);
-            newList.Id = dbList.Id;
+            newList.Id = await UserRepository.AddAndSaveAsync(ModelMapper.Map(newList));
 
             NavigationManager.NavigateTo(NavigationManager.BaseUri + "list/" + newList.Id, true);
         }

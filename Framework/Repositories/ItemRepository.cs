@@ -7,13 +7,12 @@ using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Repositories
 {
-    public class ItemRepository : RepositoryBase<ToDoDBContext>
+    public class ItemRepository : RepositoryBase<ToDoDBContext, ToDoItem>
     {
         public ItemRepository(IDbContextFactory<ToDoDBContext> dbContextFactory)
             :base(dbContextFactory)
         {
         }
-
 
         public async Task<List<ToDoItem>> GetAllItemsCompleteAsync(Guid listId, bool? isActive = null)
         {

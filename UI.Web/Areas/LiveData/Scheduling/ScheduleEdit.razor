@@ -5,7 +5,6 @@
 @using Framework.DomainModels.Base;
 @using ToDo.Data.Common.Enums;
 @using ToDo.Data.Common;
-@using ToDo.Data.ToDoData.Entities.Base;
 @using UI.Web.Areas.Identity.Pages.Account.Manage;
 
 @inject ReminderService ReminderService
@@ -183,12 +182,10 @@
     {
         if (ItemId != Guid.Empty)
         {
-            Title = (await ItemRepository.GetAsync<ToDoItem>(ItemId))?.Bezeichnung ?? Title;
-            var schedules = await ItemRepository.GetAllAsync<Schedule>(s => s.ToDoItemId == ItemId);
-            var reminders = await ItemRepository.GetAllAsync<ScheduleReminder>(r => r.ToDoItemId == ItemId);
+            Title = (await ItemRepository.GetAsync(ItemId))?.Bezeichnung ?? Title;
 
-            Model.Schedules = Mapper.Map<List<ScheduleDomainModel>>(await ItemRepository.GetAllAsync<Schedule>(s => s.ToDoItemId == ItemId));
-            Model.Reminders = Mapper.Map<List<ScheduleReminderDomainModel>>(await ItemRepository.GetAllAsync<ScheduleReminder>(r => r.ToDoItemId == ItemId));
+            Model.Schedules = ModelMapper.MapToList<ScheduleDomainModel>(await ScheduleRepository.GetAllAsync(s => s.ToDoItemId == ItemId));
+            Model.Reminders = ModelMapper.MapToList<ScheduleReminderDomainModel>(await ScheduleReminderRepository.GetAllAsync(r => r.ToDoItemId == ItemId));
         }
 
         if (User != null)
@@ -210,17 +207,17 @@
         switch (newType)
         {
             case 0:
-                Model.Schedules[index].ScheduleDefinition = Mapper.Map<ScheduleDefinition>(ScheduleFixed.Default);
+                Model.Schedules[index].ScheduleDefinition = (ScheduleDefinition)ModelMapper.Map(ScheduleFixed.Default);
 
                 break;
 
             case 1:
-                Model.Schedules[index].ScheduleDefinition = Mapper.Map<ScheduleDefinition>(ScheduleWeekdays.Default);
+                Model.Schedules[index].ScheduleDefinition = (ScheduleDefinition)ModelMapper.Map(ScheduleWeekdays.Default);
 
                 break;
 
             case 2:
-                Model.Schedules[index].ScheduleDefinition = Mapper.Map<ScheduleDefinition>(ScheduleInterval.Default);
+                Model.Schedules[index].ScheduleDefinition = (ScheduleDefinition)ModelMapper.Map(ScheduleInterval.Default);
 
                 break;
         }
@@ -284,13 +281,13 @@
     private async Task Save()
     {
         if (EntitiesToRemove.Schedules.Any())
-            await ItemRepository.RemoveAndSaveAsync(Mapper.Map<Schedule[]>(EntitiesToRemove.Schedules));
+            await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove.Schedules));
 
         if (EntitiesToRemove.Reminders.Any())
-            await ItemRepository.RemoveAndSaveAsync(Mapper.Map<ScheduleReminder[]>(EntitiesToRemove.Reminders));
+            await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove.Reminders));
 
-        await ItemRepository.AddOrUpdateAndSaveAsync(Mapper.Map<Schedule[]>(Model.Schedules));
-        await ItemRepository.AddOrUpdateAndSaveAsync(Mapper.Map<ScheduleReminder[]>(Model.Reminders));
+        await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(Model.Schedules));
+        await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(Model.Reminders));
 
         await ReminderService.UpdateReminders(ItemId);
  

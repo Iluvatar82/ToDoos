@@ -14,8 +14,6 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.EntityFrameworkCore;
 @using Microsoft.JSInterop
-@using ToDo.Data;
-@using ToDo.Data.ToDoData.Entities;
 @using UI.Web
 @using UI.Web.Data;
 @using UI.Web.Data.Dtos;
@@ -24,12 +22,13 @@
 @inject AuthenticationStateProvider AuthenticationProvider;
 @inject NavigationManager NavigationManager
 
-@inject IMapper Mapper;
 @inject ModelMapper ModelMapper;
 
 @inject CategoryRepository CategoryRepository;
 @inject ItemRepository ItemRepository;
 @inject ListRepository ListRepository;
+@inject ScheduleRepository ScheduleRepository;
+@inject ScheduleReminderRepository ScheduleReminderRepository;
 @inject UserRepository UserRepository;
 @inject SettingRepository SettingRepository;
 

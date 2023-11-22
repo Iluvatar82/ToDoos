@@ -1,20 +1,19 @@
-﻿using AutoMapper;
+﻿using Framework.Converter;
 using Framework.DomainModels;
 using Framework.Extensions;
 using Framework.Repositories;
 using Microsoft.AspNetCore.Components;
-using ToDo.Data.ToDoData.Entities;
 
 namespace UI.Web.Services
 {
     public class ItemHandlerService
     {
-        private IMapper _mapper { get; set; }
+        private ModelMapper _modelMapper { get; set; }
         private ItemRepository _itemRepository { get; set; }
 
-        public ItemHandlerService(IMapper mapper, ItemRepository itemRepository)
+        public ItemHandlerService(ModelMapper modelMapper, ItemRepository itemRepository)
         {
-            _mapper = mapper;
+            _modelMapper = modelMapper;
             _itemRepository = itemRepository;
         }
 
@@ -63,7 +62,7 @@ namespace UI.Web.Services
             for (var index = 0; index < elements.Count; index++)
                 elements[index].Order = index;
 
-            await _itemRepository.UpdateAndSaveAsync(_mapper.Map<ToDoItem[]>(elements));
+            await _itemRepository.UpdateAndSaveAsync(_modelMapper.MapToArray(elements));
             updateAction.Invoke();
         }
 
@@ -77,7 +76,7 @@ namespace UI.Web.Services
 
             elements = elements.OrderBy(i => i.Get<int>("OriginalOrder")).ToList();
 
-            await _itemRepository.UpdateAndSaveAsync(_mapper.Map<ToDoItem[]>(elements));
+            await _itemRepository.UpdateAndSaveAsync(_modelMapper.MapToArray(elements));
             updateAction.Invoke();
             return elements;
         }

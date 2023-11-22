@@ -70,7 +70,7 @@
             return;
 
         var guidId = Guid.Parse(User.Id);
-        myLists = Mapper.Map<List<ToDoListDomainModel>>(await UserRepository.GetAllListsAsync(guidId));
+        myLists = ModelMapper.MapToList<ToDoListDomainModel>(await UserRepository.GetAllListsAsync(guidId));
     }
 
     private async Task RemoveList(ToDoListDomainModel list, bool force = false)
@@ -96,7 +96,7 @@
         }
 
         await ItemRepository.RemoveAndSaveAsync(flatItems);
-        await UserRepository.RemoveAndSaveAsync(Mapper.Map<ToDoList>(list));
+        await UserRepository.RemoveAndSaveAsync(ModelMapper.Map(list));
 
         NavigationManager.NavigateTo(NavigationManager.BaseUri, true);
     }

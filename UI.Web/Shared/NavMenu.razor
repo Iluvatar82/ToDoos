@@ -75,7 +75,7 @@
             return;
 
         var guidId = Guid.Parse(User.Id);
-        allLists = Mapper.Map<List<ToDoListDomainModel>>(await UserRepository.GetAllListsAsync(guidId));
+        allLists = ModelMapper.MapToList<ToDoListDomainModel>(await UserRepository.GetAllListsAsync(guidId));
     }
 
     private void ToggleNavMenu()

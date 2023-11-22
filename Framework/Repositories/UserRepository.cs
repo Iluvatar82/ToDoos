@@ -6,7 +6,7 @@ using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Repositories
 {
-    public class UserRepository : RepositoryBase<ToDoDBContext>
+    public class UserRepository : RepositoryBase<ToDoDBContext, UserGroup>
     {
         public UserRepository(IDbContextFactory<ToDoDBContext> contextFactory)
             : base(contextFactory)

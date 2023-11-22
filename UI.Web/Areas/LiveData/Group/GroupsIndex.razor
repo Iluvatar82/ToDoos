@@ -66,7 +66,7 @@
             return;
 
         var guidId = Guid.Parse(User.Id);
-        myGroups = Mapper.Map<List<UserGroupDomainModel>>(await UserRepository.GetAllGroupsAsync(guidId));
+        myGroups = ModelMapper.MapToList<UserGroupDomainModel>(await UserRepository.GetAllGroupsAsync(guidId));
     }
 
     private async Task SaveNewGroup(EditContext context)
@@ -77,7 +77,7 @@
             var guidId = Guid.Parse(User.Id);
             newGroup.UserId = guidId;
 
-            await UserRepository.AddAndSaveAsync(Mapper.Map<UserGroup>(newGroup));
+            await UserRepository.AddAndSaveAsync(ModelMapper.Map(newGroup));
 
             myGroups.Add(newGroup);
 
@@ -88,7 +88,7 @@
 
     private async Task RemoveGroup(UserGroupDomainModel group, bool force = false)
     {
-        var allUsers = Mapper.Map<UserGroupDomainModel[]>((await UserRepository.GetAllUsersForGroupAsync(group.GroupId)));
+        var allUsers = ModelMapper.MapToList<UserGroupDomainModel>((await UserRepository.GetAllUsersForGroupAsync(group.GroupId)));
         if (allUsers.Any() && !force)
         {
             PageModal.NotNull();
@@ -99,7 +99,7 @@
                     <span class="fa fa-warning text-warning fs-2" aria-hidden="true"></span>
                 </div>
 
-                <div class="col-9 text-start"><span>Die Gruppe "@group.Name" besteht aus @allUsers.Length Usern. Möchten Sie alle User-Zuordnungen löschen?</span></div>
+                <div class="col-9 text-start"><span>Die Gruppe "@group.Name" besteht aus @allUsers.Count Usern. Möchten Sie alle User-Zuordnungen löschen?</span></div>
             </div>;
 
             PageModal.AcceptActionAsync = () => RemoveGroup(group, true);
@@ -108,7 +108,7 @@
             return;
         }
 
-        await UserRepository.RemoveAndSaveAsync(Mapper.Map<UserGroup[]>(allUsers));
+        await UserRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(allUsers));
 
         myGroups.Remove(group);
 

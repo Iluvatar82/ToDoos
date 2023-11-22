@@ -253,14 +253,14 @@
         await RetrieveItems();
         await base.OnParametersSetAsync();
 
-        listEntity = Mapper.Map<ToDoListDomainModel>(await UserRepository.GetListAsync(ListId));
+        listEntity = (ToDoListDomainModel)ModelMapper.Map(await UserRepository.GetListAsync(ListId));
         if (!listEntity.IsUserList && ListHubConnection != null && User != default)
             await ListHubConnection.SendAsync("JoinedGroupList", ListId, User);
 
         if (!listEntity.IsUserList)
-            Categories = Mapper.Map<List<CategoryDomainModel>>(await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId));
+            Categories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.ListId == ListId));
         else if (User != default)
-            Categories = Mapper.Map<List<CategoryDomainModel>>(await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == Guid.Parse(User.Id)));
+            Categories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.UserId == Guid.Parse(User.Id)));
         else
             Categories = new List<CategoryDomainModel>();
 
@@ -288,14 +288,14 @@
 
         if (!showInactive)
         {
-            topLevelItems = Mapper.Map<List<ToDoItemDomainModel>>(await ItemRepository.GetAllItemsCompleteAsync(ListId, !showInactive))
+            topLevelItems = ModelMapper.MapToList<ToDoItemDomainModel>(await ItemRepository.GetAllItemsCompleteAsync(ListId, !showInactive))
                                 .Where(item => item.Parent == null).ToList();
 
             topLevelItems = ItemHandlerService.Order(topLevelItems);
         }
         else
         {
-            var allItems = Mapper.Map<List<ToDoItemDomainModel>>(await ItemRepository.GetAllItemsCompleteAsync(ListId));
+            var allItems = ModelMapper.MapToList<ToDoItemDomainModel>(await ItemRepository.GetAllItemsCompleteAsync(ListId));
             topLevelItems = BuildInactiveItemsFromAll(allItems);
             topLevelItems = ItemHandlerService.Order(topLevelItems);
         }

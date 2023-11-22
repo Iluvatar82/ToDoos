@@ -116,16 +116,16 @@
             return;
 
         var guidId = Guid.Parse(User.Id);
-        userGroups = Mapper.Map<List<UserGroupDomainModel>>(await UserRepository.GetAllGroupsAsync(guidId));
-        list = Mapper.Map<ToDoListDomainModel>(await ListRepository.GetAsync<ToDoList>(ListId))!;
+        userGroups = ModelMapper.MapToList<UserGroupDomainModel>(await UserRepository.GetAllGroupsAsync(guidId));
+        list = (ToDoListDomainModel)ModelMapper.Map((await ListRepository.GetAsync(ListId))!);
         isUserList = list.IsUserList;
         if (!isUserList)
         {
             selectedUserGroupId = list.GroupId;
-            listCategories = Mapper.Map<List<CategoryDomainModel>>(await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId));
+            listCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.ListId == ListId));
             if (!listCategories.Any())
             {
-                listCategories = Mapper.Map<List<CategoryDomainModel>>(await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId))
+                listCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.UserId == guidId))
                     .ForEach((c, i) => { c.Id = Guid.Empty; c.UserId = null; c.ListId = ListId; }).ToList();
             }
         }
@@ -175,13 +175,13 @@
 
     private async Task SaveList()
     {
-        await ListRepository.UpdateAndSaveAsync(Mapper.Map<ToDoList>(list));
+        await ListRepository.UpdateAndSaveAsync(ModelMapper.Map(list));
         if (!isUserList)
         {
             if (listCategoriesToRemove.Any())
-                await ItemRepository.RemoveAndSaveAsync(Mapper.Map<Category[]>(listCategoriesToRemove));
+                await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(listCategoriesToRemove));
 
-            await CategoryRepository.AddOrUpdateAndSaveAsync(Mapper.Map<Category[]>(listCategories));
+            await CategoryRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(listCategories));
         }
 
         NavigateBack();

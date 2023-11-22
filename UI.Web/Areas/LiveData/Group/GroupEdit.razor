@@ -91,10 +91,10 @@
     protected override async Task OnInitializedAsync()
     {
         allIdentities = await IdentityRepository.GetAllIdentities();
-        var userGroups = Mapper.Map<UserGroupDomainModel[]>(await UserRepository.GetAllUsersForGroupAsync(GroupId));
+        var userGroups = ModelMapper.MapToList<UserGroupDomainModel>(await UserRepository.GetAllUsersForGroupAsync(GroupId));
         var identities = allIdentities.Where(i => userGroups.Any(u => u.UserId.ToString() == i.Id)).ToList();
 
-        userGroups.Satisfies(g => g.Length == identities.Count);
+        userGroups.Satisfies(g => g.Count == identities.Count);
         userGroups.Satisfies(g => g.All(u => identities.Any(i => i.Id == u.UserId.ToString())));
         identities.Satisfies(i => i.All(u => userGroups.Any(g => g.UserId.ToString(name) == u.Id)));
 
@@ -161,9 +161,9 @@
     private async Task Save()
     {
         if (EntitiesToRemove.Any())
-            await ItemRepository.RemoveAndSaveAsync(Mapper.Map<UserGroup[]>(EntitiesToRemove));
+            await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove));
 
-        await ItemRepository.AddOrUpdateAndSaveAsync(Mapper.Map<UserGroup[]>(usersInformation.Select(info => info.Group)));
+        await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(usersInformation.Select(info => info.Group)));
 
         NavigateBack();
     }

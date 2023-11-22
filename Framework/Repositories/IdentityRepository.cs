@@ -6,7 +6,7 @@ using ToDo.Data.Identity;
 
 namespace Framework.Repositories
 {
-    public class IdentityRepository : RepositoryBase<ApplicationDbContext>
+    public class IdentityRepository : RepositoryBase<ApplicationDbContext, IdentityRole>
     {
         public IdentityRepository(IDbContextFactory<ApplicationDbContext> dbContextFactory) : base(dbContextFactory)
         {

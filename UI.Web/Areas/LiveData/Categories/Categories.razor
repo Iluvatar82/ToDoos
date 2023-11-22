@@ -93,12 +93,12 @@ else
         if (ListId != null)
         {
             if (!AllCategories.Any())
-                AllCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllCategoriesAsync(c => c.ListId == ListId)).ToList();
+                AllCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.ListId == ListId)).ToList();
         }
         else
         {
             var guidId = Guid.Parse(User!.Id);
-            AllCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllCategoriesAsync(c => c.UserId == guidId)).ToList();
+            AllCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.UserId == guidId)).ToList();
         }
     }
 

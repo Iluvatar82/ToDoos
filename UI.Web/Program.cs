@@ -53,6 +53,8 @@ namespace UI.Web
             builder.Services.AddTransient<CategoryRepository>();
             builder.Services.AddTransient<ItemRepository>();
             builder.Services.AddTransient<ListRepository>();
+            builder.Services.AddTransient<ScheduleRepository>();
+            builder.Services.AddTransient<ScheduleReminderRepository>();
             builder.Services.AddTransient<UserRepository>();
             builder.Services.AddTransient<SettingRepository>();
 

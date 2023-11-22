@@ -1,6 +1,7 @@
 ﻿@page "/list/{ListId:guid}/item/new"
 
 @using Framework.DomainModels.Base;
+@using ToDo.Data.ToDoData.Entities.Base
 @using UI.Web.Areas.LiveData.Scheduling
 
 @inject ReminderService ReminderService
@@ -118,9 +119,8 @@
             if (Model.CategoryId != null)
                 Model.Category = Categories.FirstOrDefault(c => c.Id == Model.CategoryId.Value);
 
-            var dbModel = Mapper.Map<ToDoItem>(Model);
-            await ItemRepository.AddAndSaveAsync(dbModel);
-            Model.Id = dbModel.Id;
+            var dbModel = ModelMapper.Map(Model);
+            Model.Id = await ItemRepository.AddAndSaveAsync(dbModel);
 
             if (Model.Schedules.Any() && Model.Reminders.Any())
                 await ReminderService.UpdateReminders(Model.Id);

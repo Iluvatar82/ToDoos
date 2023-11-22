@@ -68,7 +68,7 @@
             else
                 _newCategory.UserId = Guid.Parse(User!.Id);
 
-            await CategoryRepository.AddAndSaveAsync(Mapper.Map<Category>(_newCategory));
+            await CategoryRepository.AddAndSaveAsync(ModelMapper.Map(_newCategory));
             NavigateBack();
         }
     }

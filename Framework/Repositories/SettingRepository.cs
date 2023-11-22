@@ -6,7 +6,7 @@ using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Repositories
 {
-    public class SettingRepository : RepositoryBase<ToDoDBContext>
+    public class SettingRepository : RepositoryBase<ToDoDBContext, Setting>
     {
         public SettingRepository(IDbContextFactory<ToDoDBContext> contextFactory) : base(contextFactory)
         {

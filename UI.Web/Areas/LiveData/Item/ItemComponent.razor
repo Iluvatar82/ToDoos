@@ -255,7 +255,7 @@
         else
             Model.Done = null;
 
-        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem>(Model));
+        await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
         await OnDoneChanged.InvokeAsync(Model);
 
         if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
@@ -267,7 +267,7 @@
         var valid = context.Validate();
         if (valid)
         {
-            await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem>(Model));
+            await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
             BezeichnungEditEnabled = false;
             await OnBezeichnungEditEnabled.InvokeAsync(null);
 
@@ -305,7 +305,7 @@
         else
             Model.IsActive = !Model.IsActive;
 
-        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem[]>(Model.SelfAndAllDescendents));
+        await ItemRepository.UpdateAndSaveAsync(ModelMapper.MapToArray(Model.SelfAndAllDescendents));
         StateHasChanged();
 
         await OnRemove.InvokeAsync(Model);
@@ -320,7 +320,7 @@
         Model.CategoryId = selectedCategory?.Id;
         Model.Category = selectedCategory;
 
-        await ItemRepository.UpdateAndSaveAsync(Mapper.Map<ToDoItem>(Model));
+        await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
         StateHasChanged();
 
         if (User != default && ListHubConnection!.State == HubConnectionState.Connected)

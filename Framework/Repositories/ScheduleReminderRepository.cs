@@ -5,9 +5,9 @@ using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Repositories
 {
-    public class ListRepository : RepositoryBase<ToDoDBContext, ToDoList>
+    public class ScheduleReminderRepository : RepositoryBase<ToDoDBContext, ScheduleReminder>
     {
-        public ListRepository(IDbContextFactory<ToDoDBContext> contextFactory)
+        public ScheduleReminderRepository(IDbContextFactory<ToDoDBContext> contextFactory)
             : base(contextFactory)
         {
         }
