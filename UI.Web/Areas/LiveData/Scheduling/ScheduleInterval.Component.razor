@@ -1,5 +1,6 @@
-﻿@using  Common = global::ToDo.Data.Common;
+﻿@using ToDo.Data.Common
 @using ToDo.Data.Common.Enums;
+
 <td class="align-top py-0 border-0" colspan="4">
     <table class="table mb-0">
         <tbody>
@@ -71,7 +72,7 @@
 
 
 @code {
-    private Common.ScheduleInterval intervalValue = new Common.ScheduleInterval();
+    private ScheduleInterval intervalValue = new ScheduleInterval();
     private DateTime? start;
     private DateTime? end;
 
@@ -79,7 +80,7 @@
     private ScheduleTimeUnit unit { get => intervalValue.Unit; set { if (Model.Unit == value) return; intervalValue.Unit = value; ModelChanged.InvokeAsync(intervalValue); } }
 
     [Parameter]
-    public Common.ScheduleInterval Model { get => intervalValue; set { if (value.Interval == intervalValue.Interval) return; intervalValue = value; ModelChanged.InvokeAsync(value); } }
+    public ScheduleInterval Model { get => intervalValue; set { if (value.Interval == intervalValue.Interval) return; intervalValue = value; ModelChanged.InvokeAsync(value); } }
 
     [Parameter]
     public DateTime? Start { get => start; set { if (start == value) return; start = value; StartChanged.InvokeAsync(value); } }
@@ -88,7 +89,7 @@
     public DateTime? End { get => end; set { if (end == value) return; end = value; EndChanged.InvokeAsync(value); } }
 
     [Parameter]
-    public EventCallback<Common.ScheduleInterval> ModelChanged { get; set; }
+    public EventCallback<ScheduleInterval> ModelChanged { get; set; }
 
     [Parameter]
     public EventCallback<DateTime?> StartChanged { get; set; }

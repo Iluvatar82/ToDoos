@@ -1,6 +1,5 @@
 ﻿@page "/schedule/{ListId:guid}/{ItemId:guid}"
 
-@using Common = global::ToDo.Data.Common;
 @using Core.Common;
 @using Core.Validation
 @using Framework.DomainModels.Base;
@@ -58,15 +57,15 @@
 
                     @switch (schedule.Type)
                     {
-                        case Common.Enums.ScheduleType.Fixed:
+                        case ScheduleType.Fixed:
                             <ScheduleFixed_Component @bind-Model=@schedule.ScheduleDefinition.Fixed!.Date></ScheduleFixed_Component>
                             break;
 
-                        case Common.Enums.ScheduleType.Interval:
+                        case ScheduleType.Interval:
                             <ScheduleInterval_Component @bind-Model=@schedule.ScheduleDefinition!.Interval @bind-Start=@schedule.Start @bind-End=@schedule.End></ScheduleInterval_Component>
                             break;
 
-                        case Common.Enums.ScheduleType.WeekDays:
+                        case ScheduleType.WeekDays:
                             <ScheduleWeekdays_Component @bind-Model=@schedule.ScheduleDefinition.WeekDays @bind-Start=@schedule.Start @bind-End=@schedule.End></ScheduleWeekdays_Component>
                             break;
                     }
@@ -211,17 +210,17 @@
         switch (newType)
         {
             case 0:
-                Model.Schedules[index].ScheduleDefinition = Mapper.Map<ScheduleDefinition>(Common.ScheduleFixed.Default);
+                Model.Schedules[index].ScheduleDefinition = Mapper.Map<ScheduleDefinition>(ScheduleFixed.Default);
 
                 break;
 
             case 1:
-                Model.Schedules[index].ScheduleDefinition = Mapper.Map<ScheduleDefinition>(Common.ScheduleWeekdays.Default);
+                Model.Schedules[index].ScheduleDefinition = Mapper.Map<ScheduleDefinition>(ScheduleWeekdays.Default);
 
                 break;
 
             case 2:
-                Model.Schedules[index].ScheduleDefinition = Mapper.Map<ScheduleDefinition>(Common.ScheduleInterval.Default);
+                Model.Schedules[index].ScheduleDefinition = Mapper.Map<ScheduleDefinition>(ScheduleInterval.Default);
 
                 break;
         }

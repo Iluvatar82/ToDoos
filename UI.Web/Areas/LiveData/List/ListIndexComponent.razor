@@ -96,7 +96,7 @@
         }
 
         await ItemRepository.RemoveAndSaveAsync(flatItems);
-        await UserRepository.RemoveAndSaveAsync(Mapper.Map<global::ToDo.Data.ToDoData.Entities.ToDoList>(list));
+        await UserRepository.RemoveAndSaveAsync(Mapper.Map<ToDoList>(list));
 
         NavigationManager.NavigateTo(NavigationManager.BaseUri, true);
     }

@@ -2,6 +2,7 @@
 using AutoMapper.EquivalencyExpression;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using Framework.Converter;
 using Framework.Converter.Automapper;
 using Framework.Repositories;
 using Framework.Services;
@@ -74,6 +75,8 @@ namespace UI.Web
 
             ConfigureHangfireService(builder.Services, connectionString);
             ConfigureAutoMapper(builder.Services);
+
+            builder.Services.AddTransient<ModelMapper>();
 
             var app = builder.Build();
             if (app.Environment.IsDevelopment())

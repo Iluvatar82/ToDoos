@@ -10,6 +10,13 @@ namespace Framework.Converter.Automapper
     public class MapperProfile : Profile
     {
         public MapperProfile() {
+
+            CreateMap<HangfireJob, HangfireJobDomainModel>();
+            CreateMap<HangfireJobDomainModel, HangfireJob>();
+
+            CreateMap<Setting, SettingDomainModel>();
+            CreateMap<SettingDomainModel, Setting>();
+
             CreateMap<string, ScheduleTimeUnit>().ConvertUsing<TimeUnitConverter>();
             CreateMap<ScheduleTimeUnit, string>().ConvertUsing<TimeUnitConverter>();
 

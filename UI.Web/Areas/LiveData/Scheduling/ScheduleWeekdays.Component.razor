@@ -1,6 +1,5 @@
-﻿@using  Common = global::ToDo.Data.Common;
-@using System.Globalization;
-
+﻿@using System.Globalization;
+@using ToDo.Data.Common
 
 <td class="align-top py-0 border-0" colspan="4">
     <table class="table mb-0">
@@ -88,7 +87,7 @@
 </td>
 
 @code {
-    private Common.ScheduleWeekdays weekdaysValue = new Common.ScheduleWeekdays();
+    private ScheduleWeekdays weekdaysValue = new ScheduleWeekdays();
     private DateTime? start;
     private DateTime? end;
 
@@ -101,10 +100,10 @@
     public DateTime? End { get => end; set { if (end == value) return; end = value; EndChanged.InvokeAsync(value); } }
 
     [Parameter]
-    public Common.ScheduleWeekdays Model { get => weekdaysValue; set { if (value.ToString() == weekdaysValue.ToString() || value == null) return; weekdaysValue = value; ModelChanged.InvokeAsync(value); } }
+    public ScheduleWeekdays Model { get => weekdaysValue; set { if (value.ToString() == weekdaysValue.ToString() || value == null) return; weekdaysValue = value; ModelChanged.InvokeAsync(value); } }
 
     [Parameter]
-    public EventCallback<Common.ScheduleWeekdays> ModelChanged { get; set; }
+    public EventCallback<ScheduleWeekdays> ModelChanged { get; set; }
 
     [Parameter]
     public EventCallback<DateTime?> StartChanged { get; set; }
