@@ -6,7 +6,6 @@ using Framework.Extensions;
 using Framework.Repositories;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
-using System.Net.Mail;
 using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Services
@@ -77,6 +76,9 @@ namespace Framework.Services
             foreach (var schedule in scheduleDomainModels)
             {
                 var nextScheduleOccurrence = schedule.ScheduleDefinition.NextOccurrenceAfter(DateTime.Now, schedule.Start, schedule.End);
+                if (nextScheduleOccurrence == null)
+                    continue;
+
                 foreach (var reminder in reminders)
                 {
                     var reminderDefinition = _mapper.Map<ReminderDefinition>(reminder.Definition);

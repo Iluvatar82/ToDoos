@@ -2,6 +2,7 @@
 using AutoMapper.EquivalencyExpression;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using EmailServer;
 using Framework.Converter;
 using Framework.Converter.Automapper;
 using Framework.Repositories;
@@ -80,6 +81,7 @@ namespace UI.Web
             ConfigureAutoMapper(builder.Services);
 
             builder.Services.AddTransient<ModelMapper>();
+            builder.Services.AddTransient<ScheduleDefinitionConverter>();
 
             var app = builder.Build();
             if (app.Environment.IsDevelopment())
@@ -113,8 +115,16 @@ namespace UI.Web
 
             app.UseCors(c => c.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
+            //RunMailServer();
             app.Run();
         }
+
+        //private static void RunMailServer()
+        //{
+        //    var mailServer = new MailServer();
+        //    mailServer.Start();
+        //    //BackgroundJob.Enqueue(() => mailServer.Start().Wait());
+        //}
 
         private static void ConfigureHangfireService(IServiceCollection services, string connectionString)
         {

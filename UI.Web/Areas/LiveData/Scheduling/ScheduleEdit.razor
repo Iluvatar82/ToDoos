@@ -8,6 +8,7 @@
 @using UI.Web.Areas.Identity.Pages.Account.Manage;
 
 @inject ReminderService ReminderService
+@inject ScheduleDefinitionConverter ScheduleDefinitionConverter
 
 @if (ItemId != Guid.Empty)
 {
@@ -208,17 +209,17 @@
         switch (newType)
         {
             case 0:
-                Model.Schedules[index].ScheduleDefinition = (ScheduleDefinition)ModelMapper.Map(ScheduleFixed.Default);
+                Model.Schedules[index].ScheduleDefinition = ScheduleDefinitionConverter.Convert(ScheduleFixed.Default, null);
 
                 break;
 
             case 1:
-                Model.Schedules[index].ScheduleDefinition = (ScheduleDefinition)ModelMapper.Map(ScheduleWeekdays.Default);
+                Model.Schedules[index].ScheduleDefinition = ScheduleDefinitionConverter.Convert(ScheduleWeekdays.Default, null);
 
                 break;
 
             case 2:
-                Model.Schedules[index].ScheduleDefinition = (ScheduleDefinition)ModelMapper.Map(ScheduleInterval.Default);
+                Model.Schedules[index].ScheduleDefinition = ScheduleDefinitionConverter.Convert(ScheduleInterval.Default, null);
 
                 break;
         }

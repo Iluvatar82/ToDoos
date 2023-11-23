@@ -1,14 +1,15 @@
 ﻿using AutoMapper;
 using Core.Validation;
 using Framework.DomainModels;
-using Framework.DomainModels.Common;
 using Framework.Extensions;
 using Framework.Repositories;
 using Framework.Services.Base;
 using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using ToDo.Data.ToDoData.Entities;
+using System.Net;
+using System.Net.Mail;
+using System.Text;
 
 namespace Framework.Services
 {
@@ -52,6 +53,35 @@ namespace Framework.Services
 
             msg.SetClickTracking(false, false);
             await client.SendEmailAsync(msg);
+
+
+
+            //using (var smtpClient = new SmtpClient("smtp.todoos.net", 9025))
+            //{
+            //    smtpClient.UseDefaultCredentials = false;
+            //    smtpClient.Credentials = new NetworkCredential(Options.Email!.Sender_Address, Options.Email.Sender_Password);
+            //    smtpClient.EnableSsl = true;
+            //    smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+
+            //    var mailBody = new MailMessage
+            //    {
+            //        From = new MailAddress(Options.Email.Sender_Address!, Options.Email.Sender_Display_Name),
+            //        Subject = title,
+            //        SubjectEncoding = Encoding.UTF8,
+            //        BodyEncoding = Encoding.UTF8,
+            //        HeadersEncoding = Encoding.UTF8,
+            //        IsBodyHtml = true,
+            //        Body = message,
+            //        Priority = MailPriority.Normal
+            //    };
+
+            //    foreach (var recipient in recipients)
+            //        mailBody.To.Add(new MailAddress(recipient));
+
+            //    await smtpClient.SendMailAsync(mailBody);
+            //}
+
+            //await Task.CompletedTask;
         }
 
         public async Task SendReminderAsync(Guid itemId, params string[] recipients)
