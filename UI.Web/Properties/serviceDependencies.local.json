@@ -1,8 +1,15 @@
 {
-    "dependencies": {
-        "mssql1": {
-            "type": "mssql.local",
-            "connectionId": "ConnectionStrings:DBConnection"
-        }
+  "dependencies": {
+    "mssql1": {
+      "type": "mssql.local",
+      "connectionId": "ConnectionStrings:DBConnection"
+    },
+    "secrets1": {
+      "secretStore": null,
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.KeyVault/vaults/todoosvault",
+      "type": "secrets.keyVault",
+      "connectionId": "todoosvault",
+      "dynamicId": null
     }
+  }
 }

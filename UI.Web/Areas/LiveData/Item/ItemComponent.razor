@@ -6,6 +6,7 @@
 @using UI.Web.Areas.LiveData.List
 @using UI.Web.Services;
 
+@inject ReminderService ReminderService
 @inject ItemStyleService ItemStyleService;
 @inject ItemDragDropService ItemDragDropService;
 @inject ItemHandlerService ItemHandlerService;
@@ -72,11 +73,11 @@
     <td class="fixed-w text-end fade-in-on-hover">
         @if(!string.IsNullOrWhiteSpace(OccurrenceString))
         {
-            <span class="px-2 position-relative fa fa-clock @(Model.NextOrLastOccurrence < DateTime.Now ? "opacity-50" : string.Empty)" tooltip=@OccurrenceString @onclick=@(() => NavigationManager.NavigateTo(NavigationManager.BaseUri + $"Schedule/{ListId}/{Model.Id}"))></span>
+            <span class="px-2 position-relative fa fa-clock @(Model.NextOrLastOccurrence < DateTime.Now ? "opacity-50" : string.Empty)" tooltip=@OccurrenceString @onclick=@(() => NavigationManager.NavigateTo(NavigationManager.BaseUri + $"schedule/{Model.Id}"))></span>
         }
         else
         {
-            <span class="px-2 position-relative fa-regular fa-clock opacity-25" @onclick=@(() => NavigationManager.NavigateTo(NavigationManager.BaseUri + $"Schedule/{ListId}/{Model.Id}"))></span>
+            <span class="px-2 position-relative fa-regular fa-clock opacity-25" @onclick=@(() => NavigationManager.NavigateTo(NavigationManager.BaseUri + $"schedule/{Model.Id}"))></span>
         }
     </td>
 
@@ -243,6 +244,7 @@
         BezeichnungEditEnabled = Model.IsActive && !Hidden;
         if (!wasActive)
             await OnBezeichnungEditEnabled.InvokeAsync(this);
+
     }
 
     private async Task DoneChanged()
@@ -270,6 +272,8 @@
             await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
             BezeichnungEditEnabled = false;
             await OnBezeichnungEditEnabled.InvokeAsync(null);
+
+            await ReminderService.UpdateReminders(Model.Id);
 
             if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
                 await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
@@ -308,6 +312,7 @@
         await ItemRepository.UpdateAndSaveAsync(ModelMapper.MapToArray(Model.SelfAndAllDescendents));
         StateHasChanged();
 
+        await ReminderService.UpdateReminders(Model.Id);
         await OnRemove.InvokeAsync(Model);
 
         if (User != default && ListHubConnection!.State == HubConnectionState.Connected)

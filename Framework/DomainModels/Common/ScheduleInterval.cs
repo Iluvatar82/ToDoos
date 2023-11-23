@@ -7,6 +7,7 @@ namespace Framework.DomainModels.Common
         public static string Default = $"i 1 d";
 
         public decimal Interval { get; set; }
+
         public ScheduleTimeUnit Unit {get; set; }
 
 

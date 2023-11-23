@@ -6,7 +6,6 @@ namespace Framework.DomainModels.Common
     {
         public static string Default = $"30 m";
 
-
         public decimal Value { get; set; }
         public ScheduleTimeUnit Unit { get; set; }
     }

@@ -120,4 +120,7 @@
   <data name="Application_Name" xml:space="preserve">
     <value>ToDoo's</value>
   </data>
+  <data name="Application_Url" xml:space="preserve">
+    <value>https://todoos.net</value>
+  </data>
 </root>

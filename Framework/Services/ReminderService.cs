@@ -6,6 +6,7 @@ using Framework.Extensions;
 using Framework.Repositories;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
+using System.Net.Mail;
 using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Services
@@ -57,35 +58,54 @@ namespace Framework.Services
             var schedules = item.Schedules.ToList();
             var reminders = item.Reminders.ToList();
 
-            var nextScheduleOccurrences = _mapper.Map<List<ScheduleDomainModel>>(schedules)
-                .Select(s => s.ScheduleDefinition.NextOccurrenceAfter(DateTime.Now, s.Start, s.End)).Where(d => d != null).Select(d => d!.Value).OrderBy(d => d).ToList();
+            var scheduleDomainModels = _mapper.Map<List<ScheduleDomainModel>>(schedules);
 
             var existingHangfireJobs = await _itemRepository.GetAllAsync<HangfireJob>(j => j.ToDoItemId == itemId);
-            
             foreach (var job in existingHangfireJobs)
+            {
+                BackgroundJob.Delete(job.JobId);
                 RecurringJob.RemoveIfExists(job.JobId);
+            }
 
             if (existingHangfireJobs.Any())
                 await _itemRepository.RemoveAndSaveAsync(existingHangfireJobs.ToArray());
 
+            if (!item.IsActive)
+                return;
+
             var newJobIds = new List<string>();
-            foreach (var nextScheduleOccurrence in nextScheduleOccurrences)
+            foreach (var schedule in scheduleDomainModels)
             {
+                var nextScheduleOccurrence = schedule.ScheduleDefinition.NextOccurrenceAfter(DateTime.Now, schedule.Start, schedule.End);
                 foreach (var reminder in reminders)
                 {
                     var reminderDefinition = _mapper.Map<ReminderDefinition>(reminder.Definition);
-                    var nextReminderTime = reminderDefinition.ApplyReminderToOccurrence(nextScheduleOccurrence);
+                    var nextReminderTime = reminderDefinition.ApplyReminderToOccurrence(nextScheduleOccurrence.Value);
+                    if (schedule.Type == DomainModels.Common.Enums.ScheduleType.Fixed)
+                    {
+                        if (nextScheduleOccurrence == null)
+                            continue;
 
-                    if (nextReminderTime < DateTime.Now)
-                        continue;
+                        if (nextReminderTime < DateTime.Now)
+                            continue;
 
-                    //EmailBuilder-Service implementieren und hier vorlagern
-                    //Save JobIDs in new Table
-                    var newJob = BackgroundJob.Schedule(() => _emailService.SendAsync("Erinnerung",
-                        $"<div style='font-weight:bold'>\"{item.Bezeichnung}\"!</div><div>Bitte bis <span style='font-weight:bold'>{nextScheduleOccurrence.ToShortDateString()}</span> um <span style='font-weight:bold'>{nextScheduleOccurrence.ToShortTimeString()}!</span> erledigen.</div>",
-                        Base.MessageType.Info, null, userEmails.ToArray()), nextReminderTime);
+                        var newJobId = BackgroundJob.Schedule(() => _emailService.SendReminderAsync(itemId, userEmails.ToArray()), nextReminderTime);
+                        newJobIds.Add(newJobId);
+                    }
+                    else
+                    {
+                        if (schedule.ScheduleDefinition.WeekDays != null)
+                            schedule.ScheduleDefinition.WeekDays.Time = TimeOnly.FromDateTime(reminderDefinition.ApplyReminderToOccurrence(new DateTime(schedule.ScheduleDefinition.WeekDays.Time.Ticks)));
 
-                    newJobIds.Add(newJob);
+                        schedule.Start = nextReminderTime;
+
+                        var cronDefinition = _mapper.Map<CronDomainModel>(schedule);
+
+                        var newJob = reminder.Id.ToString().ToLower();
+                        RecurringJob.AddOrUpdate(newJob, () => _emailService.SendReminderAsync(itemId, userEmails.ToArray()), cronDefinition, new RecurringJobOptions() { TimeZone = TimeZoneInfo.Local });
+
+                        newJobIds.Add(newJob);
+                    }
                 }
             }
 

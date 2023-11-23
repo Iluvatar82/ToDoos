@@ -31,6 +31,7 @@ namespace Framework.Converter.Automapper
 
             CreateMap<Schedule, ScheduleDomainModel>();
             CreateMap<ScheduleDomainModel, Schedule>();
+            CreateMap<ScheduleDomainModel, CronDomainModel>().ConvertUsing<ScheduleCronConverter>();
 
             CreateMap<UserGroup, UserGroupDomainModel>();
             CreateMap<UserGroupDomainModel, UserGroup>();

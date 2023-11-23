@@ -1,4 +1,4 @@
-﻿@page "/schedule/{ListId:guid}/{ItemId:guid}"
+﻿@page "/schedule/{ItemId:guid}"
 
 @using Core.Common;
 @using Core.Validation
@@ -163,9 +163,6 @@
     public IdentityUser? User { get; set; }
 
     [Parameter]
-    public Guid ListId { get; set; }
-
-    [Parameter]
     public Guid ItemId { get; set; }
 
     [Parameter]
@@ -175,6 +172,8 @@
     [Parameter]
     public EventCallback<ScheduleEditDomainModel> ModelChanged { get; set; }
 
+    private Guid? ListId { get; set; }
+
     private string Title { get; set; } = "Keine Beschreibung";
     private decimal DefaultReminderTimeInMinutes { get; set; }
 
@@ -182,7 +181,9 @@
     {
         if (ItemId != Guid.Empty)
         {
-            Title = (await ItemRepository.GetAsync(ItemId))?.Bezeichnung ?? Title;
+            var item = await ItemRepository.GetAsync(ItemId);
+            ListId = item?.ListId;
+            Title = item?.Bezeichnung ?? Title;
 
             Model.Schedules = ModelMapper.MapToList<ScheduleDomainModel>(await ScheduleRepository.GetAllAsync(s => s.ToDoItemId == ItemId));
             Model.Reminders = ModelMapper.MapToList<ScheduleReminderDomainModel>(await ScheduleReminderRepository.GetAllAsync(r => r.ToDoItemId == ItemId));
@@ -275,7 +276,7 @@
 
     private void NavigateBack()
     {
-        NavigationManager.NavigateTo(NavigationManager.BaseUri + $"/list/{ListId}");
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + $"list/{ListId}");
     }
 
     private async Task Save()

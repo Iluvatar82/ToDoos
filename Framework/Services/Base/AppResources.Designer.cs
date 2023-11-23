@@ -68,5 +68,14 @@ namespace Framework.Services.Base {
                 return ResourceManager.GetString("Application_Name", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die https://todoos.net ähnelt.
+        /// </summary>
+        public static string Application_Url {
+            get {
+                return ResourceManager.GetString("Application_Url", resourceCulture);
+            }
+        }
     }
 }

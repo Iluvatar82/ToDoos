@@ -1,47 +1,67 @@
 {
-    "profiles": {
-        "http": {
-            "commandName": "Project",
-            "launchBrowser": true,
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Release"
-            },
-            "dotnetRunMessages": true,
-            "applicationUrl": "http://localhost:5169/"
-        },
-        "https": {
-            "commandName": "Project",
-            "launchBrowser": true,
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Release"
-            },
-            "dotnetRunMessages": true,
-            "applicationUrl": "https://localhost:7163/;http://localhost:5169/"
-        },
-        "IIS Express": {
-            "commandName": "IISExpress",
-            "launchBrowser": true,
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            }
-        },
-        "WSL": {
-            "commandName": "WSL2",
-            "launchBrowser": true,
-            "launchUrl": "https://localhost:7163/",
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Release",
-                "ASPNETCORE_URLS": "https://localhost:7163/;http://localhost:5169/"
-            },
-            "distributionName": ""
-        }
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Release",
+        "todoosvault": "https://todoosvault.vault.azure.net/",
+        "AZURE_USERNAME": "spitefr@gmail.com"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5169/"
     },
-    "iisSettings": {
-        "windowsAuthentication": false,
-        "anonymousAuthentication": true,
-        "iisExpress": {
-            "applicationUrl": "http://localhost:28604/",
-            "sslPort": 44369
-        }
+    "https": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Release",
+        "todoosvault": "https://todoosvault.vault.azure.net/",
+        "AZURE_USERNAME": "spitefr@gmail.com"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7163/;http://localhost:5169/"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "todoosvault": "https://todoosvault.vault.azure.net/",
+        "AZURE_USERNAME": "spitefr@gmail.com"
+      }
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "launchBrowser": true,
+      "launchUrl": "https://localhost:7163/",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Release",
+        "ASPNETCORE_URLS": "https://localhost:7163/;http://localhost:5169/",
+        "todoosvault": "https://todoosvault.vault.azure.net/",
+        "AZURE_USERNAME": "spitefr@gmail.com"
+      },
+      "distributionName": ""
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "environmentVariables": {
+        "ASPNETCORE_URLS": "https://+:443;http://+:80",
+        "todoosvault": "https://todoosvault.vault.azure.net/",
+        "AZURE_USERNAME": "spitefr@gmail.com"
+      },
+      "publishAllPorts": true,
+      "useSSL": true
     }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:28604/",
+      "sslPort": 44369
+    }
+  }
 }

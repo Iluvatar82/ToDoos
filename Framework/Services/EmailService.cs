@@ -1,19 +1,32 @@
-﻿using Core.Validation;
+﻿using AutoMapper;
+using Core.Validation;
+using Framework.DomainModels;
+using Framework.DomainModels.Common;
+using Framework.Extensions;
+using Framework.Repositories;
 using Framework.Services.Base;
 using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using System.Net;
-using System.Net.Mail;
-using System.Text;
+using ToDo.Data.ToDoData.Entities;
 
 namespace Framework.Services
 {
     public class EmailService : INotificationService
     {
-        public EmailService(IOptions<AuthMessageSenderOptions> optionsAccessor)
+        private readonly IMapper mapper;
+        private readonly ItemRepository itemRepository;
+        private readonly EmailBuilderService emailBuilderService;
+
+        public EmailService(IOptions<AuthMessageSenderOptions> optionsAccessor,
+            IMapper mapper,
+            ItemRepository itemRepository,
+            EmailBuilderService emailBuilderService)
         {
             Options = optionsAccessor.Value;
+            this.mapper = mapper;
+            this.itemRepository = itemRepository;
+            this.emailBuilderService = emailBuilderService;
         }
 
         public AuthMessageSenderOptions Options { get; }
@@ -39,34 +52,19 @@ namespace Framework.Services
 
             msg.SetClickTracking(false, false);
             await client.SendEmailAsync(msg);
+        }
 
-            //using (var smtpClient = new SmtpClient("smtp.gmail.com", 587))
-            //{
-            //    smtpClient.UseDefaultCredentials = false;
-            //    smtpClient.Credentials = new NetworkCredential(_sender, _password);
-            //    smtpClient.EnableSsl = true;
-            //    smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+        public async Task SendReminderAsync(Guid itemId, params string[] recipients)
+        {
+            var item = mapper.Map<ToDoItemDomainModel>(await itemRepository.GetItemCompleteAsync(itemId));
+            item.NotNull();
 
-            //    var mailBody = new MailMessage
-            //    {
-            //        From = new MailAddress(_sender, "ToDoos.net"),
-            //        Subject = title,
-            //        SubjectEncoding = Encoding.UTF8,
-            //        BodyEncoding = Encoding.UTF8,
-            //        HeadersEncoding = Encoding.UTF8,
-            //        IsBodyHtml = true,
-            //        Body = message,
-            //        Priority = MailPriority.Normal
-            //    };
+            var nextInfo = item.Schedules
+                .Select(s => (Schedule: s, NextOccurrence: s.ScheduleDefinition.NextOccurrenceAfter(DateTime.Now, s.Start, s.End) ?? DateTime.MaxValue))
+                .OrderBy(sI => sI.NextOccurrence).First();
 
-            //    foreach (var recipient in recipients)
-            //        mailBody.To.Add(new MailAddress(recipient));
-
-            //    await smtpClient.SendMailAsync(mailBody);
-            //}
-
-            //await Task.CompletedTask;
-
+            var messageString = emailBuilderService.BuildErinnerungMailMessage(item, nextInfo.NextOccurrence, nextInfo.Schedule.Type == DomainModels.Common.Enums.ScheduleType.Fixed);
+            await SendAsync("Erinnerung", messageString, MessageType.Info, recipients: recipients);
         }
     }
 }

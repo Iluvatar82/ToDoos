@@ -67,6 +67,7 @@ namespace UI.Web
 
             builder.Services.AddSingleton<DBDomainMapper>();
 
+            builder.Services.AddTransient<EmailBuilderService>();
             builder.Services.AddTransient<EmailService>();
             builder.Services.AddTransient<IEmailSender, EmailSenderWrapper>();
 

@@ -1,8 +1,13 @@
 {
-    "dependencies": {
-        "mssql1": {
-            "type": "mssql",
-            "connectionId": "ConnectionStrings:DBConnection"
-        }
+  "dependencies": {
+    "mssql1": {
+      "type": "mssql",
+      "connectionId": "ConnectionStrings:DBConnection"
+    },
+    "secrets1": {
+      "type": "secrets",
+      "connectionId": "todoosvault",
+      "dynamicId": null
     }
+  }
 }

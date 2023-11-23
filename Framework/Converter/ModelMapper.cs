@@ -30,7 +30,7 @@ namespace Framework.Converter
                 CategoryDomainModel category => _mapper.Map<Category>(category),
                 HangfireJobDomainModel job => _mapper.Map<HangfireJob>(job),
                 ScheduleDomainModel schedule => _mapper.Map<Schedule>(schedule),
-                ScheduleReminderDomainModel reminder => _mapper.Map<Category>(reminder),
+                ScheduleReminderDomainModel reminder => _mapper.Map<ScheduleReminder>(reminder),
                 SettingDomainModel setting => _mapper.Map<Setting>(setting),
                 ToDoItemDomainModel item => _mapper.Map<ToDoItem>(item),
                 ToDoListDomainModel list => _mapper.Map<ToDoList>(list),
