@@ -2,6 +2,8 @@
 using Framework.Extensions;
 using Framework.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 using ToDo.Data.ToDoData;
 using ToDo.Data.ToDoData.Entities;
 
@@ -24,6 +26,15 @@ namespace Framework.Repositories
                 return await dbContext.ToDoItems!.Where(i => i.ListId == listId).IncludeAll().ToListAsync();
             else
                 return await dbContext.ToDoItems!.Where(i => i.ListId == listId && i.IsActive == isActive).IncludeAll().ToListAsync();
+        }
+
+        public async Task<List<ToDoItem>> GetAllItemsCompleteAsync(Func<ToDoItem, bool> filterFunc)
+        {
+            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            dbContext.NotNull();
+            dbContext!.ToDoItems.NotNull();
+
+            return dbContext.ToDoItems!.IncludeAll().Where(filterFunc).ToList();
         }
 
         public async Task<ToDoItem?> GetItemCompleteAsync(Guid itemId)

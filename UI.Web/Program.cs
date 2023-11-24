@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ServiceJobs;
 using ToDo.Data.Identity;
 using ToDo.Data.ToDoData;
 using UI.Web.Areas.Identity;
@@ -20,6 +21,7 @@ using UI.Web.Areas.Identity.EmailSenderWrapper;
 using UI.Web.Hangfire;
 using UI.Web.Hubs;
 using UI.Web.Services;
+using UI.Web.StartupConfiguration;
 
 namespace UI.Web
 {
@@ -73,6 +75,8 @@ namespace UI.Web
 
             AddEmailSenderSecrets(builder);
 
+            builder.Services.AddSingleton<DatabaseCleanupJob>();
+
             builder.Services.AddAntiforgery(af => af.SuppressXFrameOptionsHeader = true);
             builder.Services.AddCors();
 
@@ -113,6 +117,8 @@ namespace UI.Web
             app.MapFallbackToPage("/_Host");
 
             app.UseCors(c => c.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+
+            ConfigureServices.Register(app);
 
             app.Run();
         }
