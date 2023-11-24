@@ -69,7 +69,7 @@ namespace Framework.Services
             if (existingHangfireJobs.Any())
                 await _itemRepository.RemoveAndSaveAsync(existingHangfireJobs.ToArray());
 
-            if (!item.IsActive)
+            if (item.InactiveSince.HasValue)
                 return;
 
             var newJobIds = new List<string>();

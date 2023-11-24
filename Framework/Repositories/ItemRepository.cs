@@ -2,8 +2,6 @@
 using Framework.Extensions;
 using Framework.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
 using ToDo.Data.ToDoData;
 using ToDo.Data.ToDoData.Entities;
 
@@ -16,16 +14,13 @@ namespace Framework.Repositories
         {
         }
 
-        public async Task<List<ToDoItem>> GetAllItemsCompleteAsync(Guid listId, bool? isActive = null)
+        public async Task<List<ToDoItem>> GetAllItemsCompleteAsync(Guid listId, bool showInactive)
         {
             using var dbContext = await dbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.ToDoItems.NotNull();
 
-            if (isActive == null)
-                return await dbContext.ToDoItems!.Where(i => i.ListId == listId).IncludeAll().ToListAsync();
-            else
-                return await dbContext.ToDoItems!.Where(i => i.ListId == listId && i.IsActive == isActive).IncludeAll().ToListAsync();
+            return await dbContext.ToDoItems!.Where(i => i.ListId == listId && i.InactiveSince.HasValue == showInactive).IncludeAll().ToListAsync();
         }
 
         public async Task<List<ToDoItem>> GetAllItemsCompleteAsync(Func<ToDoItem, bool> filterFunc)

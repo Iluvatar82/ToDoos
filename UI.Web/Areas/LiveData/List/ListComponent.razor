@@ -286,26 +286,18 @@
             return;
         }
 
-        if (!showInactive)
-        {
-            topLevelItems = ModelMapper.MapToList<ToDoItemDomainModel>(await ItemRepository.GetAllItemsCompleteAsync(ListId, !showInactive))
-                                .Where(item => item.Parent == null).ToList();
-
-            topLevelItems = ItemHandlerService.Order(topLevelItems);
-        }
-        else
-        {
-            var allItems = ModelMapper.MapToList<ToDoItemDomainModel>(await ItemRepository.GetAllItemsCompleteAsync(ListId));
+        var allItems = ModelMapper.MapToList<ToDoItemDomainModel>(await ItemRepository.GetAllItemsCompleteAsync(ListId, showInactive));
+        if (showInactive)
             topLevelItems = BuildInactiveItemsFromAll(allItems);
-            topLevelItems = ItemHandlerService.Order(topLevelItems);
-        }
+
+        topLevelItems = ItemHandlerService.Order(topLevelItems);
 
         topLevelReferenceList = new List<ElementReference>();
     }
 
     private List<ToDoItemDomainModel> BuildInactiveItemsFromAll(List<ToDoItemDomainModel> allItems)
     {
-        var allInactiveItems = allItems.Where(item => !item.IsActive);
+        var allInactiveItems = allItems.Where(item => item.InactiveSince.HasValue);
         var result = new HashSet<ToDoItemDomainModel>();
 
         foreach (var inactiveItem in allInactiveItems)
@@ -317,7 +309,7 @@
                 if (currentItem.VisuallyDeactivated == true)
                     break;
 
-                if (currentItem.IsActive)
+                if (!currentItem.InactiveSince.HasValue)
                     currentItem.VisuallyDeactivated = true;
             }
 

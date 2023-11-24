@@ -75,7 +75,7 @@
 
     private async Task RemoveList(ToDoListDomainModel list, bool force = false)
     {
-        var flatItems = (await ItemRepository.GetAllItemsCompleteAsync(list.Id)).ToArray();
+        var flatItems = (await ItemRepository.GetAllItemsCompleteAsync(list.Id, false)).ToArray();
         if (flatItems.Any() && !force)
         {
             PageModal.NotNull();

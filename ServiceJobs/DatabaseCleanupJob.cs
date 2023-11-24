@@ -14,7 +14,7 @@ namespace ServiceJobs
 
         public async Task Execute()
         {
-            var allOldItems = await _repository.GetAllItemsCompleteAsync(i => i.IsActive == false && i.Done < DateTime.Now.AddDays(-7));
+            var allOldItems = await _repository.GetAllItemsCompleteAsync(i => i.InactiveSince != null && i.InactiveSince < DateTime.Now.AddDays(-7));
             
             var allSchedules = allOldItems.SelectMany(i => i.Schedules).ToArray();
             var allReminders = allOldItems.SelectMany(i => i.Reminders).ToArray();

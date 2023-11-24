@@ -35,12 +35,11 @@ namespace ToDo.Data.ToDoData.Entities
 
         public DateTime? Done { get; set; }
 
-        public bool IsActive { get; set; }
+        public DateTime? InactiveSince { get; set; }
 
 
         public ToDoItem()
         {
-            IsActive = true;
             Bezeichnung = string.Empty;
             Children = new List<ToDoItem>();
             Schedules = new List<Schedule>();

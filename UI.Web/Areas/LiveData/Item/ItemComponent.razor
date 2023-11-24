@@ -38,7 +38,7 @@
             <span class="fa fa-plus" aria-hidden="true"></span>
         </div>
 
-        <div class="px-2 @((Model.Done.HasValue || Hidden || !Model.IsActive) ? "" : "markToDoDone fade-in-on-hover") p-0">
+        <div class="px-2 @((Model.Done.HasValue || Hidden || Model.InactiveSince.HasValue) ? "" : "markToDoDone fade-in-on-hover") p-0">
             @if (Model.Done.HasValue)
             {
                 <span class="text-success" @onclick=@DoneChanged><i class="fa fa-check" aria-hidden="true"></i></span>
@@ -97,7 +97,7 @@
     </td>
 </tr>
 
-@if (Model.IsActive && !Hidden)
+@if (!Model.InactiveSince.HasValue && !Hidden)
 {
     @if (newItemModel != null)
     {
@@ -113,7 +113,7 @@
 {
     foreach (var child in Model.Children.OrderBy(item => item.Done.HasValue).ThenBy(item => item.Order).ThenByDescending(item => item.NextOrLastOccurrence))
     {
-        if (InactiveMode && !child.VisuallyDeactivated && child.IsActive)
+        if (InactiveMode && !child.VisuallyDeactivated && !child.InactiveSince.HasValue)
             continue;
 
         <ItemComponent Model=child Level=@(Level + 1) InactiveMode=InactiveMode ListId=ListId TopLevel=@TopLevel
@@ -198,7 +198,7 @@
     public bool BezeichnungEditEnabled { get => bezeichnungEditEnabled; set { bezeichnungEditEnabled = value; StateHasChanged(); } }
     private DateTime? date { get; set; }
     private DateTime? timeOfDay { get; set; }
-    private bool Hidden => InactiveMode && Model.IsActive;
+    private bool Hidden => InactiveMode && !Model.InactiveSince.HasValue;
     private RenderFragment BezeichnungFragment => (__builder) => __builder.AddMarkupContent(0, ItemContentRenderService.RenderContent(Model.Bezeichnung));
     private List<(string Icon, string Element)> CategorySelect { get; set; } = new List<(string Icon, string Element)>();
     private string OccurrenceString
@@ -241,7 +241,7 @@
     private async Task BezeichnungEditEnabledChanged()
     {
         var wasActive = BezeichnungEditEnabled;
-        BezeichnungEditEnabled = Model.IsActive && !Hidden;
+        BezeichnungEditEnabled = !Model.InactiveSince.HasValue && !Hidden;
         if (!wasActive)
             await OnBezeichnungEditEnabled.InvokeAsync(this);
 
@@ -249,7 +249,7 @@
 
     private async Task DoneChanged()
     {
-        if (Hidden || !Model.IsActive)
+        if (Hidden || Model.InactiveSince.HasValue)
             return;
 
         if (Model.Done == null)
@@ -295,7 +295,7 @@
                     <span class="fa fa-warning text-warning fs-2" aria-hidden="true"></span>
                 </div>
 
-                <div class="col-9 text-start">Das Item "@(Model.Bezeichnung)" besitzt Unter-Items. Möchten Sie alle Items @(Model.IsActive ? "inaktiv" : "aktiv") setzen?</div>
+                <div class="col-9 text-start">Das Item "@(Model.Bezeichnung)" besitzt Unter-Items. Möchten Sie alle Items @(Model.InactiveSince.HasValue ? "inaktiv" : "aktiv") setzen?</div>
             </div>
     ;
 
@@ -305,9 +305,9 @@
             return;
         }
         else if (force == true)
-            SetActiveStateForAll(Model, !Model.IsActive);
+            SetActiveStateForAll(Model, Model.InactiveSince.HasValue ? null : DateTime.Now);
         else
-            Model.IsActive = !Model.IsActive;
+            Model.InactiveSince = Model.InactiveSince.HasValue ? null : DateTime.Now;
 
         await ItemRepository.UpdateAndSaveAsync(ModelMapper.MapToArray(Model.SelfAndAllDescendents));
         StateHasChanged();
@@ -332,11 +332,11 @@
             await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
     }
 
-    private void SetActiveStateForAll(ToDoItemDomainModel item, bool isActive)
+    private void SetActiveStateForAll(ToDoItemDomainModel item, DateTime? activeValue)
     {
         foreach (var childItem in item.Children)
-            SetActiveStateForAll(childItem, isActive);
+            SetActiveStateForAll(childItem, activeValue);
 
-        item.IsActive = isActive;
+        item.InactiveSince = activeValue;
     }
 }

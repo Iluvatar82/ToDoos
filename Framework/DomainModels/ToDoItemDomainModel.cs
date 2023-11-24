@@ -25,7 +25,7 @@ namespace Framework.DomainModels
 
         public DateTime? Done { get; set; }
 
-        public bool IsActive { get; set; }
+        public DateTime? InactiveSince { get; set; }
 
         public bool VisuallyDeactivated { get; set; }
 
@@ -74,7 +74,6 @@ namespace Framework.DomainModels
                 ParentId = parentId,
                 CategoryId = categoryId,
                 ListId = listId,
-                IsActive = true
             };
 
             result.Set("OriginalOrder", 0);
