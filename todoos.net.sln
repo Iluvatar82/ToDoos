@@ -17,9 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Framework.Tests", "Framewor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ToDo.Data.MigrationTool", "ToDo.Data.MigrationTool\ToDo.Data.MigrationTool.csproj", "{8D797891-A10C-45B2-9494-55AC60C7B52B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceJobs", "ServiceJobs\ServiceJobs.csproj", "{1DDFC999-D33F-49AF-859F-9A2021B16AB1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailServer", "EmailServer\EmailServer.csproj", "{F48A02E7-0886-46F0-A017-CBB4C0CD27A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceJobs", "ServiceJobs\ServiceJobs.csproj", "{1DDFC999-D33F-49AF-859F-9A2021B16AB1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,10 +57,6 @@ Global
 		{1DDFC999-D33F-49AF-859F-9A2021B16AB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1DDFC999-D33F-49AF-859F-9A2021B16AB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1DDFC999-D33F-49AF-859F-9A2021B16AB1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F48A02E7-0886-46F0-A017-CBB4C0CD27A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F48A02E7-0886-46F0-A017-CBB4C0CD27A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F48A02E7-0886-46F0-A017-CBB4C0CD27A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F48A02E7-0886-46F0-A017-CBB4C0CD27A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

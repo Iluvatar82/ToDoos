@@ -57,7 +57,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
-    <ProjectReference Include="..\EmailServer\EmailServer.csproj" />
     <ProjectReference Include="..\Framework\Framework.csproj" />
     <ProjectReference Include="..\ServiceJobs\ServiceJobs.csproj" />
     <ProjectReference Include="..\ToDo.Data\ToDo.Data.csproj" />
