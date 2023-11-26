@@ -31,8 +31,6 @@ namespace Framework.DomainModels
 
         public DateTime? NextOrLastOccurrence => Schedules?.NextOccurrenceAfter(DateTime.Now) ?? Schedules?.LastOccurrenceBefore(DateTime.Now);
 
-        public List<DateTime> DefaultOccurences => Occurrences(DateTime.Today.AddDays(-7), DateTime.Today.AddDays(7));
-
         public List<DateTime> Occurrences(DateTime from, DateTime to) => Schedules?.GetOccurrences(from, to) ?? new List<DateTime>();
 
 

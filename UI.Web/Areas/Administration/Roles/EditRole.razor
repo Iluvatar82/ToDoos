@@ -107,48 +107,76 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        if (!IsNewPage && Id != default)
+        try
         {
-            var dbRole = await IdentityRepository.GetRoleAsync(Id);
-            
-            dbRole.NotNull();
+            if (!IsNewPage && Id != default)
+            {
+                var dbRole = await IdentityRepository.GetRoleAsync(Id);
 
-            displayRole = IdentityRoleDto.ToIdentityRoleDto(dbRole!);
-            usersInRole = await IdentityRepository.GetUsersWithRoleAsync(Id);
+                dbRole.NotNull();
+
+                displayRole = IdentityRoleDto.ToIdentityRoleDto(dbRole!);
+                usersInRole = await IdentityRepository.GetUsersWithRoleAsync(Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 
     private async Task ToAddUserByEmailAddress(EditContext context)
     {
-        var valid = context.Validate();
-        if (valid)
+        try
         {
-            displayEmail.NotNullOrEmpty();
-            displayEmail.Email.NotNullOrEmpty();
+            var valid = context.Validate();
+            if (valid)
+            {
+                displayEmail.NotNullOrEmpty();
+                displayEmail.Email.NotNullOrEmpty();
 
-            var user = await IdentityRepository.GetUserByEmailAsync(displayEmail.Email!);
-            if (user != null)
-                await IdentityRepository.ApplyRoleToUserAsync(displayRole.Id, user.Id);
+                var user = await IdentityRepository.GetUserByEmailAsync(displayEmail.Email!);
+                if (user != null)
+                    await IdentityRepository.ApplyRoleToUserAsync(displayRole.Id, user.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 
     private void NavigateBack()
     {
-        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+        try
+        {
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task SaveNewRole(EditContext context)
     {
-        var valid = context.Validate();
-        if (valid)
+        try
         {
-            displayRole.NotNull();
-            displayRole.Id.NotNullOrEmpty();
-            displayRole.Rolle.NotNullOrEmpty();
+            var valid = context.Validate();
+            if (valid)
+            {
+                displayRole.NotNull();
+                displayRole.Id.NotNullOrEmpty();
+                displayRole.Rolle.NotNullOrEmpty();
 
-            await IdentityRepository.AddAndSaveAsync(IdentityRoleDto.ToIdentityRole(displayRole));
+                await IdentityRepository.AddAndSaveAsync(IdentityRoleDto.ToIdentityRole(displayRole));
 
-            NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+                NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/");
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 }

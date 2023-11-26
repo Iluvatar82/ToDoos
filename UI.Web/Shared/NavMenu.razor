@@ -71,15 +71,31 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (User == null)
-            return;
+        try
+        {
+            if (User == null)
+                return;
 
-        var guidId = Guid.Parse(User.Id);
-        allLists = ModelMapper.MapToList<ToDoListDomainModel>(await UserRepository.GetAllListsAsync(guidId));
+            var guidId = Guid.Parse(User.Id);
+            allLists = ModelMapper.MapToList<ToDoListDomainModel>(await UserRepository.GetAllListsAsync(guidId));
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
+
+        await base.OnParametersSetAsync();
     }
 
     private void ToggleNavMenu()
     {
-        collapseNavMenu = !collapseNavMenu;
+        try
+        {
+            collapseNavMenu = !collapseNavMenu;
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 }

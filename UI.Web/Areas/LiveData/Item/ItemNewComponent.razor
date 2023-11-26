@@ -69,62 +69,108 @@
 
     protected override void OnParametersSet()
     {
-        if (User == null)
-            return;
+        try
+        {
+            if (User == null)
+                return;
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
+
+        base.OnParametersSet();
     }
 
     private void SetCategoryId(string value)
     {
-        if (Guid.TryParse(value, out var catId))
-            Model.CategoryId = catId;
-        else
-            Model.CategoryId = null;
+        try
+        {
+            if (Guid.TryParse(value, out var catId))
+                Model.CategoryId = catId;
+            else
+                Model.CategoryId = null;
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private Dictionary<string, object>? SetSelected(Guid? categoryId, Guid? currentId)
     {
-        if (!categoryId.Equals(currentId))
-            return null;
-
-        return new Dictionary<string, object>
+        try
         {
-            { "selected", "selected" }
-        };
+            if (!categoryId.Equals(currentId))
+                return null;
+
+            return new Dictionary<string, object>
+            {
+                { "selected", "selected" }
+            };
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            return null;
+        }
     }
 
     private async Task Abort()
     {
-        await OnChange.InvokeAsync(null);
+        try
+        {
+            await OnChange.InvokeAsync(null);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private Dictionary<string, object>? GetMarginLeft()
     {
-        if (Model.CategoryId == null)
-            return null;
-
-        return new Dictionary<string, object>
+        try
         {
-            { "style", $"margin-left: {Level * 32}px" }
-        };
+            if (Model.CategoryId == null)
+                return null;
+
+            return new Dictionary<string, object>
+            {
+                { "style", $"margin-left: {Level * 32}px" }
+            };
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            return null;
+        }
     }
 
     private async Task SaveNewToDo(EditContext context)
     {
-        var valid = context.Validate();
-        if (valid)
+        try
         {
-            Model.Schedules = ScheduleEditModel.Schedules;
-            Model.Reminders = ScheduleEditModel.Reminders;
-            if (Model.CategoryId != null)
-                Model.Category = Categories.FirstOrDefault(c => c.Id == Model.CategoryId.Value);
+            var valid = context.Validate();
+            if (valid)
+            {
+                Model.Schedules = ScheduleEditModel.Schedules;
+                Model.Reminders = ScheduleEditModel.Reminders;
+                if (Model.CategoryId != null)
+                    Model.Category = Categories.FirstOrDefault(c => c.Id == Model.CategoryId.Value);
 
-            var dbModel = ModelMapper.Map(Model);
-            Model.Id = await ItemRepository.AddAndSaveAsync(dbModel);
+                var dbModel = ModelMapper.Map(Model);
+                Model.Id = await ItemRepository.AddAndSaveAsync(dbModel);
 
-            if (Model.Schedules.Any() && Model.Reminders.Any())
-                await ReminderService.UpdateReminders(Model.Id);
+                if (Model.Schedules.Any() && Model.Reminders.Any())
+                    await ReminderService.UpdateReminders(Model.Id);
 
-            await OnChange.InvokeAsync(Model);
+                await OnChange.InvokeAsync(Model);
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 }

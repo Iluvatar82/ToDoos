@@ -43,16 +43,37 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        allRoles = (await IdentityRepository.GetAllRoles()).Select(IdentityRoleDto.ToIdentityRoleDto).ToList();
+        try
+        {
+            allRoles = (await IdentityRepository.GetAllRoles()).Select(IdentityRoleDto.ToIdentityRoleDto).ToList();
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void NavigateToEdit(string id)
     {
-        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/roles/edit/" + id);
+        try
+        {
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/roles/edit/" + id);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void NavigateToNew()
     {
-        NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/roles/new");
+        try
+        {
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/roles/new");
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 }

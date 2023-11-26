@@ -37,7 +37,14 @@
 
     protected override void OnInitialized()
     {
-        HangFireUrl = NavigationManager.BaseUri + "hangfire";
+        try
+        {
+            HangFireUrl = NavigationManager.BaseUri + "hangfire";
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
@@ -48,7 +55,7 @@
         }
         catch (Exception ex)
         {
-            //ToDo
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
 
         await base.OnAfterRenderAsync(firstRender);

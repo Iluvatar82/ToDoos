@@ -18,11 +18,25 @@
 @code {
     protected override void OnInitialized()
     {
-        ToastService.ToastsChanged += (_, _) => InvokeAsync(() => StateHasChanged());
+        try
+        {
+            ToastService.ToastsChanged += (_, _) => InvokeAsync(() => StateHasChanged());
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     void IDisposable.Dispose()
     {
-        ToastService.ToastsChanged -= (_, _) => StateHasChanged();
+        try
+        {
+            ToastService.ToastsChanged -= (_, _) => StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 }

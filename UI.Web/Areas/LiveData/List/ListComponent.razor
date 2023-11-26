@@ -46,6 +46,8 @@
             </div>
         </div>
 
+@*         <UI.Web.Areas.LiveData.Shared.TimeLine></UI.Web.Areas.LiveData.Shared.TimeLine>*@
+
         <CascadingValue Value=@Categories>
             @if (newItemModel != null)
             {
@@ -181,7 +183,7 @@
     {
         newItemModel = null;
         StateHasChanged();
-        if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
+        if (User != default && ListHubConnection!.State == HubConnectionState.Connected && listEntity?.IsUserList == false)
             await ListHubConnection!.SendAsync("BroadcastListChanged", ListId, User);
     };
 
@@ -205,77 +207,100 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ListHubConnection?.On<string>("JoinedList", async (username) =>
+        try
         {
-            await ToastService.SendAsync("Beigetreten", $"{username} hat die Liste geöffnet!", Framework.Services.Base.MessageType.Info);
-            await InvokeAsync(StateHasChanged);
-        });
-
-        ListHubConnection?.On<string>("UpdateList", async (username) =>
-        {
-            await ToastService.SendAsync("Aktualisiert", $"{username} hat die Liste aktualisiert!.{Environment.NewLine}Lade Änderungen...", Framework.Services.Base.MessageType.Info);
-            await InvokeAsync(async () =>
+            ListHubConnection?.On<string>("JoinedList", async (username) =>
             {
-                await RetrieveItems();
-                StateHasChanged();
+                await ToastService.SendAsync("Beigetreten", $"{username} hat die Liste geöffnet!", Framework.Services.Base.MessageType.Info);
+                await InvokeAsync(StateHasChanged);
             });
-        });
 
-        ListHubConnection?.On<string>("LeftList", async (username) =>
+            ListHubConnection?.On<string>("UpdateList", async (username) =>
+            {
+                await ToastService.SendAsync("Aktualisiert", $"{username} hat die Liste aktualisiert!.{Environment.NewLine}Lade Änderungen...", Framework.Services.Base.MessageType.Info);
+                await InvokeAsync(async () =>
+                {
+                    await RetrieveItems();
+                    StateHasChanged();
+                });
+            });
+
+            ListHubConnection?.On<string>("LeftList", async (username) =>
+            {
+                await ToastService.SendAsync("Verlassen", $"{username} hat die Liste geschlossen!", Framework.Services.Base.MessageType.Info);
+                await InvokeAsync(StateHasChanged);
+            });
+
+            if (ListId == default)
+            {
+                var _currentUser = (await AuthenticationProvider.GetAuthenticationStateAsync()).User;
+                if (_currentUser?.Claims.Any() != true)
+                    return;
+
+                ListId = Guid.Parse(_currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
+            }
+        }
+        catch (Exception ex)
         {
-            await ToastService.SendAsync("Verlassen", $"{username} hat die Liste geschlossen!", Framework.Services.Base.MessageType.Info);
-            await InvokeAsync(StateHasChanged);
-        });
-
-        if (ListId == default)
-        {
-            var _currentUser = (await AuthenticationProvider.GetAuthenticationStateAsync()).User;
-            if (_currentUser?.Claims.Any() != true)
-                return;
-
-            ListId = Guid.Parse(_currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (previousListId == ListId)
-            return;
-
-        if (User != default)
+        try
         {
-            var userId = Guid.Parse(User.Id);
-            var twoColumnSetting = await SettingRepository.GetSettingAsync(userId, Settings.TwoColumns);
-            if (twoColumnSetting != null)
-                showTwoColumns = twoColumnSetting.Value.GetBool();
+            if (previousListId == ListId)
+                return;
+
+            if (User != default)
+            {
+                var userId = Guid.Parse(User.Id);
+                var twoColumnSetting = await SettingRepository.GetSettingAsync(userId, Settings.TwoColumns);
+                if (twoColumnSetting != null)
+                    showTwoColumns = twoColumnSetting.Value.GetBool();
+            }
+
+            await RetrieveItems();
+            await base.OnParametersSetAsync();
+
+            listEntity = (ToDoListDomainModel)ModelMapper.Map(await UserRepository.GetListAsync(ListId));
+            if (!listEntity.IsUserList && ListHubConnection != null && User != default)
+                await ListHubConnection.SendAsync("JoinedGroupList", ListId, User);
+
+            if (!listEntity.IsUserList)
+                Categories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.ListId == ListId));
+            else if (User != default)
+                Categories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.UserId == Guid.Parse(User.Id)));
+            else
+                Categories = new List<CategoryDomainModel>();
+
+            await ToastService.SendAsync("Liste geöffnet", $"Liste <b>{listEntity.Name}</b> wurde geöffnet!", Framework.Services.Base.MessageType.Info);
+
+            previousListId = ListId;
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
 
-        await RetrieveItems();
         await base.OnParametersSetAsync();
-
-        listEntity = (ToDoListDomainModel)ModelMapper.Map(await UserRepository.GetListAsync(ListId));
-        if (!listEntity.IsUserList && ListHubConnection != null && User != default)
-            await ListHubConnection.SendAsync("JoinedGroupList", ListId, User);
-
-        if (!listEntity.IsUserList)
-            Categories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.ListId == ListId));
-        else if (User != default)
-            Categories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.UserId == Guid.Parse(User.Id)));
-        else
-            Categories = new List<CategoryDomainModel>();
-
-        await ToastService.SendAsync("Liste geöffnet", $"Liste <b>{listEntity.Name}</b> wurde geöffnet!", Framework.Services.Base.MessageType.Info);
-
-        previousListId = ListId;
     }
 
     private async Task SwitchActiveInactiveView()
     {
-        showInactive = !showInactive;
+        try
+        {
+            showInactive = !showInactive;
 
-        await RetrieveItems();
+            await RetrieveItems();
 
-        StateHasChanged();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task RetrieveItems()
@@ -306,7 +331,7 @@
         foreach (var inactiveItem in allInactiveItems)
         {
             var currentItem = inactiveItem;
-            while(currentItem.Parent != null)
+            while (currentItem.Parent != null)
             {
                 currentItem = currentItem.Parent;
                 if (currentItem.VisuallyDeactivated == true)
@@ -325,23 +350,30 @@
 
     private void NavigateBack()
     {
-        NavigationManager.NavigateTo(NavigationManager.BaseUri);
+        try
+        {
+            NavigationManager.NavigateTo(NavigationManager.BaseUri);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private ItemComponent? currentEditItemComponent = null;
     private async Task HandleBezeichnungEnabled(ItemComponent? component)
     {
-        if (currentEditItemComponent != null)
-            currentEditItemComponent.BezeichnungEditEnabled = false;
-
-        currentEditItemComponent = component;
         try
         {
+            if (currentEditItemComponent != null)
+                currentEditItemComponent.BezeichnungEditEnabled = false;
+
+            currentEditItemComponent = component;
             await JS.InvokeVoidAsync("allowKeyNavigation", component == null);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            //ToDo
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 }

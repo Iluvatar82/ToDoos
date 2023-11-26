@@ -37,58 +37,82 @@
     private bool HideOptions { get; set; } = true;
     private List<(RenderFragment Fragment, string Text)> Elements { get; set; } = new List<(RenderFragment Fragment, string Text)>();
 
-    protected override void OnParametersSet()
+    protected override async void OnParametersSet()
     {
-        if (string.IsNullOrWhiteSpace(Selected))
-            Selected = "bitte auswählen";
-
-        Validator.Satisfies(() => SimpleElements?.Any() == true || ElementsWithIcons?.Any() == true);
-
-        Elements = new List<(RenderFragment Fragment, string Text)>();
-        SelectedFragment = GetSelectedFragment(Selected);
-
-        if (SimpleElements?.Any() == true)
-        { 
-            foreach (var element in SimpleElements)
-                Elements.Add(((builder) => builder.AddContent(0, element), element));
-        }
-        else
+        try
         {
-            foreach (var element in ElementsWithIcons!)
-            {
-                RenderFragment elementRenderFragment = @<span class="@element.Icon" aria-hidden="true" style="width: 24px;"></span>;
-                elementRenderFragment += @<span> @element.Element</span>;
+            if (string.IsNullOrWhiteSpace(Selected))
+                Selected = "bitte auswählen";
 
-                Elements.Add((elementRenderFragment, element.Element));
+            if (SimpleElements?.Any() != true && ElementsWithIcons?.Any() != true)
+                return;
+
+            Elements = new List<(RenderFragment Fragment, string Text)>();
+            SelectedFragment = GetSelectedFragment(Selected);
+
+            if (SimpleElements?.Any() == true)
+            {
+                foreach (var element in SimpleElements)
+                    Elements.Add(((builder) => builder.AddContent(0, element), element));
+            }
+            else
+            {
+                foreach (var element in ElementsWithIcons!)
+                {
+                    RenderFragment elementRenderFragment = @<span class="@element.Icon" aria-hidden="true" style="width: 24px;"></span>;
+                    elementRenderFragment += @<span> @element.Element</span>;
+
+                    Elements.Add((elementRenderFragment, element.Element));
+                }
             }
         }
-        base.OnParametersSet();
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
+
+        await base.OnParametersSetAsync();
     }
 
     private RenderFragment GetSelectedFragment(string element)
     {
-        if (SimpleElements?.Contains(element) == true)
-            return @<span>element</span>;
-        else
+        try
         {
-            var elementWithIcon = ElementsWithIcons!.FirstOrDefault(ewi => ewi.Element == element);
-            if (elementWithIcon == default)
-                return@<span>&ensp;</span>;
+            if (SimpleElements?.Contains(element) == true)
+                return @<span>element</span>;
+            else
+            {
+                var elementWithIcon = ElementsWithIcons!.FirstOrDefault(ewi => ewi.Element == element);
+                if (elementWithIcon == default)
+                    return@<span>&ensp;</span>;
 
-            RenderFragment fragment =@<span class="@elementWithIcon.Icon" aria-hidden="true" style="width: 24px;"></span>;
-            if (!OnlyShowIcon)
-                fragment +=@<span> @elementWithIcon.Element</span>;
+                RenderFragment fragment =@<span class="@elementWithIcon.Icon" aria-hidden="true" style="width: 24px;"></span>;
+                if (!OnlyShowIcon)
+                    fragment +=@<span> @elementWithIcon.Element</span>;
 
-            return fragment;
+                return fragment;
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            return @<span>element</span>;
         }
     }
 
     private async void Select(string element)
     {
-        Selected = element;
-        await SelectedChanged.InvokeAsync(element);
+        try
+        {
+            Selected = element;
+            await SelectedChanged.InvokeAsync(element);
 
-        SelectedFragment = GetSelectedFragment(Selected);
-        HideOptions = true;
+            SelectedFragment = GetSelectedFragment(Selected);
+            HideOptions = true;
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 }

@@ -87,65 +87,116 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        if (User == null && ListId == null)
-            return;
+        try
+        {
+            if (User == null && ListId == null)
+                return;
 
-        if (ListId != null)
-        {
-            if (!AllCategories.Any())
-                AllCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.ListId == ListId)).ToList();
+            if (ListId != null)
+            {
+                if (!AllCategories.Any())
+                    AllCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.ListId == ListId)).ToList();
+            }
+            else
+            {
+                var guidId = Guid.Parse(User!.Id);
+                AllCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.UserId == guidId)).ToList();
+            }
         }
-        else
+        catch (Exception ex)
         {
-            var guidId = Guid.Parse(User!.Id);
-            AllCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.UserId == guidId)).ToList();
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
+
+        await base.OnParametersSetAsync();
     }
 
     private void UpdateColor(CategoryDomainModel category, string color)
     {
-        category.RGB_A = color;
+        try
+        {
+            category.RGB_A = color;
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void HandleBezeichnungChange(EditContext context, CategoryDomainModel changedCategory)
     {
-        var valid = context.Validate();
-        if (valid)
-            BezeichnungEditEnabled = -1;
+        try
+        {
+            var valid = context.Validate();
+            if (valid)
+                BezeichnungEditEnabled = -1;
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void IconChanged(CategoryDomainModel changedCategory, string icon)
     {
-        changedCategory.Icon = icon;
+        try
+        {
+            changedCategory.Icon = icon;
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async void RemoveCategory(int index)
     {
-        //TODO Check einbauen (ob Items mit der Category existieren)
-        index.Satisfies(i => i < AllCategories.Count);
+        try
+        {
+            //TODO Check einbauen (ob Items mit der Category existieren)
+            index.Satisfies(i => i < AllCategories.Count);
 
-        var toRemove = AllCategories[index];
-        if (toRemove.Id != Guid.Empty)
-            EntitiesToRemove.Add(toRemove);
+            var toRemove = AllCategories[index];
+            if (toRemove.Id != Guid.Empty)
+                EntitiesToRemove.Add(toRemove);
 
-        AllCategories.RemoveAt(index);
+            AllCategories.RemoveAt(index);
 
-        await OnRemoved.InvokeAsync(toRemove);
+            await OnRemoved.InvokeAsync(toRemove);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void NavigateToNew()
     {
-        if (ListId != null)
-            NavigationManager.NavigateTo(NavigationManager.BaseUri + $"administration/categories/new/{ListId}");
-        else
-            NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/categories/new/categories");
+        try
+        {
+            if (ListId != null)
+                NavigationManager.NavigateTo(NavigationManager.BaseUri + $"administration/categories/new/{ListId}");
+            else
+                NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/categories/new/categories");
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task Save()
     {
-        if (EntitiesToRemove.Any())
-            await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove));
+        try
+        {
+            if (EntitiesToRemove.Any())
+                await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove));
 
-        await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(AllCategories));
+            await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(AllCategories));
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 }

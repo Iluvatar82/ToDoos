@@ -180,119 +180,184 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (ItemId != Guid.Empty)
+        try
         {
-            var item = await ItemRepository.GetAsync(ItemId);
-            ListId = item?.ListId;
-            Title = item?.Bezeichnung ?? Title;
+            if (ItemId != Guid.Empty)
+            {
+                var item = await ItemRepository.GetAsync(ItemId);
+                ListId = item?.ListId;
+                Title = item?.Bezeichnung ?? Title;
 
-            Model.Schedules = ModelMapper.MapToList<ScheduleDomainModel>(await ScheduleRepository.GetAllAsync(s => s.ToDoItemId == ItemId));
-            Model.Reminders = ModelMapper.MapToList<ScheduleReminderDomainModel>(await ScheduleReminderRepository.GetAllAsync(r => r.ToDoItemId == ItemId));
+                Model.Schedules = ModelMapper.MapToList<ScheduleDomainModel>(await ScheduleRepository.GetAllAsync(s => s.ToDoItemId == ItemId));
+                Model.Reminders = ModelMapper.MapToList<ScheduleReminderDomainModel>(await ScheduleReminderRepository.GetAllAsync(r => r.ToDoItemId == ItemId));
+            }
+
+            if (User != null)
+            {
+                var reminderValueString = (await SettingRepository.GetAllSettingsAsync(Guid.Parse(User.Id))).FirstOrDefault(s => s.Key == Settings.ReminderValue)?.Value;
+                decimal reminderValue = 30m;
+                if (!string.IsNullOrWhiteSpace(reminderValueString))
+                    decimal.TryParse(reminderValueString, out reminderValue);
+
+                DefaultReminderTimeInMinutes = reminderValue;
+            }
+
+            if (!Model.Schedules.Any() && !Model.Reminders.Any())
+                await CreateNewReminder();
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
 
-        if (User != null)
-        {
-            var reminderValueString = (await SettingRepository.GetAllSettingsAsync(Guid.Parse(User.Id))).FirstOrDefault(s => s.Key == Settings.ReminderValue)?.Value;
-            decimal reminderValue = 30m;
-            if (!string.IsNullOrWhiteSpace(reminderValueString))
-                decimal.TryParse(reminderValueString, out reminderValue);
-
-            DefaultReminderTimeInMinutes = reminderValue;
-        }
-
-        if (!Model.Schedules.Any() && !Model.Reminders.Any())
-            await CreateNewReminder();
+        await base.OnParametersSetAsync();
     }
 
     private void ChangeTo(int index, int newType)
     {
-        switch (newType)
+        try
         {
-            case 0:
-                Model.Schedules[index].ScheduleDefinition = ScheduleDefinitionConverter.Convert(ScheduleFixed.Default, null);
+            switch (newType)
+            {
+                case 0:
+                    Model.Schedules[index].ScheduleDefinition = ScheduleDefinitionConverter.Convert(ScheduleFixed.Default, null);
 
-                break;
+                    break;
 
-            case 1:
-                Model.Schedules[index].ScheduleDefinition = ScheduleDefinitionConverter.Convert(ScheduleWeekdays.Default, null);
+                case 1:
+                    Model.Schedules[index].ScheduleDefinition = ScheduleDefinitionConverter.Convert(ScheduleWeekdays.Default, null);
 
-                break;
+                    break;
 
-            case 2:
-                Model.Schedules[index].ScheduleDefinition = ScheduleDefinitionConverter.Convert(ScheduleInterval.Default, null);
+                case 2:
+                    Model.Schedules[index].ScheduleDefinition = ScheduleDefinitionConverter.Convert(ScheduleInterval.Default, null);
 
-                break;
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 
     private async Task CreateNew()
     {
-        var newSchedule = new ScheduleDomainModel() { ToDoItemId = ItemId, ScheduleDefinition = new ScheduleDefinition() { Fixed = DateTime.Today.AddDays(1) } };
-        Model.Schedules.Add(newSchedule);
+        try
+        {
+            var newSchedule = new ScheduleDomainModel() { ToDoItemId = ItemId, ScheduleDefinition = new ScheduleDefinition() { Fixed = DateTime.Today.AddDays(1) } };
+            Model.Schedules.Add(newSchedule);
 
-        await ModelChanged.InvokeAsync(Model);
+            await ModelChanged.InvokeAsync(Model);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task CreateNewReminder()
     {
-        var newReminder = new ScheduleReminderDomainModel() { ToDoItemId = ItemId, ReminderDefinition = new ReminderDefinition() { Value = DefaultReminderTimeInMinutes, Unit = SettingsModel.DefaultReminderUnit } };
-        Model.Reminders.Add(newReminder);
+        try
+        {
+            var newReminder = new ScheduleReminderDomainModel() { ToDoItemId = ItemId, ReminderDefinition = new ReminderDefinition() { Value = DefaultReminderTimeInMinutes, Unit = SettingsModel.DefaultReminderUnit } };
+            Model.Reminders.Add(newReminder);
 
-        await ModelChanged.InvokeAsync(Model);
+            await ModelChanged.InvokeAsync(Model);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task RemoveAt(int index, bool schedules = true)
     {
-        if (schedules)
+        try
         {
-            if (Model.Schedules[index].Id != Guid.Empty)
-                EntitiesToRemove.Schedules.Add(Model.Schedules[index]);
+            if (schedules)
+            {
+                if (Model.Schedules[index].Id != Guid.Empty)
+                    EntitiesToRemove.Schedules.Add(Model.Schedules[index]);
 
-            Model.Schedules.RemoveAt(index);
+                Model.Schedules.RemoveAt(index);
+            }
+            else
+            {
+                if (Model.Reminders[index].Id != Guid.Empty)
+                    EntitiesToRemove.Reminders.Add(Model.Reminders[index]);
+
+                Model.Reminders.RemoveAt(index);
+            }
+
+            await ModelChanged.InvokeAsync(Model);
         }
-        else
-        { 
-            if (Model.Reminders[index].Id != Guid.Empty)
-                EntitiesToRemove.Reminders.Add(Model.Reminders[index]);
-
-            Model.Reminders.RemoveAt(index);
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
-
-        await ModelChanged.InvokeAsync(Model);
     }
 
     private async Task SetReminderValue(int index, decimal value)
     {
-        Model.Reminders[index].ReminderDefinition.Value = value;
+        try
+        {
+            Model.Reminders[index].ReminderDefinition.Value = value;
 
-        await ModelChanged.InvokeAsync(Model);
+            await ModelChanged.InvokeAsync(Model);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task SetReminderUnit(int index, int unit)
     {
-        Model.Reminders[index].ReminderDefinition.Unit = (ScheduleTimeUnit)unit;
+        try
+        {
+            Model.Reminders[index].ReminderDefinition.Unit = (ScheduleTimeUnit)unit;
 
-        await ModelChanged.InvokeAsync(Model);
+            await ModelChanged.InvokeAsync(Model);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void NavigateBack()
     {
-        NavigationManager.NavigateTo(NavigationManager.BaseUri + $"list/{ListId}");
+        try
+        {
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + $"list/{ListId}");
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task Save()
     {
-        if (EntitiesToRemove.Schedules.Any())
-            await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove.Schedules));
+        try
+        {
+            if (EntitiesToRemove.Schedules.Any())
+                await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove.Schedules));
 
-        if (EntitiesToRemove.Reminders.Any())
-            await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove.Reminders));
+            if (EntitiesToRemove.Reminders.Any())
+                await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove.Reminders));
 
-        await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(Model.Schedules));
-        await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(Model.Reminders));
+            await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(Model.Schedules));
+            await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(Model.Reminders));
 
-        await ReminderService.UpdateReminders(ItemId);
- 
-        NavigateBack();
+            await ReminderService.UpdateReminders(ItemId);
+
+            NavigateBack();
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 }

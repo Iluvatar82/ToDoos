@@ -226,110 +226,158 @@
 
     protected override void OnInitialized()
     {
-        date = Model.NextOrLastOccurrence?.Date;
-        timeOfDay = Model.NextOrLastOccurrence;
-
-        base.OnInitialized();
+        try
+        {
+            date = Model.NextOrLastOccurrence?.Date;
+            timeOfDay = Model.NextOrLastOccurrence;
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     protected override void OnParametersSet()
     {
-        Model.Children.ForEach((dm, i) => dm.Set("OriginalOrder", i));
-        CategorySelect = Categories.Select(c => (Icon: c.Icon, Element: c.Bezeichnung)).ToList();
+        try
+        {
+            Model.Children.ForEach((dm, i) => dm.Set("OriginalOrder", i));
+            CategorySelect = Categories.Select(c => (Icon: c.Icon, Element: c.Bezeichnung)).ToList();
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
+
+        base.OnParametersSet();
     }
 
     private async Task BezeichnungEditEnabledChanged()
     {
-        var wasActive = BezeichnungEditEnabled;
-        BezeichnungEditEnabled = !Model.InactiveSince.HasValue && !Hidden;
-        if (!wasActive)
-            await OnBezeichnungEditEnabled.InvokeAsync(this);
-
+        try
+        {
+            var wasActive = BezeichnungEditEnabled;
+            BezeichnungEditEnabled = !Model.InactiveSince.HasValue && !Hidden;
+            if (!wasActive)
+                await OnBezeichnungEditEnabled.InvokeAsync(this);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task DoneChanged()
     {
-        if (Hidden || Model.InactiveSince.HasValue)
-            return;
+        try
+        {
+            if (Hidden || Model.InactiveSince.HasValue)
+                return;
 
-        if (Model.Done == null)
-            Model.Done = DateTime.Now;
-        else
-            Model.Done = null;
+            if (Model.Done == null)
+                Model.Done = DateTime.Now;
+            else
+                Model.Done = null;
 
-        await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
-        await OnDoneChanged.InvokeAsync(Model);
+            await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
+            await OnDoneChanged.InvokeAsync(Model);
 
-        if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
-            await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
+            if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
+                await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task BezeichnungChanged(EditContext context)
     {
-        var valid = context.Validate();
-        if (valid)
+        try
         {
-            await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
-            BezeichnungEditEnabled = false;
-            await OnBezeichnungEditEnabled.InvokeAsync(null);
+            var valid = context.Validate();
+            if (valid)
+            {
+                await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
+                BezeichnungEditEnabled = false;
+                await OnBezeichnungEditEnabled.InvokeAsync(null);
 
-            await ReminderService.UpdateReminders(Model.Id);
+                await ReminderService.UpdateReminders(Model.Id);
 
-            if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
-                await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
+                if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
+                    await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 
     private async Task ActiveChanged(bool force = false)
     {
-        if (Hidden)
-            return;
-
-        if (Model.Children?.Any() == true && !force)
+        try
         {
-            PageModal.NotNull();
+            if (Hidden)
+                return;
 
-            PageModal!.Title = @<h5>Achtung!</h5>;
-            PageModal.Body =@<div class="row align-items-center">
-                <div class="col-3 text-center">
-                    <span class="fa fa-warning text-warning fs-2" aria-hidden="true"></span>
+            if (Model.Children?.Any() == true && !force)
+            {
+                PageModal.NotNull();
+
+                PageModal!.Title = @<h5>Achtung!</h5>;
+                PageModal.Body =@<div class="row align-items-center">
+                    <div class="col-3 text-center">
+                        <span class="fa fa-warning text-warning fs-2" aria-hidden="true"></span>
+                    </div>
+
+                    <div class="col-9 text-start">Das Item "@(Model.Bezeichnung)" besitzt Unter-Items. Möchten Sie alle Items @(Model.InactiveSince.HasValue ? "inaktiv" : "aktiv") setzen?</div>
                 </div>
+                ;
 
-                <div class="col-9 text-start">Das Item "@(Model.Bezeichnung)" besitzt Unter-Items. Möchten Sie alle Items @(Model.InactiveSince.HasValue ? "inaktiv" : "aktiv") setzen?</div>
-            </div>
-    ;
+                PageModal.AcceptActionAsync = async () => await ActiveChanged(true);
 
-            PageModal.AcceptActionAsync = async () => await ActiveChanged(true);
+                PageModal.Show();
+                return;
+            }
+            else if (force == true)
+                SetActiveStateForAll(Model, Model.InactiveSince.HasValue ? null : DateTime.Now);
+            else
+                Model.InactiveSince = Model.InactiveSince.HasValue ? null : DateTime.Now;
 
-            PageModal.Show();
-            return;
+            await ItemRepository.UpdateAndSaveAsync(ModelMapper.MapToArray(Model.SelfAndAllDescendents));
+            StateHasChanged();
+
+            await ReminderService.UpdateReminders(Model.Id);
+            await OnRemove.InvokeAsync(Model);
+
+            if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
+                await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
         }
-        else if (force == true)
-            SetActiveStateForAll(Model, Model.InactiveSince.HasValue ? null : DateTime.Now);
-        else
-            Model.InactiveSince = Model.InactiveSince.HasValue ? null : DateTime.Now;
-
-        await ItemRepository.UpdateAndSaveAsync(ModelMapper.MapToArray(Model.SelfAndAllDescendents));
-        StateHasChanged();
-
-        await ReminderService.UpdateReminders(Model.Id);
-        await OnRemove.InvokeAsync(Model);
-
-        if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
-            await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task CategoryChanged(string categoryValue)
     {
-        var selectedCategory = Categories.FirstOrDefault(c => c.Bezeichnung == categoryValue);
-        Model.CategoryId = selectedCategory?.Id;
-        Model.Category = selectedCategory;
+        try
+        {
+            var selectedCategory = Categories.FirstOrDefault(c => c.Bezeichnung == categoryValue);
+            Model.CategoryId = selectedCategory?.Id;
+            Model.Category = selectedCategory;
 
-        await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
-        StateHasChanged();
+            await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
+            StateHasChanged();
 
-        if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
-            await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
+            if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
+                await ListHubConnection.SendAsync("BroadcastListChanged", ListId, User);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void SetActiveStateForAll(ToDoItemDomainModel item, DateTime? activeValue)

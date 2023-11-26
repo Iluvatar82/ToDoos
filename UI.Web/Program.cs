@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging.EventLog;
 using ServiceJobs;
 using ToDo.Data.Identity;
 using ToDo.Data.ToDoData;
@@ -34,10 +36,10 @@ namespace UI.Web
             var connectionName = IsDevelopment() && false ? "DBConnection_Local" : "DBConnection";
             var connectionString = builder.Configuration.GetConnectionString(connectionName) ?? throw new InvalidOperationException("Connection string 'DBConnection' not found.");
 
-            builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
-            builder.Services.AddDbContextFactory<ToDoDBContext>(options => options.UseSqlServer(connectionString).EnableSensitiveDataLogging());
+            builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning)).UseSqlServer(connectionString));
+            builder.Services.AddDbContextFactory<ToDoDBContext>(options => options.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning)).UseSqlServer(connectionString).EnableSensitiveDataLogging());
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-  
+
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -51,7 +53,7 @@ namespace UI.Web
 
             builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             builder.Services.AddScoped<ToastNotificationService>();
-            
+
             builder.Services.AddTransient<CategoryRepository>();
             builder.Services.AddTransient<ItemRepository>();
             builder.Services.AddTransient<ListRepository>();
@@ -85,6 +87,19 @@ namespace UI.Web
 
             builder.Services.AddTransient<ModelMapper>();
             builder.Services.AddTransient<ScheduleDefinitionConverter>();
+           
+            builder.Services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.ClearProviders();
+                loggingBuilder.AddConfiguration(builder.Configuration.GetSection("Logging"));
+                loggingBuilder.AddEventLog(new EventLogSettings()
+                {
+                    SourceName = "todoosUI",
+                    LogName = "todoos"
+                });
+
+                loggingBuilder.AddConsole();
+            });
 
             var app = builder.Build();
             if (app.Environment.IsDevelopment())
@@ -121,6 +136,10 @@ namespace UI.Web
             ConfigureServices.Register(app);
 
             app.Run();
+
+            Console.WriteLine($"Hosted here: {string.Join(Environment.NewLine, app.Urls)}");
+
+            app.Services.GetService<ILoggerFactory>()!.CreateLogger(typeof(Program)).LogInformation("Application started");
         }
 
         private static void ConfigureHangfireService(IServiceCollection services, string connectionString)

@@ -47,29 +47,52 @@
 
     protected override void OnParametersSet()
     {
-        
+        try
+        {
+
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
+
+        base.OnParametersSet();
     }
 
     private void NavigateBack()
     {
-        if (Guid.TryParse(BackTo, out var listId))
-            NavigationManager.NavigateTo(NavigationManager.BaseUri + "list/edit/" + listId);
-        else
-            NavigationManager.NavigateTo(NavigationManager.BaseUri + BackTo + "/");
+        try
+        {
+            if (Guid.TryParse(BackTo, out var listId))
+                NavigationManager.NavigateTo(NavigationManager.BaseUri + "list/edit/" + listId);
+            else
+                NavigationManager.NavigateTo(NavigationManager.BaseUri + BackTo + "/");
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task SaveNewCategory(EditContext context)
     {
-        var valid = context.Validate();
-        if (valid)
+        try
         {
-            if (Guid.TryParse(BackTo, out var listId))
-                _newCategory.ListId = listId;
-            else
-                _newCategory.UserId = Guid.Parse(User!.Id);
+            var valid = context.Validate();
+            if (valid)
+            {
+                if (Guid.TryParse(BackTo, out var listId))
+                    _newCategory.ListId = listId;
+                else
+                    _newCategory.UserId = Guid.Parse(User!.Id);
 
-            await CategoryRepository.AddAndSaveAsync(ModelMapper.Map(_newCategory));
-            NavigateBack();
+                await CategoryRepository.AddAndSaveAsync(ModelMapper.Map(_newCategory));
+                NavigateBack();
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 }

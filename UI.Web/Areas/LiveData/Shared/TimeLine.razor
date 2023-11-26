@@ -1,0 +1,68 @@
+﻿@inject IJSRuntime JS
+
+<div id="items_timeline"></div>
+
+
+<script src="/src/d3/d3.min.js"></script>
+<script src="/jquery/jquery.js"></script>
+<script>
+    function drawTimeline() {
+        const scaleX = d3.scaleTime([new Date(2023, 10, 18), new Date(2023, 11, 02)]);
+        var axisX = d3.axisBottom(scaleX);
+
+        var height = 200;
+        var marginBottom = 16;
+        var svg = d3.select("#items_timeline").append("svg").attr("width", 1920).attr("height", height);
+        svg.append("g").attr("transform", `translate(0,${height - marginBottom})`).call(axisX);
+
+        items_timeline.append(svg.node());
+    }
+    </script>
+
+@code {
+    private List<(ToDoItemDomainModel Item, List<DateTime> Occurrences)> displayedItems { get; set; } = new List<(ToDoItemDomainModel Item, List<DateTime> Occurrences)>();
+    private List<(ToDoItemDomainModel Item, List<DateTime> Occurrences)> originalDisplayedItems { get; set; } = new List<(ToDoItemDomainModel Item, List<DateTime> Occurrences)>();
+
+    [Parameter]
+    public List<ToDoItemDomainModel> Items { get; set; } = new List<ToDoItemDomainModel>();
+
+    [Parameter]
+    public DateTime Start { get; set; } = DateTime.Now.AddDays(-7);
+
+    [Parameter]
+    public DateTime End { get; set; } = DateTime.Now.AddDays(7);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            displayedItems = Items.Select(i => (Item: i, Occuccences: i.Occurrences(Start, End))).Where(io => io.Occuccences.Any()).ToList();
+            await JS.InvokeVoidAsync("drawTimeline");
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            var itemsIds = displayedItems.Select(i => i.Item.Id).ToHashSet<Guid>();
+            var originalItemsIds = originalDisplayedItems.Select(i => i.Item.Id).ToHashSet<Guid>();
+            if (!(itemsIds.All(iid => originalItemsIds.Contains(iid)) && originalItemsIds.All(oiid => itemsIds.Contains(oiid))))
+                return;
+
+            await JS.InvokeVoidAsync("drawTimeline");
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}

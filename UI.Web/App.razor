@@ -36,9 +36,6 @@
             })
             .Build();
 
-        ListHubConnection.ServerTimeout = TimeSpan.FromSeconds(60);
-        ListHubConnection.HandshakeTimeout = TimeSpan.FromSeconds(30);
-
         await ListHubConnection.StartAsync();
     }
 }

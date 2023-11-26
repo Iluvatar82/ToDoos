@@ -1,6 +1,7 @@
 ﻿@using Core.Validation;
 @using Microsoft.AspNetCore.Identity;
 @using UI.Web.Exception;
+
 @inherits LayoutComponentBase
 
 <PageTitle>ToDo's</PageTitle>
@@ -83,12 +84,19 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var currentUser = (await AuthenticationProvider.GetAuthenticationStateAsync()).User;
-        if (currentUser?.Claims.Any() != true)
-            return;
+        try
+        {
+            var currentUser = (await AuthenticationProvider.GetAuthenticationStateAsync()).User;
+            if (currentUser?.Claims.Any() != true)
+                return;
 
-        var userId = Guid.Parse(currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
-        User = await IdentityRepository!.GetAsync<IdentityUser>(userId.ToString());
+            var userId = Guid.Parse(currentUser.Claims!.First(c => c.Type.Contains("nameidentifier")).Value);
+            User = await IdentityRepository!.GetAsync<IdentityUser>(userId.ToString());
+        }
+        catch(Exception ex)
+        {
+            LoggerFactory.CreateLogger<MainLayout>().LogError(ex, ex.Message);
+        }
     }
 
     private List<(string Content, int Indentation)>? myErrorLines

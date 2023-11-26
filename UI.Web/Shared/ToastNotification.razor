@@ -25,13 +25,19 @@
 
     protected override void OnInitialized()
     {
-        ShowToast();
+        try
+        {
+            ShowToast();
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void ShowToast()
     {
         BuildToastSettings();
-
         InvokeAsync(() => StateHasChanged());
     }
 

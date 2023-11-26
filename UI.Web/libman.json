@@ -25,6 +25,13 @@
     {
       "library": "bootstrap-toaster@5.1.0",
       "destination": "wwwroot/bootstrap-toaster/"
+    },
+    {
+      "library": "d3@7.8.5",
+      "destination": "wwwroot/src/d3/",
+      "files": [
+        "d3.min.js"
+      ]
     }
   ]
 }

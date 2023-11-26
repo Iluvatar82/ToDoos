@@ -17,7 +17,10 @@
 @using UI.Web
 @using UI.Web.Data;
 @using UI.Web.Data.Dtos;
+@using UI.Web.Services
 @using UI.Web.Shared
+
+@inject ILoggerFactory LoggerFactory;
 
 @inject AuthenticationStateProvider AuthenticationProvider;
 @inject NavigationManager NavigationManager

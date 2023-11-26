@@ -54,31 +54,45 @@
 
     protected override async Task OnInitializedAsync()
     {
-        AllIcons = new List<string>{ string.Empty };
-        var file = await File.ReadAllTextAsync("wwwroot/font-awesome/css/all.min.css");
+        try
+        {
+            AllIcons = new List<string> { string.Empty };
+            var file = await File.ReadAllTextAsync("wwwroot/font-awesome/css/all.min.css");
 
-        var fileBlocks = file.Split("@font-face").Where(l => l.Contains(":before")).ToList();
-        fileBlocks.Satisfies(f => f.Count == 2);
+            var fileBlocks = file.Split("@font-face").Where(l => l.Contains(":before")).ToList();
+            fileBlocks.Satisfies(f => f.Count == 2);
 
-        var regex = new Regex("\\.(?<iconname>fa-.+?)\\:before");
-        var allmatches = regex.Matches(fileBlocks[0]);
-        var allIcons = allmatches.Select(match => $"fa {match.Groups["iconname"]}");
-        
-        AllIcons.AddRange(allIcons);
+            var regex = new Regex("\\.(?<iconname>fa-.+?)\\:before");
+            var allmatches = regex.Matches(fileBlocks[0]);
+            var allIcons = allmatches.Select(match => $"fa {match.Groups["iconname"]}");
 
-        allmatches = regex.Matches(fileBlocks[1]);
-        allIcons = allmatches.Select(match => $"fab {match.Groups["iconname"]}");
+            AllIcons.AddRange(allIcons);
 
-        AllIcons.AddRange(allIcons);
+            allmatches = regex.Matches(fileBlocks[1]);
+            allIcons = allmatches.Select(match => $"fab {match.Groups["iconname"]}");
+
+            AllIcons.AddRange(allIcons);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void Select(string icon)
     {
-        Selected = icon;
+        try
+        {
+            Selected = icon;
 
-        SelectionActive = false;
-        StateHasChanged();
+            SelectionActive = false;
+            StateHasChanged();
 
-        SelectedChanged.InvokeAsync(icon);
+            SelectedChanged.InvokeAsync(icon);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 }

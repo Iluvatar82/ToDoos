@@ -112,83 +112,132 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (User == default)
-            return;
-
-        var guidId = Guid.Parse(User.Id);
-        userGroups = ModelMapper.MapToList<UserGroupDomainModel>(await UserRepository.GetAllGroupsAsync(guidId));
-        list = (ToDoListDomainModel)ModelMapper.Map((await ListRepository.GetAsync(ListId))!);
-        isUserList = list.IsUserList;
-        if (!isUserList)
+        try
         {
-            selectedUserGroupId = list.GroupId;
-            listCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.ListId == ListId));
-            if (!listCategories.Any())
+            if (User == default)
+                return;
+
+            var guidId = Guid.Parse(User.Id);
+            userGroups = ModelMapper.MapToList<UserGroupDomainModel>(await UserRepository.GetAllGroupsAsync(guidId));
+            list = (ToDoListDomainModel)ModelMapper.Map((await ListRepository.GetAsync(ListId))!);
+            isUserList = list.IsUserList;
+            if (!isUserList)
             {
-                listCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.UserId == guidId))
-                    .ForEach((c, i) => { c.Id = Guid.Empty; c.UserId = null; c.ListId = ListId; }).ToList();
+                selectedUserGroupId = list.GroupId;
+                listCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.ListId == ListId));
+                if (!listCategories.Any())
+                {
+                    listCategories = ModelMapper.MapToList<CategoryDomainModel>(await CategoryRepository.GetAllAsync(c => c.UserId == guidId))
+                        .ForEach((c, i) => { c.Id = Guid.Empty; c.UserId = null; c.ListId = ListId; }).ToList();
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 
     private void SwitchUserGroupList()
     {
-        if (User == default)
-            return;
-
-        isUserList = !isUserList;
-        if (isUserList)
+        try
         {
-            selectedUserGroupId = null;
-            IdentitiesInGroup = null;
-        }
+            if (User == default)
+                return;
 
-        list.UserId = isUserList ? Guid.Parse(User.Id) : null;
-        list.GroupId = selectedUserGroupId;
+            isUserList = !isUserList;
+            if (isUserList)
+            {
+                selectedUserGroupId = null;
+                IdentitiesInGroup = null;
+            }
+
+            list.UserId = isUserList ? Guid.Parse(User.Id) : null;
+            list.GroupId = selectedUserGroupId;
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task GetUsersInGroup()
     {
-        if (selectedUserGroupId == null)
+        try
         {
-            IdentitiesInGroup = null;
-            return;
-        }
+            if (selectedUserGroupId == null)
+            {
+                IdentitiesInGroup = null;
+                return;
+            }
 
-        var allUsersInGroup = await UserRepository.GetAllUsersForGroupAsync(selectedUserGroupId.Value);
-        IdentitiesInGroup = await IdentityRepository.GetUsersByIdAsync(allUsersInGroup.Select(ug => ug.UserId.ToString()));
-        StateHasChanged();
+            var allUsersInGroup = await UserRepository.GetAllUsersForGroupAsync(selectedUserGroupId.Value);
+            IdentitiesInGroup = await IdentityRepository.GetUsersByIdAsync(allUsersInGroup.Select(ug => ug.UserId.ToString()));
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void ChangeBezeichnung(EditContext? context = null)
     {
-        var valid = context?.Validate() ?? true;
-        if (valid)
-            nameChange = false;
+        try
+        {
+            var valid = context?.Validate() ?? true;
+            if (valid)
+                nameChange = false;
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void HandleRemoveCategory(CategoryDomainModel category)
     {
-        if (category.Id != Guid.Empty)
-            listCategoriesToRemove.Add(category);
+        try
+        {
+            if (category.Id != Guid.Empty)
+                listCategoriesToRemove.Add(category);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task SaveList()
     {
-        await ListRepository.UpdateAndSaveAsync(ModelMapper.Map(list));
-        if (!isUserList)
+        try
         {
-            if (listCategoriesToRemove.Any())
-                await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(listCategoriesToRemove));
+            await ListRepository.UpdateAndSaveAsync(ModelMapper.Map(list));
+            if (!isUserList)
+            {
+                if (listCategoriesToRemove.Any())
+                    await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(listCategoriesToRemove));
 
-            await CategoryRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(listCategories));
+                await CategoryRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(listCategories));
+            }
+
+            NavigateBack();
         }
-
-        NavigateBack();
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void NavigateBack()
     {
-        NavigationManager.NavigateTo(NavigationManager.BaseUri + $"list/{ListId}");
+        try
+        {
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + $"list/{ListId}");
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 }

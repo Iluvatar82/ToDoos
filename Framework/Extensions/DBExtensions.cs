@@ -11,7 +11,8 @@ namespace Framework.Extensions
                 .Include(entity => entity.Category)
                 .Include(entity => entity.Parent)
                 .Include(entity => entity.Schedules)
-                .Include(entity => entity.Reminders);
+                .Include(entity => entity.Reminders)
+                .AsSplitQuery();
         }
     }
 }

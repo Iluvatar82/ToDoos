@@ -33,20 +33,34 @@
 
     private async Task SaveNewList(EditContext context)
     {
-        var valid = context.Validate();
-        if (valid && User != default)
+        try
         {
-            var guidId = Guid.Parse(User!.Id);
-            newList.UserId = guidId;
+            var valid = context.Validate();
+            if (valid && User != default)
+            {
+                var guidId = Guid.Parse(User!.Id);
+                newList.UserId = guidId;
 
-            newList.Id = await UserRepository.AddAndSaveAsync(ModelMapper.Map(newList));
+                newList.Id = await UserRepository.AddAndSaveAsync(ModelMapper.Map(newList));
 
-            NavigationManager.NavigateTo(NavigationManager.BaseUri + "list/" + newList.Id, true);
+                NavigationManager.NavigateTo(NavigationManager.BaseUri + "list/" + newList.Id, true);
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 
     private void NavigateBack()
     {
-        NavigationManager.NavigateTo(NavigationManager.BaseUri);
+        try
+        {
+            NavigationManager.NavigateTo(NavigationManager.BaseUri);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 }

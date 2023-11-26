@@ -114,22 +114,37 @@
 
     private Dictionary<string, object>? GetCheckboxAttributes(bool isActive)
     {
-        if (!isActive)
-            return new Dictionary<string, object>();
-
-        return new Dictionary<string, object>
+        try
         {
-            { "checked", string.Empty }
-        };
+            if (!isActive)
+                return new Dictionary<string, object>();
+
+            return new Dictionary<string, object>
+            {
+                { "checked", string.Empty }
+            };
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            return new Dictionary<string, object>();
+        }
     }
 
     private string GetWochentag(int dayNumber) => new CultureInfo("de-AT").DateTimeFormat.GetDayName((DayOfWeek)dayNumber);
 
     private async Task CheckboxChanged(ChangeEventArgs e, int index)
     {
-        var value = e.Value as bool?;
-        weekdaysValue.Days[index] = value ?? false;
-        
-        await ModelChanged.InvokeAsync(weekdaysValue);
+        try
+        {
+            var value = e.Value as bool?;
+            weekdaysValue.Days[index] = value ?? false;
+
+            await ModelChanged.InvokeAsync(weekdaysValue);
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 }

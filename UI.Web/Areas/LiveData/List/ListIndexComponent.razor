@@ -66,38 +66,54 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (User == default)
-            return;
+        try
+        {
+            if (User == default)
+                return;
 
-        var guidId = Guid.Parse(User.Id);
-        myLists = ModelMapper.MapToList<ToDoListDomainModel>(await UserRepository.GetAllListsAsync(guidId));
+            var guidId = Guid.Parse(User.Id);
+            myLists = ModelMapper.MapToList<ToDoListDomainModel>(await UserRepository.GetAllListsAsync(guidId));
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
+
+        await base.OnParametersSetAsync();
     }
 
     private async Task RemoveList(ToDoListDomainModel list, bool force = false)
     {
-        var flatItems = (await ItemRepository.GetAllItemsCompleteAsync(list.Id, false)).ToArray();
-        if (flatItems.Any() && !force)
+        try
         {
-            PageModal.NotNull();
+            var flatItems = (await ItemRepository.GetAllItemsCompleteAsync(list.Id, false)).ToArray();
+            if (flatItems.Any() && !force)
+            {
+                PageModal.NotNull();
 
-            PageModal!.Title = @<h5>Achtung!</h5>;
-            PageModal.Body =@<div class="row align-items-center">
-                <div class="col-3 text-center">
-                    <span class="fa fa-warning text-warning fs-2" aria-hidden="true"></span>
-                </div>
+                PageModal!.Title = @<h5>Achtung!</h5>;
+                PageModal.Body =@<div class="row align-items-center">
+                    <div class="col-3 text-center">
+                        <span class="fa fa-warning text-warning fs-2" aria-hidden="true"></span>
+                    </div>
 
-                <div class="col-9 text-start"><span>Die Liste "@list.Name" besitzt ToDo-Items. Möchten Sie alle @flatItems.Length Items löschen?</span></div>
-            </div>;
+                    <div class="col-9 text-start"><span>Die Liste "@list.Name" besitzt ToDo-Items. Möchten Sie alle @flatItems.Length Items löschen?</span></div>
+                </div>;
 
-            PageModal.AcceptActionAsync = () => RemoveList(list, true);
+                PageModal.AcceptActionAsync = () => RemoveList(list, true);
 
-            PageModal.Show();
-            return;
+                PageModal.Show();
+                return;
+            }
+
+            await ItemRepository.RemoveAndSaveAsync(flatItems);
+            await UserRepository.RemoveAndSaveAsync(ModelMapper.Map(list));
+
+            NavigationManager.NavigateTo(NavigationManager.BaseUri, true);
         }
-
-        await ItemRepository.RemoveAndSaveAsync(flatItems);
-        await UserRepository.RemoveAndSaveAsync(ModelMapper.Map(list));
-
-        NavigationManager.NavigateTo(NavigationManager.BaseUri, true);
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 }

@@ -90,81 +90,123 @@
 
     protected override async Task OnInitializedAsync()
     {
-        allIdentities = await IdentityRepository.GetAllIdentities();
-        var userGroups = ModelMapper.MapToList<UserGroupDomainModel>(await UserRepository.GetAllUsersForGroupAsync(GroupId));
-        var identities = allIdentities.Where(i => userGroups.Any(u => u.UserId.ToString() == i.Id)).ToList();
-
-        userGroups.Satisfies(g => g.Count == identities.Count);
-        userGroups.Satisfies(g => g.All(u => identities.Any(i => i.Id == u.UserId.ToString())));
-        identities.Satisfies(i => i.All(u => userGroups.Any(g => g.UserId.ToString(name) == u.Id)));
-
-        foreach (var userGroup in userGroups)
+        try
         {
-            var identity = identities.First(i => i.Id == userGroup.UserId.ToString());
-            usersInformation.Add((userGroup, identity));
-        }
+            allIdentities = await IdentityRepository.GetAllIdentities();
+            var userGroups = ModelMapper.MapToList<UserGroupDomainModel>(await UserRepository.GetAllUsersForGroupAsync(GroupId));
+            var identities = allIdentities.Where(i => userGroups.Any(u => u.UserId.ToString() == i.Id)).ToList();
 
-        name = usersInformation.FirstOrDefault().Group.Name ?? "Kein Gruppenname vergeben";
+            userGroups.Satisfies(g => g.Count == identities.Count);
+            userGroups.Satisfies(g => g.All(u => identities.Any(i => i.Id == u.UserId.ToString())));
+            identities.Satisfies(i => i.All(u => userGroups.Any(g => g.UserId.ToString(name) == u.Id)));
+
+            foreach (var userGroup in userGroups)
+            {
+                var identity = identities.First(i => i.Id == userGroup.UserId.ToString());
+                usersInformation.Add((userGroup, identity));
+            }
+
+            name = usersInformation.FirstOrDefault().Group.Name ?? "Kein Gruppenname vergeben";
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void AddUser()
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return;
-
-        var identity = allIdentities.First(i => i.Id == userId);
-
-        var newUserGroup = new UserGroupDomainModel
+        try
         {
-            Name = name,
-            UserId = Guid.Parse(identity.Id),
-            GroupId = GroupId
-        };
+            if (string.IsNullOrWhiteSpace(userId))
+                return;
 
-        usersInformation.Add((newUserGroup, identity));
+            var identity = allIdentities.First(i => i.Id == userId);
 
-        userId = string.Empty;
-        StateHasChanged();
+            var newUserGroup = new UserGroupDomainModel
+                {
+                    Name = name,
+                    UserId = Guid.Parse(identity.Id),
+                    GroupId = GroupId
+                };
 
-        SaveGroup();
+            usersInformation.Add((newUserGroup, identity));
+
+            userId = string.Empty;
+            StateHasChanged();
+
+            SaveGroup();
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void RemoveUser(UserGroupDomainModel user)
     {
-        var removedUserInformation = usersInformation.FirstOrDefault(ui => ui.Group == user);
+        try
+        {
+            var removedUserInformation = usersInformation.FirstOrDefault(ui => ui.Group == user);
 
-        if (removedUserInformation.Group.Id != Guid.Empty)
-            EntitiesToRemove.Add(removedUserInformation.Group);
+            if (removedUserInformation.Group.Id != Guid.Empty)
+                EntitiesToRemove.Add(removedUserInformation.Group);
 
-        usersInformation.Remove(removedUserInformation);
+            usersInformation.Remove(removedUserInformation);
 
-        StateHasChanged();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private void SaveGroup(EditContext? context = null)
     {
-        var valid = context?.Validate() ?? true;
-        if (valid)
+        try
         {
-            var allGroups = usersInformation.Select(ui => ui.Group).ToList();
-            allGroups.ForEach(u => u.Name = name);
+            var valid = context?.Validate() ?? true;
+            if (valid)
+            {
+                var allGroups = usersInformation.Select(ui => ui.Group).ToList();
+                allGroups.ForEach(u => u.Name = name);
 
-            nameChange = false;
+                nameChange = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 
     private void NavigateBack()
     {
-        NavigationManager.NavigateTo(NavigationManager.BaseUri + "group/");
+        try
+        {
+            NavigationManager.NavigateTo(NavigationManager.BaseUri + "group/");
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 
     private async Task Save()
     {
-        if (EntitiesToRemove.Any())
-            await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove));
+        try
+        {
+            if (EntitiesToRemove.Any())
+                await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove));
 
-        await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(usersInformation.Select(info => info.Group)));
+            await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(usersInformation.Select(info => info.Group)));
 
-        NavigateBack();
+            NavigateBack();
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
     }
 }
