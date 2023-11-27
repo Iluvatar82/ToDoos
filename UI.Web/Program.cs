@@ -1,6 +1,4 @@
-﻿using Amazon.Runtime;
-using Amazon.SimpleEmail;
-using AutoMapper;
+﻿using AutoMapper;
 using AutoMapper.EquivalencyExpression;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -77,14 +75,7 @@ namespace UI.Web
             builder.Services.AddTransient<EmailService>();
             builder.Services.AddTransient<IEmailSender, EmailSenderWrapper>();
 
-            AddEmailSenderSecrets(builder);
-
-            builder.Services.AddSingleton<IAmazonSimpleEmailService>(_ =>
-            {
-                var credentials = new BasicAWSCredentials("AKIASQISUTS4PU2MVGPB", "sOWtC4p86eBqJrY5rdwjIkzu8L3sDbi4vXLcH62r");
-                var result = new AmazonSimpleEmailServiceClient(credentials, Amazon.RegionEndpoint.EUNorth1);
-                return result;
-            });
+            ConfigureEmailSender(builder);
 
             builder.Services.AddSingleton<DatabaseCleanupJob>();
 
@@ -171,7 +162,7 @@ namespace UI.Web
             }, typeof(ToDoDBContext).Assembly, typeof(MapperProfile).Assembly);
         }
 
-        private static void AddEmailSenderSecrets(WebApplicationBuilder builder)
+        private static void ConfigureEmailSender(WebApplicationBuilder builder)
         {
             var keyVaultUrl = builder.Configuration.GetValue<string>("AzureKeyVault:AzureKeyVaultURL");
             var clientId = builder.Configuration.GetValue<string>("AzureKeyVault:AzureClientId");
@@ -185,7 +176,9 @@ namespace UI.Web
                 options.Email = new Email()
                 {
                     Sender_Address = client.GetSecret("EmailSenderAddress").Value.Value,
-                    Sender_Display_Name = client.GetSecret("EmailSenderDisplayName").Value.Value
+                    Sender_Display_Name = client.GetSecret("EmailSenderDisplayName").Value.Value,
+                    Todoos_Key = client.GetSecret("todoosadminkey").Value.Value,
+                    Todoos_Sectret_Key = client.GetSecret("todoosadminsecretkey").Value.Value
                 };
             });
         }
