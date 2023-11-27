@@ -20,16 +20,16 @@
                     <tr>
                         <td>
                             <div>
-                                <div class="d-flex justify-content-between">
-                                    <NavLink class="nav-link" href=@(NavigationManager.BaseUri + @listEntry.GetListUrl())>
+                                <NavLink class="nav-link" href=@(NavigationManager.BaseUri + @listEntry.GetListUrl())>
+                                    <div class="d-flex justify-content-between">
                                         <div>
                                             <span class="fa fa-@listEntry.GetToDoListTypeIcon() text-black" aria-hidden="true"></span>
                                             <span class="fw-bold text-black ms-2">@listEntry.Name</span>
                                         </div>
-                                    </NavLink>
 
-                                    <span id="removeListButton" class="text-secondary align-self-center me-2" @onclick=@(async () => await RemoveList(@listEntry))><i class="fa fa-xmark" aria-hidden="true"></i></span>
-                                </div>
+                                        <span id="removeListButton" class="text-secondary align-self-center me-2" @onclick:stopPropagation="true" @onclick:preventDefault="true" @onclick=@(async () => await RemoveList(@listEntry))><i class="fa fa-xmark" aria-hidden="true"></i></span>
+                                    </div>
+                                </NavLink>
                             </div>
                         </td>
                     </tr>

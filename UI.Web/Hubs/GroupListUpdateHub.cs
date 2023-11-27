@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace UI.Web.Hubs
 {
-    public class GroupListUpdateHub : Hub
+    public class GroupListUpdateHub : Hub, IDisposable
     {
         public const string HubUrl = "/hubs/updatelist";
 

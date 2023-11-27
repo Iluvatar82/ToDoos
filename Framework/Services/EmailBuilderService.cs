@@ -9,7 +9,7 @@ namespace Framework.Services
         {
             if (onlyOnce)
             {
-                return $@"
+                return $@"<html><body>
                     <div style='font-weight:bold'>
                         <span>
                             {toDoItem.Bezeichnung}! (Liste <a href=""{toDoItem.ListId.ToListUrl()}"">hier ansehen</a>, Schedule <a href=""{toDoItem.Id.ToScheduleEditUrl()}"">hier ändern</a>)
@@ -19,11 +19,11 @@ namespace Framework.Services
                         <span>
                             Bitte bis <span style='font-weight:bold'>{nextTime.ToShortDateString()}</span> um <span style='font-weight:bold'>{nextTime.ToShortTimeString()}!</span> erledigen.
                         </span>
-                    </div>";
+                    </div></body></html>";
             }
             else
             {
-                return $@"
+                return $@"<html><body>
                     <div style='font-weight:bold'>
                         <span>
                             {toDoItem.Bezeichnung}! (Liste <a href=""{toDoItem.ListId.ToListUrl()}"">hier ansehen</a>, Schedule <a href=""{toDoItem.Id.ToScheduleEditUrl()}"">hier ändern</a>)
@@ -33,7 +33,7 @@ namespace Framework.Services
                         <span>
                             Bitte bis zur nächsten Fälligkeit <span style='font-weight:bold'>{nextTime.ToShortDateString()}</span> um <span style='font-weight:bold'>{nextTime.ToShortTimeString()}!</span> erledigen.
                         </span>
-                    </div>";
+                    </div></body></html>";
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using Amazon.SimpleEmail;
+using Amazon.SimpleEmail.Model;
+using AutoMapper;
 using Core.Validation;
 using Framework.DomainModels;
 using Framework.Extensions;
@@ -15,6 +17,7 @@ namespace Framework.Services
 {
     public class EmailService : INotificationService
     {
+        private IAmazonSimpleEmailService _amazonSimpleEmailService;
         private readonly IMapper mapper;
         private readonly ItemRepository itemRepository;
         private readonly EmailBuilderService emailBuilderService;
@@ -22,12 +25,14 @@ namespace Framework.Services
         public EmailService(IOptions<AuthMessageSenderOptions> optionsAccessor,
             IMapper mapper,
             ItemRepository itemRepository,
-            EmailBuilderService emailBuilderService)
+            EmailBuilderService emailBuilderService,
+            IAmazonSimpleEmailService amazonSimpleEmailService)
         {
             Options = optionsAccessor.Value;
             this.mapper = mapper;
             this.itemRepository = itemRepository;
             this.emailBuilderService = emailBuilderService;
+            _amazonSimpleEmailService = amazonSimpleEmailService;
         }
 
         public AuthMessageSenderOptions Options { get; }
@@ -39,20 +44,77 @@ namespace Framework.Services
             recipients!.Satisfies(r => r.Any());
             Options.Email?.Sender_Address.NotNullOrEmpty();
 
-            var client = new SendGridClient(Options.SendGridKey);
-            var msg = new SendGridMessage()
+            //var client = new SendGridClient(Options.SendGridKey);
+            //var msg = new SendGridMessage()
+            //{
+            //    From = new EmailAddress(Options.Email!.Sender_Address, Options.Email!.Sender_Display_Name),
+            //    Subject = title,
+            //    PlainTextContent = message,
+            //    HtmlContent = message
+            //};
+
+            //foreach (var toEmail in recipients)
+            //    msg.AddTo(new EmailAddress(toEmail));
+
+            //msg.SetClickTracking(false, false);
+            //await client.SendEmailAsync(msg);
+
+            //using (var smtpClient = new SmtpClient("email-smtp.eu-north-1.amazonaws.com", 587))
+            //{
+            //    smtpClient.UseDefaultCredentials = false;
+            //    smtpClient.Credentials = new NetworkCredential("todoosadmin", "sOWtC4p86eBqJrY5rdwjIkzu8L3sDbi4vXLcH62r"); //Key: "AKIASQISUTS4PU2MVGPB" //Secret: "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"
+            //    smtpClient.EnableSsl = true;
+            //    smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+
+            //    var mailBody = new MailMessage
+            //    {
+            //        From = new MailAddress(Options.Email.Sender_Address!, Options.Email.Sender_Display_Name),
+            //        Subject = title,
+            //        SubjectEncoding = Encoding.UTF8,
+            //        BodyEncoding = Encoding.UTF8,
+            //        HeadersEncoding = Encoding.UTF8,
+            //        IsBodyHtml = true,
+            //        Body = message,
+            //        Priority = MailPriority.Normal
+            //    };
+
+            //    foreach (var recipient in recipients)
+            //        mailBody.To.Add(new MailAddress(recipient));
+
+            //    await smtpClient.SendMailAsync(mailBody);
+            //}
+
+            //await Task.CompletedTask;
+
+            try
             {
-                From = new EmailAddress(Options.Email!.Sender_Address, Options.Email!.Sender_Display_Name),
-                Subject = title,
-                PlainTextContent = message,
-                HtmlContent = message
-            };
-
-            foreach (var toEmail in recipients)
-                msg.AddTo(new EmailAddress(toEmail));
-
-            msg.SetClickTracking(false, false);
-            await client.SendEmailAsync(msg);
+                var response = await _amazonSimpleEmailService.SendEmailAsync(
+                    new SendEmailRequest
+                    {
+                        Destination = new Destination { ToAddresses = recipients.ToList(), },
+                        Message = new Message
+                        {
+                            Body = new Body
+                            {
+                                Html = new Amazon.SimpleEmail.Model.Content
+                                {
+                                    Charset = "UTF-8",
+                                    Data = message
+                                }
+                            },
+                            Subject = new Amazon.SimpleEmail.Model.Content
+                            {
+                                Charset = "UTF-8",
+                                Data = title
+                            }
+                        },
+                        Source = $"{Options.Email!.Sender_Display_Name} <{Options.Email.Sender_Address}>",
+                    });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("SendEmailAsync failed with exception: " + ex.Message);
+            }
         }
 
         public async Task SendReminderAsync(Guid itemId, params string[] recipients)

@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using Amazon.Runtime;
+using Amazon.SimpleEmail;
+using AutoMapper;
 using AutoMapper.EquivalencyExpression;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -76,6 +78,13 @@ namespace UI.Web
             builder.Services.AddTransient<IEmailSender, EmailSenderWrapper>();
 
             AddEmailSenderSecrets(builder);
+
+            builder.Services.AddSingleton<IAmazonSimpleEmailService>(_ =>
+            {
+                var credentials = new BasicAWSCredentials("AKIASQISUTS4PU2MVGPB", "sOWtC4p86eBqJrY5rdwjIkzu8L3sDbi4vXLcH62r");
+                var result = new AmazonSimpleEmailServiceClient(credentials, Amazon.RegionEndpoint.EUNorth1);
+                return result;
+            });
 
             builder.Services.AddSingleton<DatabaseCleanupJob>();
 

@@ -1,8 +1,14 @@
 ﻿<AuthorizeView>
     <Authorized>
-        <a href="Identity/Account/Manage">Willkommen, @context.User.Identity?.Name!</a>
+        <a href="Identity/Account/Manage">
+            <span class="fa fa-sliders"></span>
+            <span> Konto</span>
+        </a>
         <form method="post" action="Identity/Account/Logout">
-            <button type="submit" class="nav-link btn btn-link">Log out</button>
+            <button type="submit" class="nav-link btn btn-link">
+                <span class="fa-solid fa-right-from-bracket"></span>
+                <span> Log out</span>
+            </button>
         </form>
     </Authorized>
 

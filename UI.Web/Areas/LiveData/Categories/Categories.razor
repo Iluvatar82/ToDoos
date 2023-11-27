@@ -2,6 +2,8 @@
 @using System.ComponentModel.DataAnnotations;
 @using Core.Validation
 
+@inject ToastNotificationService ToastService
+
 <h4>Kategorien</h4>
 
 @if (AllCategories.Any())
@@ -193,6 +195,7 @@ else
                 await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove));
 
             await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(AllCategories));
+            await ToastService.SendAsync("Kategorien gespeichert", "Alle Kategorien wurden gespeichert", Framework.Services.Base.MessageType.Info, null);
         }
         catch (Exception ex)
         {
