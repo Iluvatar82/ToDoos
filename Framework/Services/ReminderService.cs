@@ -39,19 +39,19 @@ namespace Framework.Services
                 return;
 
             var userIDs = list.UserId is not null ? new [] { list.UserId.Value }.ToList() : (await _userRepository.GetAllUsersForGroupAsync(list.GroupId!.Value)).Select(u => u.UserId).ToList();
-            var userEmails = new List<string>();
+            var userInfo = new List<(string Email, Guid Id)>();
             if (list.UserId is not null)
             {
                 var identityUser = await _identityRepository.GetAsync<IdentityUser>(list.UserId.Value.ToString());
                 identityUser?.Email.NotNull();
 
-                userEmails.Add(identityUser!.Email!);
+                userInfo.Add((identityUser!.Email!, Guid.Parse(identityUser.Id)));
             }
             else
             {
                 var groupUserIds = (await _userRepository.GetAllUsersForGroupAsync(list.GroupId!.Value)).Select(u => u.UserId.ToString()).ToList();
-                var userIds = (await _identityRepository.GetUsersByIdAsync(groupUserIds)).Select(i => i.Email ?? string.Empty).Where(e => !string.IsNullOrWhiteSpace(e));
-                userEmails.AddRange(userIds);
+                var userInfos = (await _identityRepository.GetUsersByIdAsync(groupUserIds)).Select(i => (Email: i.Email ?? string.Empty, Id: Guid.Parse(i.Id))).Where(info => !string.IsNullOrWhiteSpace(info.Email));
+                userInfo.AddRange(userInfos);
             }
 
             var schedules = item.Schedules.ToList();
@@ -91,7 +91,7 @@ namespace Framework.Services
                         if (nextReminderTime < DateTime.Now)
                             continue;
 
-                        var newJobId = BackgroundJob.Schedule(() => _emailService.SendReminderAsync(itemId, userEmails.ToArray()), nextReminderTime);
+                        var newJobId = BackgroundJob.Schedule(() => _emailService.SendReminderAsync(itemId, userInfo.ToArray()), nextReminderTime);
                         newJobIds.Add(newJobId);
                     }
                     else
@@ -104,7 +104,7 @@ namespace Framework.Services
                         var cronDefinition = _mapper.Map<CronDomainModel>(schedule);
 
                         var newJob = reminder.Id.ToString().ToLower();
-                        RecurringJob.AddOrUpdate(newJob, () => _emailService.SendReminderAsync(itemId, userEmails.ToArray()), cronDefinition, new RecurringJobOptions() { TimeZone = TimeZoneInfo.Local });
+                        RecurringJob.AddOrUpdate(newJob, () => _emailService.SendReminderAsync(itemId, userInfo.ToArray()), cronDefinition, new RecurringJobOptions() { TimeZone = TimeZoneInfo.Local });
 
                         newJobIds.Add(newJob);
                     }

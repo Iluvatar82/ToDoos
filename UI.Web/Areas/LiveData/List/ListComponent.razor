@@ -12,10 +12,10 @@
 @using UI.Web.Services;
 
 @inject IJSRuntime JS
-@inject ToastNotificationService ToastService
-@inject EmailService EmailService;
-@inject ItemDragDropService ItemDragDropService;
-@inject ItemHandlerService ItemHandlerService;
+@inject ToastNotificationService ToastNotificationService
+@inject EmailService EmailService
+@inject ItemDragDropService ItemDragDropService
+@inject ItemHandlerService ItemHandlerService
 
 <AuthorizeView>
     <NotAuthorized>
@@ -211,13 +211,13 @@
         {
             ListHubConnection?.On<string>("JoinedList", async (username) =>
             {
-                await ToastService.SendAsync("Beigetreten", $"{username} hat die Liste geöffnet!", Framework.Services.Base.MessageType.Info);
+                await ToastNotificationService.SendAsync("Beigetreten", $"{username} hat die Liste geöffnet!", Framework.Services.Base.MessageType.Info);
                 await InvokeAsync(StateHasChanged);
             });
 
             ListHubConnection?.On<string>("UpdateList", async (username) =>
             {
-                await ToastService.SendAsync("Aktualisiert", $"{username} hat die Liste aktualisiert!.{Environment.NewLine}Lade Änderungen...", Framework.Services.Base.MessageType.Info);
+                await ToastNotificationService.SendAsync("Aktualisiert", $"{username} hat die Liste aktualisiert!.{Environment.NewLine}Lade Änderungen...", Framework.Services.Base.MessageType.Info);
                 await InvokeAsync(async () =>
                 {
                     await RetrieveItems();
@@ -227,7 +227,7 @@
 
             ListHubConnection?.On<string>("LeftList", async (username) =>
             {
-                await ToastService.SendAsync("Verlassen", $"{username} hat die Liste geschlossen!", Framework.Services.Base.MessageType.Info);
+                await ToastNotificationService.SendAsync("Verlassen", $"{username} hat die Liste geschlossen!", Framework.Services.Base.MessageType.Info);
                 await InvokeAsync(StateHasChanged);
             });
 
@@ -275,7 +275,7 @@
             else
                 Categories = new List<CategoryDomainModel>();
 
-            await ToastService.SendAsync("Liste geöffnet", $"Liste <b>{listEntity.Name}</b> wurde geöffnet!", Framework.Services.Base.MessageType.Info);
+            await ToastNotificationService.SendAsync("Liste geöffnet", $"Liste <b>{listEntity.Name}</b> wurde geöffnet!", Framework.Services.Base.MessageType.Info);
 
             previousListId = ListId;
         }

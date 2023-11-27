@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ToDo.Data.ToDoData;
 
@@ -11,9 +12,11 @@ using ToDo.Data.ToDoData;
 namespace ToDo.Data.Migrations
 {
     [DbContext(typeof(ToDoDBContext))]
-    partial class ToDoDBContextModelSnapshot : ModelSnapshot
+    [Migration("20231127143753_Notification_Added_to_DB")]
+    partial class Notification_Added_to_DB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,44 +70,6 @@ namespace ToDo.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("HangfireJob", "LiveData");
-                });
-
-            modelBuilder.Entity("ToDo.Data.ToDoData.Entities.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("Read")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Sender")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Time")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notification", "LiveData");
                 });
 
             modelBuilder.Entity("ToDo.Data.ToDoData.Entities.Schedule", b =>

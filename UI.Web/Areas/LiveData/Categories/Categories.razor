@@ -3,6 +3,7 @@
 @using Core.Validation
 
 @inject ToastNotificationService ToastService
+@inject NotificationService NotificationService
 
 <h4>Kategorien</h4>
 
@@ -195,7 +196,12 @@ else
                 await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove));
 
             await ItemRepository.AddOrUpdateAndSaveAsync(ModelMapper.MapToArray(AllCategories));
-            await ToastService.SendAsync("Kategorien gespeichert", "Alle Kategorien wurden gespeichert", Framework.Services.Base.MessageType.Info, null);
+
+            var title = "Kategorien gespeichert";
+            var message = "Die Änderungen an den Kategorien wurden gespeichert";
+
+            await ToastService.SendAsync(title, message, Framework.Services.Base.MessageType.Info);
+            await NotificationService.SaveNotifications(title, message, User?.Id ?? "");
         }
         catch (Exception ex)
         {

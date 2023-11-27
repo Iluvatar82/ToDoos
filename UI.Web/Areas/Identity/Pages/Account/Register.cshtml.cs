@@ -123,7 +123,7 @@ namespace UI.Web.Areas.Identity.Pages.Account
                     var userId = await _userManager.GetUserIdAsync(user);
 
                     await _userManager.AddToRoleAsync(user, "User");
-                    await _userRepository.AddAndSaveAsync(new ToDoList {  UserId = Guid.Parse(userId), Name = "My first List" });
+                    await _userRepository.AddAndSaveAsync(new ToDoList { UserId = Guid.Parse(userId), Name = "My first List" });
                     await _userRepository.AddAndSaveAsync(new Category { Bezeichnung = "Default", RGB_A = "#f8f8f8", Icon = "fa fa-house-chimney-window", UserId = Guid.Parse(userId) });
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

@@ -17,6 +17,9 @@ namespace Framework.Converter.Automapper
             CreateMap<Setting, SettingDomainModel>();
             CreateMap<SettingDomainModel, Setting>();
 
+            CreateMap<Notification, NotificationDomainModel>();
+            CreateMap<NotificationDomainModel, Notification>();
+
             CreateMap<string, ScheduleTimeUnit>().ConvertUsing<TimeUnitConverter>();
             CreateMap<ScheduleTimeUnit, string>().ConvertUsing<TimeUnitConverter>();
 

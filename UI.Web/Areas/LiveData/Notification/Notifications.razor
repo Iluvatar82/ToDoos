@@ -1,0 +1,38 @@
+﻿@page "/notifications"
+
+<h3>Benachrichtigungen</h3>
+
+@foreach(var notification in notifications ?? Enumerable.Empty<NotificationDomainModel>())
+{
+    @* TODO *@
+    <div>
+        <div>@notification.Title</div>
+        <div>@GetFragment(notification.Message)</div>
+    </div>
+}
+
+@code {
+    private List<NotificationDomainModel> notifications { get; set; }
+
+    [CascadingParameter]
+    public IdentityUser? User { get; set; }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            if (User == null)
+                return;
+
+            var userId = Guid.Parse(User.Id);
+            notifications = ModelMapper.MapToList<NotificationDomainModel>(await NotificationRepository.GetAllAsync(n => n.UserId == userId));
+        }
+        catch(Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
+    }
+
+    private RenderFragment GetFragment(string message) => __builder => __builder.AddMarkupContent(0, message);
+}

@@ -53,6 +53,9 @@ namespace UI.Web
 
             builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             builder.Services.AddScoped<ToastNotificationService>();
+            
+            builder.Services.AddScoped<NotificationService>();
+
 
             builder.Services.AddTransient<CategoryRepository>();
             builder.Services.AddTransient<ItemRepository>();
@@ -61,6 +64,7 @@ namespace UI.Web
             builder.Services.AddTransient<ScheduleReminderRepository>();
             builder.Services.AddTransient<UserRepository>();
             builder.Services.AddTransient<SettingRepository>();
+            builder.Services.AddTransient<NotificationRepository>();
 
             builder.Services.AddTransient<IdentityRepository>();
 

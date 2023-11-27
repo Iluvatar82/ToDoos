@@ -13,6 +13,7 @@ namespace ToDo.Data.ToDoData
         public DbSet<UserGroup> Groups { get; set; }
         public DbSet<HangfireJob> Jobs { get; set; }
         public DbSet<Setting> Settings { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
 
         public ToDoDBContext(DbContextOptions options) : base(options)
