@@ -55,7 +55,19 @@ namespace UI.Web
             builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             builder.Services.AddScoped<ToastNotificationService>();
             
-            builder.Services.AddScoped<NotificationService>();
+            builder.Services.AddScoped<NotificationService>(provider =>
+            {
+                var result = new NotificationService(
+                    provider.GetService<ModelMapper>()!,
+                    provider.GetService<NotificationRepository>()!
+                    );
+
+                var hub = provider.GetRequiredService<IHubContext<UpdateHub>>();
+                if (hub != null)
+                    result.Callback = async ids => await hub.Clients.Clients(UpdateHub.Connections.GetConnections(ids)).SendAsync("UpdateNotifications");
+
+                return result;
+            });
 
 
             builder.Services.AddTransient<CategoryRepository>();

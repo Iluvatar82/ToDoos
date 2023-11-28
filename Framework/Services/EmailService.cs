@@ -4,11 +4,11 @@ using Amazon.SimpleEmail.Model;
 using AutoMapper;
 using Core.Validation;
 using Framework.DomainModels;
+using Framework.DomainModels.Base;
 using Framework.Extensions;
 using Framework.Repositories;
 using Framework.Services.Base;
 using Microsoft.Extensions.Options;
-using System;
 
 namespace Framework.Services
 {
@@ -20,18 +20,21 @@ namespace Framework.Services
         private NotificationService _notificationService;
         private readonly IMapper _mapper;
         private readonly ItemRepository _itemRepository;
+        private readonly ListRepository _listRepository;
         private readonly EmailBuilderService _emailBuilderService;
 
         public EmailService(IOptions<AuthMessageSenderOptions> optionsAccessor,
             NotificationService notificationService,
             IMapper mapper,
             ItemRepository itemRepository,
+            ListRepository listRepository,
             EmailBuilderService emailBuilderService)
         {
             Options = optionsAccessor.Value;
             _notificationService = notificationService;
             _mapper = mapper;
             _itemRepository = itemRepository;
+            _listRepository = listRepository;
             _emailBuilderService = emailBuilderService;
             _amazonSimpleEmailService = new AmazonSimpleEmailServiceClient(new BasicAWSCredentials(Options.Email!.Todoos_Key, Options.Email.Todoos_Sectret_Key), Amazon.RegionEndpoint.EUNorth1);
         }
@@ -86,11 +89,14 @@ namespace Framework.Services
             var item = _mapper.Map<ToDoItemDomainModel>(await _itemRepository.GetItemCompleteAsync(itemId));
             item.NotNull();
 
+            var list = _mapper.Map<ToDoListDomainModel>(await _listRepository.GetAsync(item.ListId));
+            list.NotNull();
+
             var nextInfo = item.Schedules
                 .Select(s => (Schedule: s, NextOccurrence: s.ScheduleDefinition.NextOccurrenceAfter(DateTime.Now, s.Start, s.End) ?? DateTime.MaxValue))
                 .OrderBy(sI => sI.NextOccurrence).First();
 
-            var messageString = _emailBuilderService.BuildErinnerungMailMessage(item, nextInfo.NextOccurrence, nextInfo.Schedule.Type == DomainModels.Common.Enums.ScheduleType.Fixed);
+            var messageString = _emailBuilderService.BuildErinnerungMailMessage(item, list, nextInfo.NextOccurrence, nextInfo.Schedule.Type == DomainModels.Common.Enums.ScheduleType.Fixed);
             await SendAsync("Erinnerung", messageString, MessageType.Info, recipients: recipients.ToArray());
         }
     }

@@ -1,19 +1,19 @@
 ﻿using Framework.DomainModels;
+using Framework.DomainModels.Base;
 using Framework.Extensions;
 
 namespace Framework.Services
 {
     public class EmailBuilderService
     {
-        public string BuildErinnerungMailMessage(ToDoItemDomainModel toDoItem, DateTime nextTime, bool onlyOnce = true)
+        public string BuildErinnerungMailMessage(ToDoItemDomainModel toDoItem, ToDoListDomainModel list, DateTime nextTime, bool onlyOnce = true)
         {
             if (onlyOnce)
             {
                 return $@"<html><body>
-                    <div style='font-weight:bold'>
-                        <span>
-                            {toDoItem.Bezeichnung}! (Liste <a href=""{toDoItem.ListId.ToListUrl()}"">hier ansehen</a>, Schedule <a href=""{toDoItem.Id.ToScheduleEditUrl()}"">hier ändern</a>)
-                        </span>
+                    <div>
+                        <div style='font-weight:bold'>{toDoItem.Bezeichnung}! </div>
+                        <div>(Liste ""{list.Name}"": <a href=""{list.Id.ToListUrl()}"">hier ansehen</a>, Schedule: <a href=""{toDoItem.Id.ToScheduleEditUrl()}"">hier ändern</a>)</div>
                     </div>
                     <div>
                         <span>
@@ -24,10 +24,9 @@ namespace Framework.Services
             else
             {
                 return $@"<html><body>
-                    <div style='font-weight:bold'>
-                        <span>
-                            {toDoItem.Bezeichnung}! (Liste <a href=""{toDoItem.ListId.ToListUrl()}"">hier ansehen</a>, Schedule <a href=""{toDoItem.Id.ToScheduleEditUrl()}"">hier ändern</a>)
-                        </span>
+                    <div>
+                        <div style='font-weight:bold'>{toDoItem.Bezeichnung}! </div>
+                        <div>(Liste ""{list.Name}"": <a href=""{list.Id.ToListUrl()}"">hier ansehen</a>, Schedule: <a href=""{toDoItem.Id.ToScheduleEditUrl()}"">hier ändern</a>)</div>
                     </div>
                     <div>
                         <span>

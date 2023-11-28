@@ -6,6 +6,8 @@ namespace Framework.Services
 {
     public class NotificationService
     {
+        public Action<List<string>> Callback { get; set; }
+
         private readonly ModelMapper _modelMapper;
         private readonly NotificationRepository _notificationRepository;
 
@@ -29,6 +31,8 @@ namespace Framework.Services
                 resultList.Add(new NotificationDomainModel { Title = title, Message = message, UserId = userId, Category = nameof(Base.MessageType.Info), Sender = "UI" });
 
             await _notificationRepository.AddAndSaveAsync(_modelMapper.MapToArray(resultList));
+            
+            Callback(userIds.Select(id => id.ToString()).ToList());
         }
     }
 }
