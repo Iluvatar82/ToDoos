@@ -124,7 +124,7 @@
     <value>(?&lt;name&gt;\[[\w\s]+\]){0,1}(?&lt;email&gt;[\w-\.]+\@[\w-\.]+\.[\w]{2,4})</value>
   </data>
   <data name="ContentRenderService_TelLinkRegex" xml:space="preserve">
-    <value>(?&lt;name&gt;\[[\w\s]+\]){0,1}\s?(?&lt;number&gt;(?:\+|0{1,2})(?:[-\/\s]?\d+)+)</value>
+    <value>(?&lt;name&gt;\[[\w\s]+\]){0,1}\s?(?&lt;number&gt;(?:\+|0{1,2})\d{6,})</value>
   </data>
   <data name="ContentRenderService_WebLinkRegex" xml:space="preserve">
     <value>(?&lt;name&gt;\[.+?\])?(?&lt;link&gt;(?:http[s]:\/\/|www).+?)(?:\s|$)</value>

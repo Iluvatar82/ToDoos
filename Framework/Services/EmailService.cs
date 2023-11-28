@@ -81,7 +81,7 @@ namespace Framework.Services
             }
         }
 
-        public async Task SendReminderAsync(Guid itemId, params (string Email, Guid Id)[] recipients)
+        public async Task SendReminderAsync(Guid itemId, List<(string Email, Guid Id)> recipients)
         {
             var item = _mapper.Map<ToDoItemDomainModel>(await _itemRepository.GetItemCompleteAsync(itemId));
             item.NotNull();
@@ -91,7 +91,7 @@ namespace Framework.Services
                 .OrderBy(sI => sI.NextOccurrence).First();
 
             var messageString = _emailBuilderService.BuildErinnerungMailMessage(item, nextInfo.NextOccurrence, nextInfo.Schedule.Type == DomainModels.Common.Enums.ScheduleType.Fixed);
-            await SendAsync("Erinnerung", messageString, MessageType.Info, recipients: recipients);
+            await SendAsync("Erinnerung", messageString, MessageType.Info, recipients: recipients.ToArray());
         }
     }
 }

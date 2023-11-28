@@ -1,6 +1,7 @@
 ﻿@page "/categories/"
 @using System.ComponentModel.DataAnnotations;
 @using Core.Validation
+@using Microsoft.AspNetCore.SignalR.Client
 
 @inject ToastNotificationService ToastService
 @inject NotificationService NotificationService
@@ -79,6 +80,9 @@ else
 
     [Parameter]
     public List<CategoryDomainModel> AllCategories { get; set; } = new List<CategoryDomainModel>();
+
+    [CascadingParameter]
+    public HubConnection? UpdateHubConnection { get; set; }
 
     [CascadingParameter]
     public IdentityUser? User { get; set; }
@@ -192,6 +196,9 @@ else
     {
         try
         {
+            if (User?.Id == null)
+                return;
+
             if (EntitiesToRemove.Any())
                 await ItemRepository.RemoveAndSaveAsync(ModelMapper.MapToArray(EntitiesToRemove));
 
@@ -201,7 +208,9 @@ else
             var message = "Die Änderungen an den Kategorien wurden gespeichert";
 
             await ToastService.SendAsync(title, message, Framework.Services.Base.MessageType.Info);
-            await NotificationService.SaveNotifications(title, message, User?.Id ?? "");
+            await NotificationService.SaveNotifications(title, message, User.Id);
+            if (UpdateHubConnection != null)
+                await UpdateHubConnection.SendAsync("UpdateNotifications", new List<string> { User.Id });
         }
         catch (Exception ex)
         {

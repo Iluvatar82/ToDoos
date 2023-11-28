@@ -1,15 +1,35 @@
 ﻿@page "/notifications"
+@using Microsoft.AspNetCore.SignalR.Client
 
 <h3>Benachrichtigungen</h3>
 
-@foreach(var notification in notifications ?? Enumerable.Empty<NotificationDomainModel>())
-{
-    @* TODO *@
-    <div>
-        <div>@notification.Title</div>
-        <div>@GetFragment(notification.Message)</div>
-    </div>
-}
+<table class="table table-hover table-light">
+    <tbody>
+        @foreach (var notification in notifications ?? Enumerable.Empty<NotificationDomainModel>())
+        {
+            <tr class="@(notification.Read != null ? "opacity-50" : string.Empty)">
+                <td class="align-middle text-center">
+                    @if (notification.Read == null)
+                    {
+                        <span class="fa fa-plus opacity-25 read" aria-hidden="true" @onclick=@(async () => await MarkRead(@notification))></span>
+                    }
+                </td>
+
+                <td class="align-middle text-end">
+                    <div>@notification.Time.ToShortDateString()</div>
+                    <div>@notification.Time.ToShortTimeString()</div>
+                </td>
+
+                <td>
+                    <div class="w-100 p-3">
+                        <div class="mb-3">@GetTitleFragment(notification.Title)</div>
+                        <div>@GetContentFragment(notification.Message)</div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
 
 @code {
     private List<NotificationDomainModel> notifications { get; set; }
@@ -17,6 +37,8 @@
     [CascadingParameter]
     public IdentityUser? User { get; set; }
 
+    [CascadingParameter]
+    public HubConnection? UpdateHubConnection { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -25,8 +47,9 @@
             if (User == null)
                 return;
 
-            var userId = Guid.Parse(User.Id);
-            notifications = ModelMapper.MapToList<NotificationDomainModel>(await NotificationRepository.GetAllAsync(n => n.UserId == userId));
+            await UpdateNotifications(true);
+            if (UpdateHubConnection != null)
+                UpdateHubConnection.On("UpdateNotifications", async () => await InvokeAsync(async () => await UpdateNotifications(false)));
         }
         catch(Exception ex)
         {
@@ -34,5 +57,51 @@
         }
     }
 
-    private RenderFragment GetFragment(string message) => __builder => __builder.AddMarkupContent(0, message);
+    private async Task UpdateNotifications(bool isStartup)
+    {
+        var userId = Guid.Parse(User.Id);
+        var newNotifications = ModelMapper.MapToList<NotificationDomainModel>(await NotificationRepository.GetAllAsync(n => n.UserId == userId)).OrderByDescending(n => n.Time).ToList();
+        if (isStartup)
+            notifications = newNotifications;
+        else
+        {
+            foreach (var newNotification in newNotifications.Where(newN => !notifications.Select(n => n.Id).Contains(newN.Id)))
+                notifications.Insert(0, newNotification);
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task MarkRead(NotificationDomainModel notification)
+    {
+        try
+        {
+            notification.Read = DateTime.Now;
+            await NotificationRepository.UpdateAndSaveAsync(ModelMapper.Map(notification));
+
+            StateHasChanged();
+            if (UpdateHubConnection != null)
+                await UpdateHubConnection.SendAsync("UpdateNotifications", new List<string> { User!.Id });
+        }
+        catch(Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
+    }
+
+    private RenderFragment GetTitleFragment(string title)
+    {
+        RenderFragment content;
+        if (title.Contains("Erinnerung"))
+        {
+            content = __builder => __builder.AddMarkupContent(0, $"<span class=\"fa fa-envelope me-2\"></span>");
+            content += (RenderFragment)(__builder => __builder.AddMarkupContent(1, title));
+        }
+        else
+            content = (RenderFragment)(__builder => __builder.AddMarkupContent(0, title));
+
+        return content;
+    }
+
+    private RenderFragment GetContentFragment(string message) => __builder => __builder.AddMarkupContent(0, message);
 }

@@ -82,7 +82,7 @@ namespace Framework.Services
                 foreach (var reminder in reminders)
                 {
                     var reminderDefinition = _mapper.Map<ReminderDefinition>(reminder.Definition);
-                    var nextReminderTime = reminderDefinition.ApplyReminderToOccurrence(nextScheduleOccurrence.Value);
+                    var nextReminderTime = reminderDefinition.ApplyReminderToOccurrence(nextScheduleOccurrence!.Value);
                     if (schedule.Type == DomainModels.Common.Enums.ScheduleType.Fixed)
                     {
                         if (nextScheduleOccurrence == null)
@@ -91,7 +91,7 @@ namespace Framework.Services
                         if (nextReminderTime < DateTime.Now)
                             continue;
 
-                        var newJobId = BackgroundJob.Schedule(() => _emailService.SendReminderAsync(itemId, userInfo.ToArray()), nextReminderTime);
+                        var newJobId = BackgroundJob.Schedule(() => _emailService.SendReminderAsync(itemId, userInfo), nextReminderTime);
                         newJobIds.Add(newJobId);
                     }
                     else
@@ -104,7 +104,7 @@ namespace Framework.Services
                         var cronDefinition = _mapper.Map<CronDomainModel>(schedule);
 
                         var newJob = reminder.Id.ToString().ToLower();
-                        RecurringJob.AddOrUpdate(newJob, () => _emailService.SendReminderAsync(itemId, userInfo.ToArray()), cronDefinition, new RecurringJobOptions() { TimeZone = TimeZoneInfo.Local });
+                        RecurringJob.AddOrUpdate(newJob, () => _emailService.SendReminderAsync(itemId, userInfo), cronDefinition, new RecurringJobOptions() { TimeZone = TimeZoneInfo.Local });
 
                         newJobIds.Add(newJob);
                     }

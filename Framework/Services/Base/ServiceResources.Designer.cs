@@ -79,7 +79,7 @@ namespace Framework.Services.Base {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die (?&lt;name&gt;\[[\w\s]+\]){0,1}\s?(?&lt;number&gt;(?:\+|0{1,2})(?:[-\/\s]?\d+)+) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die (?&lt;name&gt;\[[\w\s]+\]){0,1}\s?(?&lt;number&gt;(?:\+|0{1,2})\d{6,}) ähnelt.
         /// </summary>
         internal static string ContentRenderService_TelLinkRegex {
             get {

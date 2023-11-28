@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Http.Connections.Client;
 @using Microsoft.AspNetCore.SignalR.Client;
 
-<CascadingValue Value="ListHubConnection">
+<CascadingValue Value="UpdateHubConnection">
     <CascadingAuthenticationState>
         <Router AppAssembly="@typeof(App).Assembly">
             <Found Context="routeData">
@@ -24,18 +24,21 @@
 
 @code {
     [CascadingParameter]
-    public HubConnection? ListHubConnection { get; set; }
+    public HubConnection? UpdateHubConnection { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        ListHubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.BaseUri + "hubs/updatelist", (options) =>
+        var userState = await AuthenticationProvider.GetAuthenticationStateAsync();
+        var userIdString = userState.User.Claims.FirstOrDefault(c => c.Type.Contains("nameidentifier"))?.Value ?? string.Empty;
+
+        UpdateHubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.BaseUri + "hubs/update", (options) =>
             {
-                options.SkipNegotiation = true;
                 options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
             })
             .Build();
 
-        await ListHubConnection.StartAsync();
+        await UpdateHubConnection.StartAsync();
+        await UpdateHubConnection.SendAsync("RegisterId", userIdString);
     }
 }

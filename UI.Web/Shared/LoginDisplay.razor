@@ -1,4 +1,5 @@
-﻿<AuthorizeView>
+﻿@using Microsoft.AspNetCore.SignalR.Client
+<AuthorizeView>
     <Authorized>
         <a href="notifications" class="position-relative">
             <span class="fa-regular fa-bell bell"></span>
@@ -27,22 +28,46 @@
     [Parameter]
     public Guid? UserId { get; set; }
 
+    [CascadingParameter]
+    public HubConnection? UpdateHubConnection { get; set; }
+
     private RenderFragment BadgeRenderFragment { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        BadgeRenderFragment = @<span></span>;
+        try
+        {
+            BadgeRenderFragment = @<span></span>;
 
-        if (UserId != null)
+            if (UserId != null)
+                await UpdateNotificationCount();
+
+            if (UpdateHubConnection != null)
+                UpdateHubConnection.On("UpdateNotifications", async () => await InvokeAsync(async () => await UpdateNotificationCount()));
+        }
+        catch(Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
+    }
+
+    private async Task UpdateNotificationCount(){
+        try
         {
             var notificationAmount = await NotificationRepository.GetUnreadCount(UserId.Value);
             if (notificationAmount > 0)
             {
                 BadgeRenderFragment = @<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            @notificationAmount
-                        <span class="visually-hidden">unread messages</span>
-                    </span>;
+                    @notificationAmount
+                    <span class="visually-hidden">unread messages</span>
+                </span>;
             }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
         }
     }
 }

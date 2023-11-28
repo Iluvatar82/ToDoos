@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging.EventLog;
@@ -91,7 +92,10 @@ namespace UI.Web
 
             builder.Services.AddTransient<ModelMapper>();
             builder.Services.AddTransient<ScheduleDefinitionConverter>();
-           
+
+            builder.Services.AddSignalR();
+            builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
+
             builder.Services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.ClearProviders();
@@ -132,7 +136,7 @@ namespace UI.Web
 
             app.MapControllers();
             app.MapBlazorHub();
-            app.MapHub<GroupListUpdateHub>(GroupListUpdateHub.HubUrl);
+            app.MapHub<UpdateHub>(UpdateHub.HubUrl);
             app.MapFallbackToPage("/_Host");
 
             app.UseCors(c => c.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());

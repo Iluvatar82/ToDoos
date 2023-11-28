@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace UI.Web.Hubs
 {
-    public class GroupListUpdateHub : Hub, IDisposable
+    public class UpdateHub : Hub, IDisposable
     {
-        public const string HubUrl = "/hubs/updatelist";
+        private readonly static UserConnectionMapper _connections = new UserConnectionMapper();
+        public const string HubUrl = "/hubs/update";
 
         public async Task JoinedGroupList(Guid listId, IdentityUser user)
         {
@@ -24,6 +25,18 @@ namespace UI.Web.Hubs
             await Clients.GroupExcept(listId.ToString(), Context.ConnectionId).SendAsync("UpdateList", user.UserName);
         }
 
+        public async Task UpdateNotifications(List<string> userIds)
+        {
+            var clients = Clients.Clients(_connections.GetConnections(userIds));
+            await clients.SendAsync("UpdateNotifications");
+        }
+
+        public void RegisterId(string userId)
+        {
+            if (!_connections.GetConnections(userId).Contains(Context.ConnectionId))
+                _connections.Add(userId, Context.ConnectionId);
+        }
+
         public async override Task OnConnectedAsync()
         {
             await base.OnConnectedAsync();
@@ -31,6 +44,9 @@ namespace UI.Web.Hubs
 
         public override async Task OnDisconnectedAsync(System.Exception? exception)
         {
+            string name = Context.UserIdentifier;
+            _connections.Remove(name, Context.ConnectionId);
+
             await base.OnDisconnectedAsync(exception);
         }
     }
