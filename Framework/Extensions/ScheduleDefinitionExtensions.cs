@@ -15,7 +15,7 @@ namespace Framework.Extensions
                 var oneWeek = Enumerable.Range(0, 7).Select(d => after.Date.AddDays(d).AddTicks(timeofDay.Ticks));
                 var activeWeekDays = schedule.WeekDays.Days.Select((a, index) => (Active: a, WeekDay: (DayOfWeek)index)).Where(info => info.Active).Select(info => info.WeekDay).ToList();
 
-                DateTime? next = oneWeek.FirstOrDefault(date => activeWeekDays.Any(active => active == date.DayOfWeek) && date.TimeOfDay >= timeofDay);
+                DateTime? next = oneWeek.FirstOrDefault(date => activeWeekDays.Any(active => active == date.DayOfWeek) && date.TimeOfDay >= timeofDay && date > after);
                 if (start.HasValue)
                     next = next >= start ? next : null;
 
@@ -27,7 +27,7 @@ namespace Framework.Extensions
             else if (schedule.Interval is not null)
             {
                 if (start == null)
-                    return null;
+                    start = after.Date;
 
                 var firstOccurrenceAfter = CalculateIntervalOccurrence(schedule, start.Value, after);
                 if (end < firstOccurrenceAfter)
@@ -49,7 +49,7 @@ namespace Framework.Extensions
                 var oneWeek = Enumerable.Range(0, 7).Select(d => before.Date.AddDays(-d).AddTicks(timeofDay.Ticks));
                 var activeWeekDays = schedule.WeekDays.Days.Select((a, index) => (Active: a, WeekDay: (DayOfWeek)index)).Where(info => info.Active).Select(info => info.WeekDay).ToList();
 
-                DateTime? previous = oneWeek.FirstOrDefault(date => activeWeekDays.Any(active => active == date.DayOfWeek) && date.TimeOfDay <= timeofDay);
+                DateTime? previous = oneWeek.FirstOrDefault(date => activeWeekDays.Any(active => active == date.DayOfWeek) && date.TimeOfDay <= timeofDay && date < before);
                 if (end.HasValue)
                     previous = previous < end ? previous : null;
 
@@ -61,9 +61,9 @@ namespace Framework.Extensions
             else if (schedule.Interval is not null)
             {
                 if (start == null)
-                    return null;
+                    start = before.Date;
 
-                var lastOccurrenceBefore = CalculateIntervalOccurrence(schedule, start.Value, before);
+                var lastOccurrenceBefore = CalculateIntervalOccurrence(schedule, start.Value, before, false);
                 if (end < lastOccurrenceBefore)
                     return null;
 
@@ -75,7 +75,28 @@ namespace Framework.Extensions
 
         private static DateTime CalculateIntervalOccurrence(ScheduleDefinition schedule, DateTime start, DateTime comparison, bool after = true)
         {
-            Func<DateTime, double, DateTime> timeIntervalFunc = schedule.Interval!.Unit switch
+            var timeIntervalFunc = GetIntervalFunc(schedule.Interval!);
+
+            if (after && comparison < start)
+                return start;
+            else if (!after && comparison > start)
+                return start;
+
+            var intervalFactor = (double)schedule.Interval!.Interval * (after ? 1 : -1);
+            var currentValue = start;
+            while (true)
+            {
+                currentValue = timeIntervalFunc(currentValue, intervalFactor);
+                if (after && currentValue > comparison || !after && currentValue < comparison)
+                    break;
+            }
+
+            return currentValue;
+        }
+
+        private static Func<DateTime, double, DateTime> GetIntervalFunc(ScheduleInterval interval)
+        {
+            return interval!.Unit switch
             {
                 ScheduleTimeUnit.Minute => (c, i) => c.AddMinutes(i),
                 ScheduleTimeUnit.Hour => (c, i) => c.AddHours(i),
@@ -85,22 +106,6 @@ namespace Framework.Extensions
                 ScheduleTimeUnit.Year => (c, i) => c.AddYears((int)i),
                 _ => (c, i) => c
             };
-
-            if (after && comparison < start)
-                return start;
-            else if (!after && comparison > start)
-                return start;
-
-            var intervalFactor = (double)schedule.Interval.Interval * (after ? 1 : -1);
-            var currentValue = start;
-            while(true)
-            {
-                currentValue = timeIntervalFunc(currentValue, intervalFactor);
-                if (after && currentValue > comparison || !after && currentValue < comparison)
-                    break;
-            }
-
-            return currentValue;
         }
 
         public static List<DateTime> GetOccurrences(this ScheduleDefinition schedule, DateTime from, DateTime to, DateTime? start = null, DateTime? end = null)
@@ -117,9 +122,9 @@ namespace Framework.Extensions
                 if (start.HasValue && start > from)
                     checkDate = start.Value;
 
-                var lastCheckDate = to.AddDays(1).AddSeconds(-1);
+                var lastCheckDate = to;
                 if (end.HasValue && end < to)
-                    lastCheckDate = end.Value.AddDays(1).AddSeconds(-1);
+                    lastCheckDate = end.Value;
 
                 if (schedule.WeekDays is not null)
                 {
@@ -135,11 +140,13 @@ namespace Framework.Extensions
                 }
                 else if (schedule.Interval is not null)
                 {
+                    var timeIntervalFunc = GetIntervalFunc(schedule.Interval);
+
                     var currentCheckDate = checkDate;
                     while(currentCheckDate <= lastCheckDate)
                     {
                         result.Add(currentCheckDate);
-                        currentCheckDate = currentCheckDate.AddDays((double)schedule.Interval.Interval);
+                        currentCheckDate = timeIntervalFunc(currentCheckDate, (double)schedule.Interval.Interval);
                     }
                 }
             }

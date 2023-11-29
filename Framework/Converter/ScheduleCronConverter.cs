@@ -12,7 +12,7 @@ namespace Framework.Converter
             schedule.NotNull();
 
             if (schedule.Type == DomainModels.Common.Enums.ScheduleType.WeekDays)
-                return $"{schedule.ScheduleDefinition.WeekDays!.Time.Minute} {schedule.ScheduleDefinition.WeekDays!.Time.Hour} * * {schedule.ScheduleDefinition.WeekDays!.DaysDefinition}";
+                return $"{schedule.ScheduleDefinition.WeekDays!.Time.Minute} {schedule.ScheduleDefinition.WeekDays!.Time.Hour} * * {schedule.ScheduleDefinition.WeekDays!.DaysCronDefinition}";
 
             schedule.Type.Satisfies(t => t == DomainModels.Common.Enums.ScheduleType.Interval);
             if (schedule.ScheduleDefinition.Interval!.Unit == DomainModels.Common.Enums.ScheduleTimeUnit.Minute)

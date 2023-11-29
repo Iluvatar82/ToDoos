@@ -46,7 +46,7 @@
             </div>
         </div>
 
-@*         <UI.Web.Areas.LiveData.Shared.TimeLine></UI.Web.Areas.LiveData.Shared.TimeLine>*@
+        <UI.Web.Areas.LiveData.Shared.TimeLine Items=@itemsWithSchedules></UI.Web.Areas.LiveData.Shared.TimeLine>
 
         <CascadingValue Value=@Categories>
             @if (newItemModel != null)
@@ -119,7 +119,7 @@
     window.currentIndex = 0;
     window.allowKeyboardNavigation = true;
 
-    document.onkeypress = function (e) {
+    window.onkeypress = function (e) {
         var isNewItemAdding = document.querySelectorAll('.newItem').length > 0;
         if (e.key == "j" && allowKeyboardNavigation && !isNewItemAdding) {
             let topLevelElements = document.querySelectorAll(window.topLevelSelector);
@@ -163,8 +163,7 @@
         }
     };
 
-
-    allowKeyNavigation = function (value) {
+    window.allowKeyNavigation = function (value) {
         allowKeyboardNavigation = value;
         if (value == false && currentElement != null) { 
             currentElement.classList.remove('active');
@@ -176,6 +175,7 @@
 @code {
     private ToDoItemDomainModel? newItemModel = null;
     private List<ToDoItemDomainModel> topLevelItems { get; set; } = new List<ToDoItemDomainModel>();
+    private List<ToDoItemDomainModel> itemsWithSchedules => topLevelItems.SelectMany(i => i.AllDescendents).Where(i => i.Schedules.Any()).ToList();
     private bool showInactive { get; set; }
     private ToDoListDomainModel? listEntity { get; set; }
     private bool showTwoColumns { get; set; } = false;

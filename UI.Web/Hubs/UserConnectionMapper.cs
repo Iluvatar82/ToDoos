@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace UI.Web.Hubs
+﻿namespace UI.Web.Hubs
 {
     public class UserConnectionMapper
     {

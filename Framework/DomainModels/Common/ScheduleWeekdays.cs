@@ -8,7 +8,9 @@
 
         public List<bool> Days { get => _days; set => _days = value; }
 
-        public string DaysDefinition => string.Join(", ", new[] { Montag ? "1" : "0", Dienstag ? "1" : "0", Mittwoch ? "1" : "0", Donnerstag ? "1" : "0", Freitag ? "1" : "0", Samstag ? "1" : "0", Sonntag ? "1" : "0" });
+        public string DaysDefinition => string.Join(", ", _days.Select(d => d ? "1" : "0"));
+
+        public string DaysCronDefinition => string.Join(",", _days.Select((d, i) => (Day: d, Index: i)).Where(di => di.Day == true).Select(di => di.Index));
 
         public bool Montag { get => _days[0]; set => _days[0] = value; }
  
