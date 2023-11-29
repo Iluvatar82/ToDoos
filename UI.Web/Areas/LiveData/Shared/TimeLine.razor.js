@@ -29,9 +29,10 @@ export function initializeTimeline()
     items_timeline.append(svg.node());
 };
 
-export function setTimelineEvents(events)
+export function setTimelineEvents(events, noReset)
 {
-    svgElement.selectAll("circle").remove();
+    if (noReset)
+        svgElement.selectAll("circle").remove();
 
     svgElement.selectAll("circle")
         .data(events)
@@ -125,4 +126,28 @@ export function setTimelineEvents(events)
             var scrollElement = document.getElementById(this.dataset.id);
             scrollElement.classList.remove('highlight');
         });
+
+    $(d3.selectAll('.fa.fa-clock').nodes()).closest('tr')
+        .on('mouseover', function () {
+            highlighted = svgElement.selectAll(`[data-id="${this.id}"]`)
+                .transition()
+                .duration('500')
+                .attr("stroke", "black")
+                .attr("stroke-thickness", "1px")
+                .attr('opacity', '.75')
+                .duration('250')
+                .attr('r', eventSize * 2);
+        })
+        .on('mouseout', function () {
+            highlighted
+                .transition()
+                .duration('500')
+                .attr("stroke", function (e) { return d3.color(e.color).darker(.5); })
+                .attr("stroke-thickness", "0.5px")
+                .attr('opacity', '1')
+                .duration('250')
+                .attr('r', eventSize);
+
+            highlighted = undefined;
+       });
 };

@@ -48,7 +48,7 @@
                         TimeIsSet = o.TimeOfDay.TotalMicroseconds > 0
                     }));
 
-                await JSScript.InvokeVoidAsync("setTimelineEvents", allEvents);
+                await JSScript.InvokeVoidAsync("setTimelineEvents", allEvents, false); //Use true to just Add Events to the existing collection
             }
         }
         catch (Exception ex)
