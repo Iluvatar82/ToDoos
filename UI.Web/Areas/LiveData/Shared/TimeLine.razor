@@ -1,10 +1,12 @@
-﻿@inject IJSRuntime JS
+﻿@using System.Diagnostics
+@inject IJSRuntime JS
 
 <div id="items_timeline" class="mb-3"></div>
 
 @code {
     private List<(ToDoItemDomainModel Item, List<DateTime> Occurrences)> displayedItems { get; set; } = new List<(ToDoItemDomainModel Item, List<DateTime> Occurrences)>();
     private IJSObjectReference? JSScript { get; set; }
+    private List<string> ItemIDs { get; set; } = new List<string>();
 
     [Parameter]
     public List<ToDoItemDomainModel> Items { get; set; } = new List<ToDoItemDomainModel>();
@@ -36,20 +38,24 @@
             if (JSScript == null)
             {
                 JSScript = await JS.InvokeAsync<IJSObjectReference>("import", "./Areas/LiveData/Shared/TimeLine.razor.js");
-
                 await JSScript.InvokeVoidAsync("initializeTimeline");
-                var allEvents = displayedItems.SelectMany(i => i.Occurrences.Where(o => o >= Start && o < End).Select(o =>
-                    new
-                    {
-                        Id = i.Item.Id,
-                        Bezeichnung = ItemContentRenderService.RenderContentWithoutHtml(i.Item.Bezeichnung),
-                        Color = i.Item.Category!.RGB_A ?? "#000000",
-                        Time = o.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
-                        TimeIsSet = o.TimeOfDay.TotalMicroseconds > 0
-                    }));
-
-                await JSScript.InvokeVoidAsync("setTimelineEvents", allEvents, false); //Use true to just Add Events to the existing collection
             }
+
+            if (ItemIDs.SequenceEqual(GetItemIDs()))
+                return;
+
+            var allEvents = displayedItems.SelectMany(i => i.Occurrences.Where(o => o >= Start && o < End).Select(o =>
+                new
+                {
+                    Id = i.Item.Id,
+                    Bezeichnung = ItemContentRenderService.RenderContentWithoutHtml(i.Item.Bezeichnung),
+                    Color = i.Item.Category!.RGB_A ?? "#000000",
+                    Time = o.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
+                    TimeIsSet = o.TimeOfDay.TotalMicroseconds > 0
+                }));
+
+            await JSScript.InvokeVoidAsync("setTimelineEvents", allEvents);
+            ItemIDs = GetItemIDs().ToList();
         }
         catch (Exception ex)
         {
@@ -58,4 +64,6 @@
 
         await base.OnAfterRenderAsync(firstRender);
     }
+
+    private IEnumerable<string> GetItemIDs() => Items.Select(i => i.Id.ToString()).OrderBy(id => id);
 }

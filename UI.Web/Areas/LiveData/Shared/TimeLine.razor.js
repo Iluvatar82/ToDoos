@@ -29,22 +29,34 @@ export function initializeTimeline()
     items_timeline.append(svg.node());
 };
 
-export function setTimelineEvents(events, noReset)
+export function setTimelineEvents(events)
 {
-    if (noReset)
-        svgElement.selectAll("circle").remove();
+    const trans = svgElement.transition().duration(250);
 
-    svgElement.selectAll("circle")
-        .data(events)
+    svgElement.selectAll("svg g[data-item]")
+        .data(events, function (e) { return e.id; })
+        .exit()
+        .call(exitTrans => exitTrans.transition(trans)
+            .attr("transform", function (e) { return `translate(${marginSide - 2 + scaleX(new Date(e.time))}, ${-2 * eventSize})`; })
+            .attr("opacity", 0)
+            .remove());
+
+    svgElement.selectAll("svg g[data-item]")
+        .data(events, function (e) { return e.id; })
         .enter()
         .append("g")
-            .attr("transform", function (e) { return `translate(${marginSide - 2 + scaleX(new Date(e.time))},${height - 50})`; })
+            .attr("data-item", "")
+            .attr("transform", function (e) { return `translate(${marginSide - 2 + scaleX(new Date(e.time))},${height + 2 * eventSize})`; })
+            .attr("opacity", 0)
+            .call(enterTrans => enterTrans.transition(trans)
+                .attr("transform", function (e) { return `translate(${marginSide - 2 + scaleX(new Date(e.time))},${height - 50})`; })
+                .attr("opacity", 1))
         .append("circle")
             .attr("r", eventSize)
             .attr("fill", function (e) { return d3.color(e.color); })
             .attr("stroke", function (e) { return d3.color(e.color).darker(.5); })
             .attr("stroke-thickness", "0.5px")
-            .attr("data-id", function (e) { return e.id; })
+        .attr("data-id", function (e) { return e.id; })
 
         .on('click', function () {
             var scrollElement = document.getElementById(this.dataset.id);
@@ -129,7 +141,7 @@ export function setTimelineEvents(events, noReset)
 
     $(d3.selectAll('.fa.fa-clock').nodes()).closest('tr')
         .on('mouseover', function () {
-            highlighted = svgElement.selectAll(`[data-id="${this.id}"]`)
+            svgElement.selectAll(`[data-id="${this.id}"]`)
                 .transition()
                 .duration('500')
                 .attr("stroke", "black")
@@ -139,7 +151,7 @@ export function setTimelineEvents(events, noReset)
                 .attr('r', eventSize * 2);
         })
         .on('mouseout', function () {
-            highlighted
+            svgElement.selectAll(`[data-id="${this.id}"]`)
                 .transition()
                 .duration('500')
                 .attr("stroke", function (e) { return d3.color(e.color).darker(.5); })
@@ -147,7 +159,5 @@ export function setTimelineEvents(events, noReset)
                 .attr('opacity', '1')
                 .duration('250')
                 .attr('r', eventSize);
-
-            highlighted = undefined;
        });
 };
