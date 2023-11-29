@@ -55,6 +55,7 @@ namespace Framework.Converter
                         result.Interval.Interval = interval;
                         result.Interval.Unit = Mapper.Map(matchInterval.Groups["unit"].Value, result.Interval.Unit);
                     }
+
                     break;
 
                 default:

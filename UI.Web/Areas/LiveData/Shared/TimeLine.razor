@@ -4,7 +4,7 @@
 
 @code {
     private List<(ToDoItemDomainModel Item, List<DateTime> Occurrences)> displayedItems { get; set; } = new List<(ToDoItemDomainModel Item, List<DateTime> Occurrences)>();
-    private IJSObjectReference JSScript { get; set; }
+    private IJSObjectReference? JSScript { get; set; }
 
     [Parameter]
     public List<ToDoItemDomainModel> Items { get; set; } = new List<ToDoItemDomainModel>();
@@ -34,17 +34,22 @@
         try
         {
             if (JSScript == null)
+            {
                 JSScript = await JS.InvokeAsync<IJSObjectReference>("import", "./Areas/LiveData/Shared/TimeLine.razor.js");
 
-            await JSScript.InvokeVoidAsync("initializeTimeline");
-            await JSScript.InvokeVoidAsync("setTimelineEvents", displayedItems.SelectMany(i => i.Occurrences.Where(o => o >= Start && o < End).Select(o =>
-                new {
-                    Id = i.Item.Id,
-                    Bezeichnung = ItemContentRenderService.RenderContentWithoutHtml(i.Item.Bezeichnung),
-                    Color = i.Item.Category!.RGB_A ?? "#000000",
-                    Time = o.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
-                    TimeIsSet = o.TimeOfDay.TotalMicroseconds > 0
-                })));
+                await JSScript.InvokeVoidAsync("initializeTimeline");
+                var allEvents = displayedItems.SelectMany(i => i.Occurrences.Where(o => o >= Start && o < End).Select(o =>
+                    new
+                    {
+                        Id = i.Item.Id,
+                        Bezeichnung = ItemContentRenderService.RenderContentWithoutHtml(i.Item.Bezeichnung),
+                        Color = i.Item.Category!.RGB_A ?? "#000000",
+                        Time = o.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
+                        TimeIsSet = o.TimeOfDay.TotalMicroseconds > 0
+                    }));
+
+                await JSScript.InvokeVoidAsync("setTimelineEvents", allEvents);
+            }
         }
         catch (Exception ex)
         {

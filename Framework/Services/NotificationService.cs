@@ -6,7 +6,7 @@ namespace Framework.Services
 {
     public class NotificationService
     {
-        public Action<List<string>> Callback { get; set; }
+        public Action<List<string>>? Callback { get; set; }
 
         private readonly ModelMapper _modelMapper;
         private readonly NotificationRepository _notificationRepository;
@@ -32,7 +32,7 @@ namespace Framework.Services
 
             await _notificationRepository.AddAndSaveAsync(_modelMapper.MapToArray(resultList));
             
-            Callback(userIds.Select(id => id.ToString()).ToList());
+            Callback?.Invoke(userIds.Select(id => id.ToString()).ToList());
         }
     }
 }

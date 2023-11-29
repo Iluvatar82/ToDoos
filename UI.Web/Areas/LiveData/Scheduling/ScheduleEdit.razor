@@ -12,7 +12,8 @@
 
 @if (ItemId != Guid.Empty)
 {
-    <h4>@Title<br>Scheduling bearbeiten</h4>
+    <h4>"@(ItemContentRenderService.RenderContentWithoutHtml(Title))"</h4>
+    <h5>Bearbeiten</h5>
 }
 
 <div class="row mt-1">

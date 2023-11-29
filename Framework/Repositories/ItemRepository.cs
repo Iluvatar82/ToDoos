@@ -16,7 +16,7 @@ namespace Framework.Repositories
 
         public async Task<List<ToDoItem>> GetAllItemsCompleteAsync(Guid listId, bool showInactive)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.ToDoItems.NotNull();
 
@@ -25,7 +25,7 @@ namespace Framework.Repositories
 
         public async Task<List<ToDoItem>> GetAllItemsCompleteAsync(Func<ToDoItem, bool> filterFunc)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.ToDoItems.NotNull();
 
@@ -34,7 +34,7 @@ namespace Framework.Repositories
 
         public async Task<ToDoItem?> GetItemCompleteAsync(Guid itemId)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.ToDoItems.NotNull();
 

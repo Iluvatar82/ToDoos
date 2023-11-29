@@ -46,7 +46,10 @@
             </div>
         </div>
 
-        <UI.Web.Areas.LiveData.Shared.TimeLine Items=@itemsWithSchedules></UI.Web.Areas.LiveData.Shared.TimeLine>
+        @if (ItemsWithSchedules.Any())
+        {
+            <UI.Web.Areas.LiveData.Shared.TimeLine Items=@ItemsWithSchedules></UI.Web.Areas.LiveData.Shared.TimeLine>
+        }
 
         <CascadingValue Value=@Categories>
             @if (newItemModel != null)
@@ -116,7 +119,7 @@
 @code {
     private ToDoItemDomainModel? newItemModel = null;
     private List<ToDoItemDomainModel> topLevelItems { get; set; } = new List<ToDoItemDomainModel>();
-    private List<ToDoItemDomainModel> itemsWithSchedules => topLevelItems.SelectMany(i => i.AllDescendents).Where(i => i.Schedules.Any()).ToList();
+    private List<ToDoItemDomainModel> ItemsWithSchedules => topLevelItems.SelectMany(i => i.SelfAndAllDescendents).Where(i => i.Schedules.Any()).ToList();
     private bool showInactive { get; set; }
     private ToDoListDomainModel? listEntity { get; set; }
     private bool showTwoColumns { get; set; } = false;
@@ -130,7 +133,7 @@
 
     private List<ElementReference> topLevelReferenceList { get; set; } = new List<ElementReference>();
     private ElementReference currentTopLevelReference { get; set; }
-    private IJSObjectReference JSScript { get; set; }
+    private IJSObjectReference? JSScript { get; set; }
 
     public ToDoItemDomainModel? DraggedToDoItem { get; set; }
 
@@ -329,7 +332,7 @@
                 currentEditItemComponent.BezeichnungEditEnabled = false;
 
             currentEditItemComponent = component;
-            await JSScript.InvokeVoidAsync("allowKeyNavigation", component == null);
+            await JSScript!.InvokeVoidAsync("allowKeyNavigation", component == null);
         }
         catch (Exception ex)
         {

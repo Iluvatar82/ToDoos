@@ -16,7 +16,7 @@ namespace Framework.Repositories
 
         public async Task<List<ToDoList>> GetAllListsAsync(Guid userId)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.ToDoLists.NotNull();
 
@@ -27,7 +27,7 @@ namespace Framework.Repositories
 
         public async Task<ToDoList> GetListAsync(Guid listId)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.ToDoLists.NotNull();
 
@@ -37,7 +37,7 @@ namespace Framework.Repositories
 
         public async Task<List<UserGroup>> GetAllGroupsAsync(Guid userId)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.Groups.NotNull();
 
@@ -47,7 +47,7 @@ namespace Framework.Repositories
 
         public async Task<List<UserGroup>> GetAllUsersForGroupAsync(Guid groupId)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.Groups.NotNull();
 

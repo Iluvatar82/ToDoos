@@ -14,7 +14,7 @@ namespace Framework.Repositories
 
         public async Task<List<IdentityRole>> GetAllRoles()
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.Roles.NotNull();
 
@@ -24,7 +24,7 @@ namespace Framework.Repositories
 
         public async Task<List<IdentityUser>> GetAllIdentities()
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.Users.NotNull();
 
@@ -34,7 +34,7 @@ namespace Framework.Repositories
 
         public async Task<IdentityRole?> GetRoleAsync(string roleId)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.Roles.NotNull();
 
@@ -44,7 +44,7 @@ namespace Framework.Repositories
 
         public async Task<IdentityUser?> GetUserByUsernameAsync(string username)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.Users.NotNull();
 
@@ -54,7 +54,7 @@ namespace Framework.Repositories
 
         public async Task<List<IdentityUser>> GetUsersByIdAsync(IEnumerable<string> userIds)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.Users.NotNull();
 
@@ -64,7 +64,7 @@ namespace Framework.Repositories
 
         public async Task<IdentityUser?> GetUserByEmailAsync(string email)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.Users.NotNull();
 
@@ -74,7 +74,7 @@ namespace Framework.Repositories
 
         public async Task ApplyRoleToUserAsync(string roleId, string userId)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
 
             var newUserRole = new IdentityUserRole<string> { RoleId = roleId, UserId = userId };
@@ -85,7 +85,7 @@ namespace Framework.Repositories
 
         public async Task<List<IdentityUser>> GetUsersWithRoleAsync(string roleId)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.Roles.NotNull();
 

@@ -13,7 +13,7 @@
         {
             lock (userConnections)
             {
-                if (!userConnections.TryGetValue(key, out List<string> connections))
+                if (!userConnections.TryGetValue(key, out var connections))
                 {
                     connections = new List<string>();
                     userConnections.Add(key, connections);
@@ -28,7 +28,7 @@
 
         public List<string> GetConnections(string key)
         {
-            if (userConnections.TryGetValue(key, out List<string> connections))
+            if (userConnections.TryGetValue(key, out var connections))
                 return connections;
 
             return new List<string>();
@@ -38,7 +38,7 @@
         {
             lock (userConnections)
             {
-                if (!userConnections.TryGetValue(key, out List<string> connections))
+                if (!userConnections.TryGetValue(key, out var connections))
                     return;
 
                 lock (connections)

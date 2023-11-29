@@ -44,7 +44,7 @@ namespace UI.Web.Hubs
 
         public override async Task OnDisconnectedAsync(System.Exception? exception)
         {
-            string name = Context.UserIdentifier;
+            string name = Context.UserIdentifier!;
             Connections.Remove(name, Context.ConnectionId);
 
             await base.OnDisconnectedAsync(exception);

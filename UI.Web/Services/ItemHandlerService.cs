@@ -8,13 +8,13 @@ namespace UI.Web.Services
 {
     public class ItemHandlerService
     {
-        private ModelMapper _modelMapper { get; set; }
-        private ItemRepository _itemRepository { get; set; }
+        private ModelMapper ModelMapper { get; set; }
+        private ItemRepository ItemRepository { get; set; }
 
         public ItemHandlerService(ModelMapper modelMapper, ItemRepository itemRepository)
         {
-            _modelMapper = modelMapper;
-            _itemRepository = itemRepository;
+            ModelMapper = modelMapper;
+            ItemRepository = itemRepository;
         }
 
 
@@ -62,7 +62,7 @@ namespace UI.Web.Services
             for (var index = 0; index < elements.Count; index++)
                 elements[index].Order = index;
 
-            await _itemRepository.UpdateAndSaveAsync(_modelMapper.MapToArray(elements));
+            await ItemRepository.UpdateAndSaveAsync(ModelMapper.MapToArray(elements));
             updateAction.Invoke();
         }
 
@@ -76,7 +76,7 @@ namespace UI.Web.Services
 
             elements = elements.OrderBy(i => i.Get<int>("OriginalOrder")).ToList();
 
-            await _itemRepository.UpdateAndSaveAsync(_modelMapper.MapToArray(elements));
+            await ItemRepository.UpdateAndSaveAsync(ModelMapper.MapToArray(elements));
             updateAction.Invoke();
             return elements;
         }

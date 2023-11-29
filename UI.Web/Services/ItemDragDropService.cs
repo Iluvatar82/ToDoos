@@ -10,13 +10,13 @@ namespace UI.Web.Services
 {
     public class ItemDragDropService
     {
-        private ModelMapper _modelMapper { get; set; }
-        private ItemRepository _itemRepository { get; set; }
+        private ModelMapper ModelMapper { get; set; }
+        private ItemRepository ItemRepository { get; set; }
 
         public ItemDragDropService(ModelMapper modelMapper, ItemRepository itemRepository)
         {
-            _modelMapper = modelMapper;
-            _itemRepository = itemRepository;
+            ModelMapper = modelMapper;
+            ItemRepository = itemRepository;
         }
 
 
@@ -40,7 +40,7 @@ namespace UI.Web.Services
 
             item.Parent = dropItem;
             item.ParentId = dropItem?.Id;
-            await _itemRepository.UpdateAndSaveAsync(_modelMapper.Map(item));
+            await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(item));
 
             if (container != null)
                 container.DraggedToDoItem = null;

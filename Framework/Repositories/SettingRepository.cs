@@ -14,7 +14,7 @@ namespace Framework.Repositories
 
         public async Task<List<Setting>> GetAllSettingsAsync(Guid userId)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.Settings.NotNull();
 
@@ -23,7 +23,7 @@ namespace Framework.Repositories
 
         public async Task<Setting?> GetSettingAsync(Guid userId, string key)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext!.Settings.NotNull();
 

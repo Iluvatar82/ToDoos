@@ -138,19 +138,16 @@ namespace UI.Web.Areas.Identity.Pages.Account
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                    {
                         return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
-                    }
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
                         return LocalRedirect(returnUrl);
                     }
                 }
+
                 foreach (var error in result.Errors)
-                {
                     ModelState.AddModelError(string.Empty, error.Description);
-                }
             }
 
             // If we got this far, something failed, redisplay form
@@ -174,9 +171,8 @@ namespace UI.Web.Areas.Identity.Pages.Account
         private IUserEmailStore<IdentityUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)
-            {
                 throw new NotSupportedException("The default UI requires a user store with email support.");
-            }
+
             return (IUserEmailStore<IdentityUser>)_userStore;
         }
     }

@@ -5,7 +5,7 @@
 
 <table class="table table-hover table-light">
     <tbody>
-        @foreach (var notification in notifications ?? Enumerable.Empty<NotificationDomainModel>())
+        @foreach (var notification in NotificationModels ?? Enumerable.Empty<NotificationDomainModel>())
         {
             <tr class="@(notification.Read != null ? "opacity-50" : string.Empty)">
                 <td class="align-middle text-center">
@@ -32,7 +32,7 @@
 </table>
 
 @code {
-    private List<NotificationDomainModel> notifications { get; set; }
+    private List<NotificationDomainModel>? NotificationModels { get; set; }
 
     [CascadingParameter]
     public IdentityUser? User { get; set; }
@@ -59,14 +59,14 @@
 
     private async Task UpdateNotifications(bool isStartup)
     {
-        var userId = Guid.Parse(User.Id);
+        var userId = Guid.Parse(User!.Id);
         var newNotifications = ModelMapper.MapToList<NotificationDomainModel>(await NotificationRepository.GetAllAsync(n => n.UserId == userId)).OrderByDescending(n => n.Time).ToList();
         if (isStartup)
-            notifications = newNotifications;
-        else
+            NotificationModels = newNotifications;
+        else if (NotificationModels != null)
         {
-            foreach (var newNotification in newNotifications.Where(newN => !notifications.Select(n => n.Id).Contains(newN.Id)))
-                notifications.Insert(0, newNotification);
+            foreach (var newNotification in newNotifications.Where(newN => !NotificationModels.Select(n => n.Id).Contains(newN.Id)))
+                NotificationModels.Insert(0, newNotification);
 
             StateHasChanged();
         }

@@ -31,7 +31,7 @@
     [CascadingParameter]
     public HubConnection? UpdateHubConnection { get; set; }
 
-    private RenderFragment BadgeRenderFragment { get; set; }
+    private RenderFragment BadgeRenderFragment { get; set; } = @<span></span>;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -54,7 +54,7 @@
     private async Task UpdateNotificationCount(){
         try
         {
-            var notificationAmount = await NotificationRepository.GetUnreadCount(UserId.Value);
+            var notificationAmount = await NotificationRepository.GetUnreadCount(UserId!.Value);
             if (notificationAmount > 0)
             {
                 BadgeRenderFragment = @<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">

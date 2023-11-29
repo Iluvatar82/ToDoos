@@ -15,7 +15,7 @@ namespace Framework.Repositories
 
         public async Task<int> GetUnreadCount(Guid userId)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
             dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);

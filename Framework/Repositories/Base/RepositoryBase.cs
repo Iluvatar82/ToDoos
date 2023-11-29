@@ -7,18 +7,18 @@ namespace Framework.Repositories.Base
 {
     public abstract class RepositoryBase<TContext, TEntity> where TContext : DbContext where TEntity : class
     {
-        protected IDbContextFactory<TContext> dbContextFactory { get; set; }
+        protected IDbContextFactory<TContext> DbContextFactory { get; set; }
 
 
         protected RepositoryBase(IDbContextFactory<TContext> contextFactory)
         {
-            dbContextFactory = contextFactory;
+            DbContextFactory = contextFactory;
         }
 
 
         public async Task<List<TEntity>> GetAllAsync()
         {
-            using var dbContext =  await dbContextFactory.CreateDbContextAsync();
+            using var dbContext =  await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
             dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -28,7 +28,7 @@ namespace Framework.Repositories.Base
 
         public async Task<List<TEntity>> GetAllAsync(Func<TEntity, bool> filterFunc)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
             dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -37,7 +37,7 @@ namespace Framework.Repositories.Base
         }
         public async Task<List<T>> GetAllAsync<T>() where T : class
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
             dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -47,7 +47,7 @@ namespace Framework.Repositories.Base
 
         public async Task<List<T>> GetAllAsync<T>(Func<T, bool> filterFunc) where T : class
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
             dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -57,7 +57,7 @@ namespace Framework.Repositories.Base
 
         public async Task<TEntity?> GetAsync(Guid id)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
             dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -67,7 +67,7 @@ namespace Framework.Repositories.Base
 
         public async Task<TEntity?> GetAsync(string id)
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
             dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -76,7 +76,7 @@ namespace Framework.Repositories.Base
         }
         public async Task<T?> GetAsync<T>(Guid id) where T : class
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
             dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -86,7 +86,7 @@ namespace Framework.Repositories.Base
 
         public async Task<T?> GetAsync<T>(string id) where T : class
         {
-            using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            using var dbContext = await DbContextFactory.CreateDbContextAsync();
             dbContext.NotNull();
             dbContext.Database.NotNull();
             dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -98,7 +98,7 @@ namespace Framework.Repositories.Base
         {
             try
             {
-                using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                using var dbContext = await DbContextFactory.CreateDbContextAsync();
                 dbContext.NotNull();
                 dbContext.Database.NotNull();
                 dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -121,7 +121,7 @@ namespace Framework.Repositories.Base
         {
             try
             {
-                using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                using var dbContext = await DbContextFactory.CreateDbContextAsync();
                 dbContext.NotNull();
                 dbContext.Database.NotNull();
                 dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -139,7 +139,7 @@ namespace Framework.Repositories.Base
         {
             try
             {
-                using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                using var dbContext = await DbContextFactory.CreateDbContextAsync();
                 dbContext.NotNull();
                 dbContext.Database.NotNull();
                 dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -157,7 +157,7 @@ namespace Framework.Repositories.Base
         {
             try
             {
-                using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                using var dbContext = await DbContextFactory.CreateDbContextAsync();
                 dbContext.NotNull();
                 dbContext.Database.NotNull();
                 dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
@@ -181,7 +181,7 @@ namespace Framework.Repositories.Base
         {
             try
             {
-                using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                using var dbContext = await DbContextFactory.CreateDbContextAsync();
                 dbContext.NotNull();
                 dbContext.Database.NotNull();
                 dbContext.Satisfies((c) => dbContext.Database.CanConnectAsync().Result);
