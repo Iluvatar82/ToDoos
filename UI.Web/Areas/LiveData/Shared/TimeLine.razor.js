@@ -26,7 +26,7 @@ export function initializeTimeline()
         .attr("transform", `translate(${marginSide},${height - marginBottom})`)
         .call(axisX);
 
-    items_timeline.append(svg.node());
+    items_timeline.append(svgElement.node());
 };
 
 export function setTimelineEvents(events)
