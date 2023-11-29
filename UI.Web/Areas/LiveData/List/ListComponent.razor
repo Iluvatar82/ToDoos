@@ -113,65 +113,6 @@
     </Authorized>
 </AuthorizeView>
 
-<script>
-    window.topLevelSelector = 'table tbody tr.top';
-    window.currentElement = null;
-    window.currentIndex = 0;
-    window.allowKeyboardNavigation = true;
-
-    window.onkeypress = function (e) {
-        var isNewItemAdding = document.querySelectorAll('.newItem').length > 0;
-        if (e.key == "j" && allowKeyboardNavigation && !isNewItemAdding) {
-            let topLevelElements = document.querySelectorAll(window.topLevelSelector);
-            currentIndex++;
-            if (currentIndex >= topLevelElements.length)
-                currentIndex = 0;
-
-            if (currentElement != null)
-                currentElement.classList.remove('active');
-
-            currentElement = topLevelElements[currentIndex];
-            currentElement.classList.add('active');
-
-            window.scrollTo({
-                    behavior: 'smooth',
-                    top:
-                        currentElement.getBoundingClientRect().top -
-                        document.body.getBoundingClientRect().top -
-                        document.querySelectorAll('.top-row')[0].getBoundingClientRect().height,
-                });
-        }
-        else if (e.key == "k" && allowKeyboardNavigation && !isNewItemAdding) {
-            let topLevelElements = document.querySelectorAll(window.topLevelSelector);
-            currentIndex--;
-            if (currentIndex < 0)
-                currentIndex = topLevelElements.length - 1;
-
-            if (currentElement != null)
-                currentElement.classList.remove('active');
-
-            currentElement = topLevelElements[currentIndex];
-            currentElement.classList.add('active');
-
-            window.scrollTo({
-                behavior: 'smooth',
-                top:
-                    currentElement.getBoundingClientRect().top -
-                    document.body.getBoundingClientRect().top -
-                    document.querySelectorAll('.top-row')[0].getBoundingClientRect().height,
-            });
-        }
-    };
-
-    window.allowKeyNavigation = function (value) {
-        allowKeyboardNavigation = value;
-        if (value == false && currentElement != null) { 
-            currentElement.classList.remove('active');
-            currentElement = null;
-        }
-    };
-</script>
-
 @code {
     private ToDoItemDomainModel? newItemModel = null;
     private List<ToDoItemDomainModel> topLevelItems { get; set; } = new List<ToDoItemDomainModel>();
@@ -189,6 +130,7 @@
 
     private List<ElementReference> topLevelReferenceList { get; set; } = new List<ElementReference>();
     private ElementReference currentTopLevelReference { get; set; }
+    private IJSObjectReference JSScript { get; set; }
 
     public ToDoItemDomainModel? DraggedToDoItem { get; set; }
 
@@ -287,6 +229,24 @@
         await base.OnParametersSetAsync();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (JSScript == null)
+            {
+                JSScript = await JS.InvokeAsync<IJSObjectReference>("import", "./Areas/LiveData/List/ListComponent.razor.js");
+                await JSScript.InvokeVoidAsync("initializeScrollHandler");
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
     private async Task SwitchActiveInactiveView()
     {
         try
@@ -369,7 +329,7 @@
                 currentEditItemComponent.BezeichnungEditEnabled = false;
 
             currentEditItemComponent = component;
-            await JS.InvokeVoidAsync("allowKeyNavigation", component == null);
+            await JSScript.InvokeVoidAsync("allowKeyNavigation", component == null);
         }
         catch (Exception ex)
         {

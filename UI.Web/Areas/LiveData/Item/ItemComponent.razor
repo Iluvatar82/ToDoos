@@ -11,7 +11,7 @@
 @inject ItemDragDropService ItemDragDropService;
 @inject ItemHandlerService ItemHandlerService;
 
-<tr @ref=@ItemReference class="bg-opacity-25 align-items-baseline @(Level == 0 ? "top" : string.Empty) @(Model.Done.HasValue ? "bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25" : null)"
+<tr id=@Model.Id @ref=@ItemReference class="bg-opacity-25 align-items-baseline @(Level == 0 ? "top" : string.Empty) @(Model.Done.HasValue ? "bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25" : null)"
     draggable="true" @ondragstart=@(_ => ItemDragDropService.HandleDragStart(Container, Model)) ondragover="event.preventDefault();" @ondrop=@(_ => ItemDragDropService.HandleDrop(Container, Model, OnDraggedFrom, OnDraggedTo, StateHasChanged))
     @attributes=@ItemStyleService.GetRowAttributes(Model, Hidden, false)>
     <td class="fixed-w position-relative fade-in-on-hover">

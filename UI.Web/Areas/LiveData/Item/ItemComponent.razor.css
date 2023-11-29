@@ -1,4 +1,5 @@
 ﻿tr {
+	transition: all .25s ease-in-out;
 	font-weight: bold;
 }
 
@@ -47,6 +48,12 @@ tr.todo-item-separator:drop {
 
 .addChild:hover {
 	font-size: 16px;
+}
+
+tr.highlight {
+	transition: all .25s ease-in-out;
+	border: 1px darkgrey solid;
+	box-sizing: border-box;
 }
 
 .moveChild {

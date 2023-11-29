@@ -2,72 +2,9 @@
 
 <div id="items_timeline" class="mb-3"></div>
 
-
-<script src="/src/d3/d3.min.js"></script>
-<script src="/jquery/jquery.js"></script>
-<script>
-    window.drawTimeline = function () {
-        if (document.querySelectorAll('#items_timeline svg').length > 0)
-            return;
-
-        var height = 200;
-        var marginBottom = 16;
-        var marginSide = 20;
-
-        window.scaleX = d3.scaleTime([d3.utcDay.offset(new Date(), -7), d3.utcDay.offset(new Date(), 7)], [0, 1264 - 2 * marginSide]);
-        var axisX = d3.axisBottom(scaleX);
-
-        window.svg = d3.select("#items_timeline").append("svg").attr("width", 1264).attr("height", height);
-        window.svg.append("g").attr("transform", `translate(${marginSide},${height - marginBottom})`).call(axisX);
-
-        items_timeline.append(svg.node());
-    }
-
-    window.setTimelineEvents = function (events) {
-
-        console.log(events);
-
-        var eventElements = window.svg.selectAll("circle")
-            .data(events)
-            .enter()
-            .append("g")
-                .attr("transform", function (e, i) { return `translate(${scaleX(new Date(e.time))},150)`; })
-            .append("circle")
-                .attr("r", 10)
-                .attr("fill", function (e, i) { return d3.color(e.color); })
-
-            .on('mouseover', function (d, i) {
-                var newG = d3.select(this.parentNode)
-                    .append("g")
-                    .attr("transform", "translate(-100, -60)");
-
-                newG.append("rect")
-                    .attr("width", "200")
-                    .attr("height", "50")
-                    .attr("fill", "white")
-                    .attr("stroke", function () { return d3.color(i.color); });
-
-                newG.append("text")
-                        .attr("stroke", "black")
-                        .attr("transform", "translate(20, 20)")
-                        .text(i.bezeichnung);
-
-                d3.select(this).transition()
-                    .duration('500')
-                    .attr('opacity', '.85');
-            })
-            .on('mouseout', function (d, i) {
-                d3.select(this.parentNode).select("g").remove();
-                d3.select(this).transition()
-                    .duration('500')
-                    .attr('opacity', '1');
-            });
-    }
-    </script>
-
 @code {
     private List<(ToDoItemDomainModel Item, List<DateTime> Occurrences)> displayedItems { get; set; } = new List<(ToDoItemDomainModel Item, List<DateTime> Occurrences)>();
-    private List<(ToDoItemDomainModel Item, List<DateTime> Occurrences)> originalDisplayedItems { get; set; } = new List<(ToDoItemDomainModel Item, List<DateTime> Occurrences)>();
+    private IJSObjectReference JSScript { get; set; }
 
     [Parameter]
     public List<ToDoItemDomainModel> Items { get; set; } = new List<ToDoItemDomainModel>();
@@ -82,7 +19,7 @@
     {
         try
         {
-            displayedItems = Items.Select(i => (Item: i, Occuccences: i.Occurrences(Start, End))).Where(io => io.Occuccences.Any()).ToList();
+            displayedItems = Items.Select(i => (Item: i, Occuccences: i.Occurrences(Start.Date, End.Date.AddDays(1)))).Where(io => io.Occuccences.Any()).ToList();
         }
         catch (Exception ex)
         {
@@ -96,23 +33,18 @@
     {
         try
         {
-            var itemsIds = displayedItems.Select(i => i.Item.Id).ToHashSet<Guid>();
-            var originalItemsIds = originalDisplayedItems.Select(i => i.Item.Id).ToHashSet<Guid>();
-            if (!(itemsIds.All(iid => originalItemsIds.Contains(iid)) && originalItemsIds.All(oiid => itemsIds.Contains(oiid))))
-                return;
+            if (JSScript == null)
+                JSScript = await JS.InvokeAsync<IJSObjectReference>("import", "./Areas/LiveData/Shared/TimeLine.razor.js");
 
-            await JS.InvokeVoidAsync("drawTimeline");
-            await JS.InvokeVoidAsync("setTimelineEvents", displayedItems.SelectMany(i => i.Occurrences.Select(o =>
+            await JSScript.InvokeVoidAsync("initializeTimeline");
+            await JSScript.InvokeVoidAsync("setTimelineEvents", displayedItems.SelectMany(i => i.Occurrences.Where(o => o >= Start && o < End).Select(o =>
                 new {
                     Id = i.Item.Id,
-                    Bezeichnung = i.Item.Bezeichnung,
+                    Bezeichnung = ItemContentRenderService.RenderContentWithoutHtml(i.Item.Bezeichnung),
                     Color = i.Item.Category!.RGB_A ?? "#000000",
-                    Time = o.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'")
+                    Time = o.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
+                    TimeIsSet = o.TimeOfDay.TotalMicroseconds > 0
                 })));
-            // await JS.InvokeVoidAsync("setTimelineEvents", new List<object> {
-            //     new { Id = Guid.NewGuid(), Bezeichnung = "Test", Color = "#000000", Time = DateTime.Now.AddDays(-2).ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'") },
-            //     new { Id = Guid.NewGuid(), Bezeichnung = "Test später", Color = "#aaaaaa", Time = DateTime.Now.AddDays(4).ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'") },
-            //});
         }
         catch (Exception ex)
         {

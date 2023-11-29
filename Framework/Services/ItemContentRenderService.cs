@@ -46,5 +46,24 @@ namespace Framework.Services
 
             return $"<div>{result}</div>";
         }
+
+        public static string RenderContentWithoutHtml(string raw)
+        {
+            var result = raw;
+
+            result = result.Replace("<", "&lt;");
+            result = result.Replace(">", "&gt;");
+
+            foreach (Match match in WebLinkRegex.Matches(raw))
+                result = result.Replace(match.Value, string.Empty);
+
+            foreach (Match match in EmailLinkRegex.Matches(raw))
+                result = result.Replace(match.Value, string.Empty);
+
+            foreach (Match match in TelLinkRegex.Matches(raw))
+                result = result.Replace(match.Value, string.Empty);
+
+            return result;
+        }
     }
 }
