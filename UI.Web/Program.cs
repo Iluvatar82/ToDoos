@@ -87,6 +87,7 @@ namespace UI.Web
             builder.Services.AddTransient<ReminderService>();
 
             builder.Services.AddSingleton<DBDomainMapper>();
+            builder.Services.AddSingleton<EventHandlerService>();
 
             builder.Services.AddTransient<EmailBuilderService>();
             builder.Services.AddTransient<EmailService>();

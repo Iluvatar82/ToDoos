@@ -1,4 +1,5 @@
-﻿@inject IJSRuntime JS
+﻿@using UI.Web.Data.Common
+@inject IJSRuntime JS
 
 <div id="items_timeline" class="mb-3"></div>
 
@@ -16,6 +17,18 @@
     [Parameter]
     public DateTime End { get; set; } = DateTime.Now.AddDays(7);
 
+    protected override void OnInitialized()
+    {
+        try
+        {
+            EventHandlerService.AddHandler("ListChanged", async (args) => await HandleItem(args));
+        }
+        catch(Exception ex)
+        {
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
+        }
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         try
@@ -24,7 +37,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
 
         await base.OnParametersSetAsync();
@@ -43,25 +56,54 @@
             if (ItemIDs.SequenceEqual(GetItemIDs()))
                 return;
 
-            var allEvents = displayedItems.SelectMany(i => i.Occurrences.Where(o => o >= Start && o < End).Select(o =>
-                new
-                {
-                    Id = i.Item.Id,
-                    Bezeichnung = ItemContentRenderService.RenderContentWithoutHtml(i.Item.Bezeichnung),
-                    Color = i.Item.Category!.RGB_A ?? "#000000",
-                    Time = o.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
-                    TimeIsSet = o.TimeOfDay.TotalMicroseconds > 0
-                }));
-
-            await JSScript.InvokeVoidAsync("setTimelineEvents", allEvents);
-            ItemIDs = GetItemIDs().ToList();
+            await UpdateItemsVisually();
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
 
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task HandleItem(object[] args)
+    {
+        if (args.Length != 1 || (!(args[0] is ListChangedEventArgs listChangedEventArgs)))
+            return;
+
+        if (listChangedEventArgs.ChangeType == ListChangeType.Create)
+        {
+            var item = listChangedEventArgs.Item;
+            if (!item.Schedules.Any())
+                return;
+
+            if (!Items.Select(i => i.Id).Contains(listChangedEventArgs.Item.Id))
+            {
+                Items.Add(item);
+                displayedItems = Items.Select(i => (Item: i, Occuccences: i.Occurrences(Start.Date, End.Date.AddDays(1)))).Where(io => io.Occuccences.Any()).ToList();
+            }
+        }
+
+        await UpdateItemsVisually();
+    }
+
+    private async Task UpdateItemsVisually()
+    {
+        if (JSScript == null)
+            return;
+
+        var allEvents = displayedItems.SelectMany(i => i.Occurrences.Where(o => o >= Start && o < End).Select(o =>
+            new
+            {
+                Id = i.Item.Id,
+                Bezeichnung = ItemContentRenderService.RenderContentWithoutHtml(i.Item.Bezeichnung),
+                Color = i.Item.Category!.RGB_A ?? "#000000",
+                Time = o.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
+                TimeIsSet = o.TimeOfDay.TotalMicroseconds > 0
+            }));
+
+        await JSScript.InvokeVoidAsync("setTimelineEvents", allEvents);
+        ItemIDs = GetItemIDs().ToList();
     }
 
     private IEnumerable<string> GetItemIDs() => Items.Select(i => i.Id.ToString()).OrderBy(id => id);

@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.SignalR.Client;
 @using Framework.Extensions;
 @using UI.Web.Areas.LiveData.List
+@using UI.Web.Data.Common
 @using UI.Web.Services;
 
 @inject ReminderService ReminderService
@@ -234,7 +235,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 
@@ -247,7 +248,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
 
         base.OnParametersSet();
@@ -264,7 +265,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 
@@ -281,6 +282,7 @@
                 Model.Done = null;
 
             await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
+            EventHandlerService.RaiseEvent("ListChanged", new ListChangedEventArgs(ListChangeType.Update, Model));
             await OnDoneChanged.InvokeAsync(Model);
 
             if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
@@ -288,7 +290,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 
@@ -300,6 +302,7 @@
             if (valid)
             {
                 await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
+                EventHandlerService.RaiseEvent("ListChanged", new ListChangedEventArgs(ListChangeType.Update, Model));
                 BezeichnungEditEnabled = false;
                 await OnBezeichnungEditEnabled.InvokeAsync(null);
 
@@ -311,18 +314,18 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 
-    private async Task ActiveChanged(bool force = false)
+    private async Task ActiveChanged(bool validated = false)
     {
         try
         {
             if (Hidden)
                 return;
 
-            if (Model.Children?.Any() == true && !force)
+            if (Model.Children?.Any() == true && !validated)
             {
                 PageModal.NotNull();
 
@@ -341,12 +344,13 @@
                 PageModal.Show();
                 return;
             }
-            else if (force == true)
+            else if (validated == true)
                 SetActiveStateForAll(Model, Model.InactiveSince.HasValue ? null : DateTime.Now);
             else
                 Model.InactiveSince = Model.InactiveSince.HasValue ? null : DateTime.Now;
 
             await ItemRepository.UpdateAndSaveAsync(ModelMapper.MapToArray(Model.SelfAndAllDescendents));
+            EventHandlerService.RaiseEvent("ListChanged", new ListChangedEventArgs(ListChangeType.Delete, Model));
             StateHasChanged();
 
             await ReminderService.UpdateReminders(Model.Id);
@@ -357,7 +361,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 
@@ -370,6 +374,7 @@
             Model.Category = selectedCategory;
 
             await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(Model));
+            EventHandlerService.RaiseEvent("ListChanged", new ListChangedEventArgs(ListChangeType.Update, Model));
             StateHasChanged();
 
             if (User != default && ListHubConnection!.State == HubConnectionState.Connected)
@@ -377,7 +382,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 

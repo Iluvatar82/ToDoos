@@ -68,7 +68,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
 
         await base.OnParametersSetAsync();
@@ -95,7 +95,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
             return @<span>element</span>;
         }
     }
@@ -112,7 +112,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 }

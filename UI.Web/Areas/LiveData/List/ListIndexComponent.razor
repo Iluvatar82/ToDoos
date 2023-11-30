@@ -76,18 +76,18 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
 
         await base.OnParametersSetAsync();
     }
 
-    private async Task RemoveList(ToDoListDomainModel list, bool force = false)
+    private async Task RemoveList(ToDoListDomainModel list, bool validated = false)
     {
         try
         {
             var flatItems = (await ItemRepository.GetAllItemsCompleteAsync(list.Id, false)).ToArray();
-            if (flatItems.Any() && !force)
+            if (flatItems.Any() && !validated)
             {
                 PageModal.NotNull();
 
@@ -113,7 +113,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 }

@@ -34,7 +34,7 @@ export function setTimelineEvents(events)
     const trans = svgElement.transition().duration(250);
 
     svgElement.selectAll("svg g[data-item]")
-        .data(events, function (e) { return e.id; })
+        .data(events, function (e) { return Key(e); })
         .exit()
         .call(exitTrans => exitTrans.transition(trans)
             .attr("transform", function (e) { return `translate(${marginSide - 2 + scaleX(new Date(e.time))}, ${-2 * eventSize})`; })
@@ -42,7 +42,7 @@ export function setTimelineEvents(events)
             .remove());
 
     svgElement.selectAll("svg g[data-item]")
-        .data(events, function (e) { return e.id; })
+        .data(events, function (e) { return Key(e); })
         .enter()
         .append("g")
             .attr("data-item", "")
@@ -56,7 +56,7 @@ export function setTimelineEvents(events)
             .attr("fill", function (e) { return d3.color(e.color); })
             .attr("stroke", function (e) { return d3.color(e.color).darker(.5); })
             .attr("stroke-thickness", "0.5px")
-        .attr("data-id", function (e) { return e.id; })
+            .attr("data-id", function (e) { return e.id; })
 
         .on('click', function () {
             var scrollElement = document.getElementById(this.dataset.id);
@@ -161,3 +161,5 @@ export function setTimelineEvents(events)
                 .attr('r', eventSize);
        });
 };
+
+function Key(e) { return e.id + e.bezeichnung + e.time + e.color };

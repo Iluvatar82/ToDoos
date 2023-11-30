@@ -72,7 +72,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
 
         await base.OnParametersSetAsync();
@@ -98,16 +98,16 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 
-    private async Task RemoveGroup(UserGroupDomainModel group, bool force = false)
+    private async Task RemoveGroup(UserGroupDomainModel group, bool validated = false)
     {
         try
         {
             var allUsers = ModelMapper.MapToList<UserGroupDomainModel>((await UserRepository.GetAllUsersForGroupAsync(group.GroupId)));
-            if (allUsers.Any() && !force)
+            if (allUsers.Any() && !validated)
             {
                 PageModal.NotNull();
 
@@ -134,7 +134,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 }

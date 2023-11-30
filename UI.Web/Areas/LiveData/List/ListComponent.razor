@@ -8,6 +8,7 @@
 @using Framework.Extensions;
 @using Microsoft.AspNetCore.SignalR.Client;
 @using UI.Web.Areas.LiveData.Item
+@using UI.Web.Data.Common
 @using UI.Web.Hubs;
 @using UI.Web.Services;
 
@@ -59,59 +60,57 @@
                 </div>
             }
 
-            <CascadingValue Value=@this>
-                @if (topLevelItems.Any() && !showTwoColumns)
-                {
-                    <div class="table-responsive">
-                        <table class="table">
-                            <tbody>
-                                @foreach (var item in topLevelItems)
-                                {
-                                    var index = topLevelItems.IndexOf(item);
-                                    <ItemComponent Model=item Level=0 InactiveMode=@showInactive ListId=ListId TopLevel=@topLevelItems
-                                        OnBezeichnungEditEnabled=@HandleBezeichnungEnabled
-                                        OnRemove=@(async item => await ItemHandlerService.HandleRemove(topLevelItems, item, null, UpdateNotifyAction))
-                                        OnDraggedFrom=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedFrom(topLevelItems, info.Source, info.Item); await InvokeAsync(StateHasChanged); }) 
-                                        OnDraggedTo=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedTo(topLevelItems, info.Destination, info.Item); await InvokeAsync(StateHasChanged); })
-                                        OnDoneChanged=@StateHasChanged 
-                                        OnReferenced=@(reference => topLevelReferenceList.Add(reference))
-                                        OnOrderChanged=@(async (ci) => await ItemHandlerService.ChangeChildOrder(topLevelItems, ci.Item, ci.Movement, StateHasChanged))
-                                        OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(topLevelItems, item, StateHasChanged))></ItemComponent>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
-                else if (topLevelItems.Any())
-                {
-                    <div class="row" data-masonry='{ "percentPosition": true }'>
-                        @foreach (var item in topLevelItems)
-                        {
-                            var index = topLevelItems.IndexOf(item);
-                            <div class="col-sm-6">
-                                <div class="card">
-                                    <div class="p-1">
-                                        <table class="table mb-0">
-                                            <tbody>
-                                                <ItemComponent Model=item Level=0 InactiveMode=@showInactive ListId=ListId TopLevel=@topLevelItems
-                                                    OnBezeichnungEditEnabled=@HandleBezeichnungEnabled 
-                                                    OnRemove=@(async item => await ItemHandlerService.HandleRemove(topLevelItems, item, null, UpdateNotifyAction))
-                                                    OnDraggedFrom=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedFrom(topLevelItems, info.Source, info.Item); await InvokeAsync(StateHasChanged); }) 
-                                                    OnDraggedTo=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedTo(topLevelItems, info.Destination, info.Item); await InvokeAsync(StateHasChanged); })
-                                                    OnDoneChanged=@StateHasChanged 
-                                                    OnReferenced=@(reference => topLevelReferenceList.Add(reference))
-                                                    OnOrderChanged=@(async (ci) => await ItemHandlerService.ChangeChildOrder(topLevelItems, ci.Item, ci.Movement, StateHasChanged))
-                                                    OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(topLevelItems, item, StateHasChanged))></ItemComponent>
-                                            </tbody>
-                                        </table>
-                                    </div>
+            @if (topLevelItems.Any() && !showTwoColumns)
+            {
+                <div class="table-responsive">
+                    <table class="table">
+                        <tbody>
+                            @foreach (var item in topLevelItems)
+                            {
+                                var index = topLevelItems.IndexOf(item);
+                                <ItemComponent Model=item Level=0 InactiveMode=@showInactive ListId=ListId TopLevel=@topLevelItems
+                                    OnBezeichnungEditEnabled=@HandleBezeichnungEnabled
+                                    OnRemove=@(async item => await ItemHandlerService.HandleRemove(topLevelItems, item, null, UpdateNotifyAction))
+                                    OnDraggedFrom=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedFrom(topLevelItems, info.Source, info.Item); await InvokeAsync(StateHasChanged); }) 
+                                    OnDraggedTo=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedTo(topLevelItems, info.Destination, info.Item); await InvokeAsync(StateHasChanged); })
+                                    OnDoneChanged=@StateHasChanged 
+                                    OnReferenced=@(reference => topLevelReferenceList.Add(reference))
+                                    OnOrderChanged=@(async (ci) => await ItemHandlerService.ChangeChildOrder(topLevelItems, ci.Item, ci.Movement, StateHasChanged))
+                                    OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(topLevelItems, item, StateHasChanged))></ItemComponent>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else if (topLevelItems.Any())
+            {
+                <div class="row" data-masonry='{ "percentPosition": true }'>
+                    @foreach (var item in topLevelItems)
+                    {
+                        var index = topLevelItems.IndexOf(item);
+                        <div class="col-sm-6">
+                            <div class="card">
+                                <div class="p-1">
+                                    <table class="table mb-0">
+                                        <tbody>
+                                            <ItemComponent Model=item Level=0 InactiveMode=@showInactive ListId=ListId TopLevel=@topLevelItems
+                                                OnBezeichnungEditEnabled=@HandleBezeichnungEnabled 
+                                                OnRemove=@(async item => await ItemHandlerService.HandleRemove(topLevelItems, item, null, UpdateNotifyAction))
+                                                OnDraggedFrom=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedFrom(topLevelItems, info.Source, info.Item); await InvokeAsync(StateHasChanged); }) 
+                                                OnDraggedTo=@(async info => { topLevelItems = ItemDragDropService.HandleDraggedTo(topLevelItems, info.Destination, info.Item); await InvokeAsync(StateHasChanged); })
+                                                OnDoneChanged=@StateHasChanged 
+                                                OnReferenced=@(reference => topLevelReferenceList.Add(reference))
+                                                OnOrderChanged=@(async (ci) => await ItemHandlerService.ChangeChildOrder(topLevelItems, ci.Item, ci.Movement, StateHasChanged))
+                                                OnOrderRemoved=@(async (item) => await ItemHandlerService.RemoveOrder(topLevelItems, item, StateHasChanged))></ItemComponent>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                        }
-                    </div>
-                    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
-                }
-            </CascadingValue>
+                        </div>
+                    }
+                </div>
+                <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
+            }
         </CascadingValue>
     </Authorized>
 </AuthorizeView>
@@ -187,7 +186,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 
@@ -221,12 +220,13 @@
                 Categories = new List<CategoryDomainModel>();
 
             await ToastNotificationService.SendAsync("Liste geöffnet", $"Liste <b>{listEntity.Name}</b> wurde geöffnet!", Framework.Services.Base.MessageType.Info);
-
+            
             previousListId = ListId;
+            EventHandlerService.ResetHandlers("ListChanged");
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
 
         await base.OnParametersSetAsync();
@@ -244,7 +244,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -255,14 +255,14 @@
         try
         {
             showInactive = !showInactive;
-
             await RetrieveItems();
 
             StateHasChanged();
+            EventHandlerService.ResetHandlers("ListChanged");
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 
@@ -319,7 +319,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 
@@ -336,7 +336,7 @@
         }
         catch (Exception ex)
         {
-            LoggerFactory.CreateLogger(this.GetType()).LogError(ex, ex.Message);
+            LoggerFactory.CreateLogger(GetType()).LogError(ex, ex.Message);
         }
     }
 }
