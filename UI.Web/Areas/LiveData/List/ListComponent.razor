@@ -8,6 +8,7 @@
 @using Framework.Extensions;
 @using Microsoft.AspNetCore.SignalR.Client;
 @using UI.Web.Areas.LiveData.Item
+@using UI.Web.Areas.LiveData.Shared
 @using UI.Web.Data.Common
 @using UI.Web.Hubs;
 @using UI.Web.Services;
@@ -49,7 +50,7 @@
 
         @if (ItemsWithSchedules.Any())
         {
-            <UI.Web.Areas.LiveData.Shared.TimeLine Items=@ItemsWithSchedules></UI.Web.Areas.LiveData.Shared.TimeLine>
+            <TimeLine Items=@ItemsWithSchedules></TimeLine>
         }
 
         <CascadingValue Value=@Categories>

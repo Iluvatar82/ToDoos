@@ -1,6 +1,7 @@
 ﻿@using System.Security.Claims;
 @using Core.Validation;
 @using UI.Web.Data.Extensions;
+        @using UI.Web.Areas.LiveData.Shared
 
 <AuthorizeView>
     <NotAuthorized>
@@ -13,9 +14,14 @@
     <Authorized>
         <h3>ToDo Liste auswählen</h3>
 
+        @if (ItemsWithSchedules.Any())
+        {
+            <TimeLine Items=@ItemsWithSchedules></TimeLine>
+        }
+
         <table class="table table-light small table-hover table-bordered">
             <tbody>
-                @foreach (var listEntry in myLists)
+                @foreach (var listEntry in MyLists)
                 {
                     <tr>
                         <td>
@@ -56,7 +62,8 @@
 
 
 @code {
-    private List<ToDoListDomainModel> myLists { get; set; } = new List<ToDoListDomainModel>();
+    private List<ToDoListDomainModel> MyLists { get; set; } = new List<ToDoListDomainModel>();
+    private List<ToDoItemDomainModel> ItemsWithSchedules { get; set; } = new List<ToDoItemDomainModel>();
 
     [CascadingParameter]
     public Modal? PageModal { get; set; }
@@ -72,7 +79,10 @@
                 return;
 
             var guidId = Guid.Parse(User.Id);
-            myLists = ModelMapper.MapToList<ToDoListDomainModel>(await UserRepository.GetAllListsAsync(guidId));
+            MyLists = ModelMapper.MapToList<ToDoListDomainModel>(await UserRepository.GetAllListsAsync(guidId));
+
+            var myListIDs = MyLists.Select(l => l.Id);
+            ItemsWithSchedules = ModelMapper.MapToList<ToDoItemDomainModel>(await ItemRepository.GetAllItemsCompleteAsync(i => myListIDs.Contains(i.ListId) && i.InactiveSince == null && i.Schedules.Any()));
         }
         catch (Exception ex)
         {
