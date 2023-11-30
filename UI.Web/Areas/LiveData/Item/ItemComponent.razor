@@ -13,7 +13,7 @@
 @inject ItemHandlerService ItemHandlerService;
 
 <tr id=@Model.Id @ref=@ItemReference class="bg-opacity-25 align-items-baseline @(Level == 0 ? "top" : string.Empty) @(Model.Done.HasValue ? "bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25" : null)"
-    draggable="true" @ondragstart=@(_ => ItemDragDropService.HandleDragStart(Container, Model)) ondragover="event.preventDefault();" @ondrop=@(_ => ItemDragDropService.HandleDrop(Container, Model, OnDraggedFrom, OnDraggedTo, StateHasChanged))
+    draggable="true" @ondragstart=@(_ => ItemDragDropService.HandleDragStart(Model, OnDraggedFrom)) ondragover="event.preventDefault();" @ondrop=@(_ => ItemDragDropService.HandleDrop(Model, OnDraggedFrom, OnDraggedTo, StateHasChanged))
     @attributes=@ItemStyleService.GetRowAttributes(Model, Hidden, false)>
     <td class="fixed-w position-relative fade-in-on-hover">
         <div class="moveChild up text-center text-white p-0 position-absolute" @onclick=@(_ => OnOrderChanged.InvokeAsync((Model, -1)))>
@@ -130,15 +130,12 @@
 
 @if(Level == 0)
 {
-    <tr class="todo-item-separator" ondragover="event.preventDefault();" @ondrop=@(_ => ItemDragDropService.HandleDrop(Container, null, OnDraggedFrom, OnDraggedTo, StateHasChanged)) @attributes=@ItemStyleService.GetRowAttributes(Model, Hidden, true)>
+    <tr class="todo-item-separator" ondragover="event.preventDefault();" @ondrop=@(_ => ItemDragDropService.HandleDrop(null, OnDraggedFrom, OnDraggedTo, StateHasChanged)) @attributes=@ItemStyleService.GetRowAttributes(Model, Hidden, true)>
         <td colspan="6" class="border-bottom-0"></td>
     </tr>
 }
 
 @code {
-    [CascadingParameter]
-    ListComponent Container { get; set; } = new ListComponent();
-
     [CascadingParameter]
     public Modal? PageModal { get; set; }
 

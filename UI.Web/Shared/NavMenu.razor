@@ -1,5 +1,7 @@
 ﻿@using UI.Web.Data.Extensions;
 
+@inject ItemDragDropService ItemDragDropService;
+
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">@Framework.Services.Base.AppResources.Application_Name</a>
@@ -47,7 +49,8 @@
 
                     @foreach (var subList in allLists)
                     {
-                        <NavLink class="nav-item nav-link nav-sub-item" href=@(NavigationManager.BaseUri + @subList.GetListUrl()) Match="NavLinkMatch.All" >
+                        <NavLink class="nav-item nav-link nav-sub-item" href=@(NavigationManager.BaseUri + @subList.GetListUrl()) Match="NavLinkMatch.All"
+                                 ondragover="event.preventDefault();" @ondrop=@(_ => ItemDragDropService.HandleDropOnList(subList.Id))>
                             <i class="fa fa-@subList.GetToDoListTypeIcon() pe-3 ms-1" aria-hidden="true"></i> @subList.Name
                         </NavLink>
                     }

@@ -35,7 +35,7 @@
     public List<ToDoItemDomainModel> Items { get; set; } = new List<ToDoItemDomainModel>();
 
     [Parameter]
-    public DateTime Start { get; set; } = DateTime.Now.AddDays(-7);
+    public DateTime Start { get; set; } = DateTime.Now.AddDays(-2);
     private DateTime start { get => Start; set { Start = value; InvokeAsync(UpdateTimeRange); } }
 
     [Parameter]

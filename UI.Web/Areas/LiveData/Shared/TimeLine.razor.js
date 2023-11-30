@@ -14,7 +14,7 @@ export function InitializeTimeline()
         return;
 
     var width = $('.content').width();
-    scaleX = d3.scaleTime([d3.utcDay.offset(new Date(), -7), d3.utcDay.offset(new Date(), 7)], [0, width - 2 * marginSide]);
+    scaleX = d3.scaleTime([d3.utcDay.offset(new Date(), -2), d3.utcDay.offset(new Date(), 7)], [0, width - 2 * marginSide]);
     xAxis = d3.axisBottom(scaleX);
 
     svgElement = d3.select("#items_timeline")

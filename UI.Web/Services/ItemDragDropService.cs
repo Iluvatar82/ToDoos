@@ -4,7 +4,6 @@ using Framework.DomainModels;
 using Framework.Extensions;
 using Framework.Repositories;
 using Microsoft.AspNetCore.Components;
-using UI.Web.Areas.LiveData.List;
 
 namespace UI.Web.Services
 {
@@ -12,6 +11,8 @@ namespace UI.Web.Services
     {
         private ModelMapper ModelMapper { get; set; }
         private ItemRepository ItemRepository { get; set; }
+        private ToDoItemDomainModel? DraggedItem { get; set; }
+        private EventCallback<(ToDoItemDomainModel?, ToDoItemDomainModel)>? DragFinished { get; set; }
 
         public ItemDragDropService(ModelMapper modelMapper, ItemRepository itemRepository)
         {
@@ -20,30 +21,49 @@ namespace UI.Web.Services
         }
 
 
-        public void HandleDragStart(ListComponent container, ToDoItemDomainModel dragItem)
+        public void HandleDragStart(ToDoItemDomainModel dragItem, EventCallback<(ToDoItemDomainModel?, ToDoItemDomainModel)>? fromAction)
         {
-            if (container != null)
-                container.DraggedToDoItem = dragItem;
+            DraggedItem = dragItem;
+            DragFinished = fromAction;
         }
 
-        public async Task HandleDrop(ListComponent container, ToDoItemDomainModel? dropItem,
+        public async Task HandleDropOnList(Guid newListId)
+        {
+            var item = DraggedItem;
+            item.NotNull();
+
+            await HandleDraggedFrom(item!.Parent, item, DragFinished, null);
+
+            item.Parent = null;
+            item.ParentId = null;
+
+            var allItems = item.SelfAndAllDescendents;
+            foreach (var itemFromAll in allItems)
+                itemFromAll.ListId = newListId;
+
+            await ItemRepository.UpdateAndSaveAsync(ModelMapper.MapToArray(allItems));
+
+            DraggedItem = null;
+        }
+
+        public async Task HandleDrop(ToDoItemDomainModel? newParent,
             EventCallback<(ToDoItemDomainModel?, ToDoItemDomainModel)> onDraggedFrom, EventCallback<(ToDoItemDomainModel?, ToDoItemDomainModel)> onDraggedTo,
             Action updateAction)
         {
-            var item = container?.DraggedToDoItem;
+            var item = DraggedItem;
             item.NotNull();
 
-            if (dropItem == item || dropItem == item!.Parent)
+            if (newParent == item || newParent == item!.Parent)
                 return;
 
             await HandleDraggedFrom(item.Parent, item, onDraggedFrom, null);
 
-            item.Parent = dropItem;
-            item.ParentId = dropItem?.Id;
+            item.Parent = newParent;
+            item.ParentId = newParent?.Id;
+
             await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(item));
 
-            if (container != null)
-                container.DraggedToDoItem = null;
+            DraggedItem = null;
 
             await HandleDraggedTo(item.Parent, item, onDraggedTo, null);
 
