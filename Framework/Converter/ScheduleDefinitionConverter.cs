@@ -88,7 +88,7 @@ namespace Framework.Converter
         [GeneratedRegex("w\\s(?<weekdays>(?:[01],\\s*?){6}\\s*?[01])\\s?(?<time>.+)*")]
         private static partial Regex WeekdayRegex();
 
-        [GeneratedRegex("i\\s(?<interval>\\d*[\\.,]?\\d*)\\s(?<unit>[hdwmy])")]
+        [GeneratedRegex("i\\s(?<interval>\\d*[\\.,]?\\d*)\\s(?<unit>[hdwMy])")]
         private static partial Regex IntervalRegex();
     }
 }

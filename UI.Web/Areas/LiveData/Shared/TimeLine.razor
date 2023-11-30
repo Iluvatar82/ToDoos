@@ -1,6 +1,29 @@
 ﻿@using UI.Web.Data.Common
 @inject IJSRuntime JS
 
+<div class="row">
+    <div class="form-floating mb-3 col">
+        <input id="start" class="form-control" type="date" @bind-value=@start />
+        <label for="start" class="form-label ms-2">Start</label>
+    </div>
+
+    <div class="form-floating mb-3 col">
+        <input id="end" class="form-control" type="date" @bind-value=@end />
+        <label for="end" class="form-label ms-2">Ende</label>
+    </div>
+
+    <div class="form-floating mb-3 col">
+        <select id="interval" class="form-control" type="select" @onchange=@(e => SetTimeRange(e.Value!.ToString()!)) >
+            <option value="0">bitte auswählen...</option>
+            <option value="1">Ein Tag</option>
+            <option value="2">Eine Woche</option>
+            <option value="3">Ein Monat</option>
+        </select>
+        <label for="interval" class="form-label ms-2">Zeitraum angeben</label>
+    </div>
+
+</div>
+
 <div id="items_timeline" class="mb-3"></div>
 
 @code {
@@ -13,9 +36,12 @@
 
     [Parameter]
     public DateTime Start { get; set; } = DateTime.Now.AddDays(-7);
+    private DateTime start { get => Start; set { Start = value; InvokeAsync(UpdateTimeRange); } }
 
     [Parameter]
     public DateTime End { get; set; } = DateTime.Now.AddDays(7);
+    private DateTime end { get => End; set { End = value; InvokeAsync(UpdateTimeRange); } }
+
 
     protected override void OnInitialized()
     {
@@ -33,7 +59,7 @@
     {
         try
         {
-            displayedItems = Items.Select(i => (Item: i, Occuccences: i.Occurrences(Start.Date, End.Date.AddDays(1)))).Where(io => io.Occuccences.Any()).ToList();
+            CalculateDisplayFromItems();
         }
         catch (Exception ex)
         {
@@ -50,7 +76,7 @@
             if (JSScript == null)
             {
                 JSScript = await JS.InvokeAsync<IJSObjectReference>("import", "./Areas/LiveData/Shared/TimeLine.razor.js");
-                await JSScript.InvokeVoidAsync("initializeTimeline");
+                await JSScript.InvokeVoidAsync("InitializeTimeline");
             }
 
             if (ItemIDs.SequenceEqual(GetItemIDs()))
@@ -80,11 +106,42 @@
             if (!Items.Select(i => i.Id).Contains(listChangedEventArgs.Item.Id))
             {
                 Items.Add(item);
-                displayedItems = Items.Select(i => (Item: i, Occuccences: i.Occurrences(Start.Date, End.Date.AddDays(1)))).Where(io => io.Occuccences.Any()).ToList();
+                CalculateDisplayFromItems();
             }
         }
 
         await UpdateItemsVisually();
+    }
+
+    private void SetTimeRange(string rangeId)
+    {
+        if (rangeId == "0")
+            return;
+
+        if (rangeId == "1")
+            end = Start.AddDays(1);
+
+        if (rangeId == "2")
+            end = Start.AddDays(7);
+
+        if (rangeId == "3")
+            end = Start.AddMonths(1);
+    }
+
+    private async Task UpdateTimeRange()
+    {
+        CalculateDisplayFromItems();
+
+        if (JSScript == null)
+            return;
+
+        await JSScript.InvokeVoidAsync("SetTimeRange", Start, End);
+        await UpdateItemsVisually();
+    }
+
+    private void CalculateDisplayFromItems()
+    {
+        displayedItems = Items.Select(i => (Item: i, Occuccences: i.Occurrences(Start.Date, End.Date.AddDays(1)))).Where(io => io.Occuccences.Any()).ToList();
     }
 
     private async Task UpdateItemsVisually()
@@ -92,6 +149,7 @@
         if (JSScript == null)
             return;
 
+        ItemIDs = GetItemIDs().ToList();
         var allEvents = displayedItems.SelectMany(i => i.Occurrences.Where(o => o >= Start && o < End).Select(o =>
             new
             {
@@ -102,8 +160,7 @@
                 TimeIsSet = o.TimeOfDay.TotalMicroseconds > 0
             }));
 
-        await JSScript.InvokeVoidAsync("setTimelineEvents", allEvents);
-        ItemIDs = GetItemIDs().ToList();
+        await JSScript.InvokeVoidAsync("SetTimelineEvents", allEvents);
     }
 
     private IEnumerable<string> GetItemIDs() => Items.Select(i => i.Id.ToString()).OrderBy(id => id);

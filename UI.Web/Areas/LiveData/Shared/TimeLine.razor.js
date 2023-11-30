@@ -1,21 +1,21 @@
 import "/src/d3/d3.min.js";
 import "/jquery/jquery.js";
 
-let svgElement, scaleX, highlighted;
+let svgElement, scaleX, xAxis, highlighted;
 
 var height = 105;
 var marginBottom = 21;
 var marginSide = 20;
 var eventSize = 5;
 
-export function initializeTimeline()
+export function InitializeTimeline()
 {
     if (document.querySelectorAll('#items_timeline svg').length > 0)
         return;
 
     var width = $('.content').width();
     scaleX = d3.scaleTime([d3.utcDay.offset(new Date(), -7), d3.utcDay.offset(new Date(), 7)], [0, width - 2 * marginSide]);
-    var axisX = d3.axisBottom(scaleX);
+    xAxis = d3.axisBottom(scaleX);
 
     svgElement = d3.select("#items_timeline")
         .append("svg")
@@ -23,15 +23,31 @@ export function initializeTimeline()
 
     svgElement
         .append("g")
+        .attr("class", "x")
         .attr("transform", `translate(${marginSide},${height - marginBottom})`)
-        .call(axisX);
+        .call(xAxis);
 
     items_timeline.append(svgElement.node());
 };
 
-export function setTimelineEvents(events)
+export function SetTimeRange(start, end)
+{
+    scaleX.domain([new Date(Date.parse(start)), new Date(Date.parse(end))]);
+
+    svgElement.selectAll("g.x")
+        .transition()
+        .duration(500)
+        .call(xAxis);
+};
+
+export function SetTimelineEvents(events)
 {
     const trans = svgElement.transition().duration(250);
+
+    svgElement.selectAll("svg g[data-item]")
+        .data(events, function (e) { return Key(e); })
+        .call(updateTrans => updateTrans.transition(trans)
+            .attr("transform", function (e) { return `translate(${marginSide - 2 + scaleX(new Date(e.time))}, ${height - 50})`; }));
 
     svgElement.selectAll("svg g[data-item]")
         .data(events, function (e) { return Key(e); })
