@@ -12,8 +12,15 @@
 @inject ItemDragDropService ItemDragDropService;
 @inject ItemHandlerService ItemHandlerService;
 
+@*@ontouchstart=@(_ => ItemDragDropService.HandleDragStart(Model, OnDraggedFrom))
+@ontouchcancel=@(_ => ItemDragDropService.Reset())
+@ontouchmove=@(_ => ItemDragDropService.TouchSetDropToElement(Model))
+@ontouchend=@(_ => ItemDragDropService.HandleDrop(Model, OnDraggedFrom, OnDraggedTo, StateHasChanged))*@
+
 <tr id=@Model.Id @ref=@ItemReference class="bg-opacity-25 align-items-baseline @(Level == 0 ? "top" : string.Empty) @(Model.Done.HasValue ? "bg-success" : string.Empty) @(Hidden ? "text-secondary text-opacity-25" : null)"
-    draggable="true" @ondragstart=@(_ => ItemDragDropService.HandleDragStart(Model, OnDraggedFrom)) ondragover="event.preventDefault();" @ondrop=@(_ => ItemDragDropService.HandleDrop(Model, OnDraggedFrom, OnDraggedTo, StateHasChanged))
+    draggable="true"
+    @ondragstart=@(_ => ItemDragDropService.HandleDragStart(Model, OnDraggedFrom)) ondragover="event.preventDefault();"
+    @ondrop=@(_ => ItemDragDropService.HandleDrop(Model, OnDraggedFrom, OnDraggedTo, StateHasChanged))
     @attributes=@ItemStyleService.GetRowAttributes(Model, Hidden, false)>
     <td class="fixed-w position-relative fade-in-on-hover">
         <div class="moveChild up text-center text-white p-0 position-absolute" @onclick=@(_ => OnOrderChanged.InvokeAsync((Model, -1)))>

@@ -12,6 +12,7 @@ namespace UI.Web.Services
         private ModelMapper ModelMapper { get; set; }
         private ItemRepository ItemRepository { get; set; }
         private ToDoItemDomainModel? DraggedItem { get; set; }
+        private object? DropToElement { get; set; }
         private EventCallback<(ToDoItemDomainModel?, ToDoItemDomainModel)>? DragFinished { get; set; }
 
         public ItemDragDropService(ModelMapper modelMapper, ItemRepository itemRepository)
@@ -20,6 +21,22 @@ namespace UI.Web.Services
             ItemRepository = itemRepository;
         }
 
+        public void Reset()
+        {
+            DraggedItem = null;
+            DraggedItem = null;
+        }
+
+        public void TouchSetDropToElement(object parent)
+        {
+            if (DraggedItem == null)
+            {
+                DropToElement = null;
+                return;
+            }
+
+            DropToElement = parent;
+        }
 
         public void HandleDragStart(ToDoItemDomainModel dragItem, EventCallback<(ToDoItemDomainModel?, ToDoItemDomainModel)>? fromAction)
         {
@@ -53,13 +70,17 @@ namespace UI.Web.Services
             var item = DraggedItem;
             item.NotNull();
 
-            if (newParent == item || newParent == item!.Parent)
+            var parent = newParent;
+            if (DropToElement != null && DropToElement is ToDoItemDomainModel itemModel)
+                parent = itemModel;
+
+            if (parent == item || parent == item!.Parent)
                 return;
 
             await HandleDraggedFrom(item.Parent, item, onDraggedFrom, null);
 
-            item.Parent = newParent;
-            item.ParentId = newParent?.Id;
+            item.Parent = parent;
+            item.ParentId = parent?.Id;
 
             await ItemRepository.UpdateAndSaveAsync(ModelMapper.Map(item));
 
