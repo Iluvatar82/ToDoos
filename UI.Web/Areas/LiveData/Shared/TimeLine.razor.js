@@ -76,6 +76,15 @@ export function SetTimelineEvents(events)
 
         .on('click', function () {
             var scrollElement = document.getElementById(this.dataset.id);
+            if (scrollElement === null) {
+                var listId = d3.select(this).data()[0].listId;
+
+                var listLink = document.querySelector(`.nav-item a[href*="${listId}"`)
+                listLink.click();
+                //window.location.href = `/list/${d3.select(this).data()[0].listId}`;
+                return;
+            }
+
             scrollElement.classList.add('highlight');
             setTimeout(() => {
                 scrollElement.classList.remove('highlight');
@@ -88,7 +97,6 @@ export function SetTimelineEvents(events)
                     document.body.getBoundingClientRect().top -
                     document.querySelectorAll('.top-row')[0].getBoundingClientRect().height,
             });
-
         })
 
         .on('mouseover', function (_, i) {
@@ -133,7 +141,8 @@ export function SetTimelineEvents(events)
                 .attr('r', eventSize * 2);
 
             var highlightElement = document.getElementById(this.dataset.id);
-            highlightElement.classList.add('highlight');
+            if (highlightElement != undefined)
+                highlightElement.classList.add('highlight');
         })
 
         .on('mouseout', function () {
@@ -151,8 +160,9 @@ export function SetTimelineEvents(events)
                 .duration('250')
                 .attr('r', eventSize);
 
-            var scrollElement = document.getElementById(this.dataset.id);
-            scrollElement.classList.remove('highlight');
+            var highlightElement = document.getElementById(this.dataset.id);
+            if (highlightElement != undefined)
+                highlightElement.classList.remove('highlight');
         });
 
     $(d3.selectAll('.fa.fa-clock').nodes()).closest('tr')

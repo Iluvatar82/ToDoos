@@ -154,8 +154,9 @@
             new
             {
                 Id = i.Item.Id,
+                ListId = i.Item.ListId,
                 Bezeichnung = ItemContentRenderService.RenderContentWithoutHtml(i.Item.Bezeichnung),
-                Color = i.Item.Category!.RGB_A ?? "#000000",
+                Color = i.Item.Category?.RGB_A ?? "#000000",
                 Time = o.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
                 TimeIsSet = o.TimeOfDay.TotalMicroseconds > 0
             }));
