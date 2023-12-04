@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using AutoMapper.EquivalencyExpression;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
