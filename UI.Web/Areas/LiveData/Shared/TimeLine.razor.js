@@ -21,9 +21,17 @@ export function InitializeTimeline()
         .append("svg")
         .attr("viewBox", `0 0 ${width} ${height}`);
 
+    svgElement.append("line")
+        .attr("x1", marginSide - 2 + scaleX(new Date()))
+        .attr("y1", 5)
+        .attr("x2", marginSide - 2 + scaleX(new Date()))
+        .attr("y2", height - marginBottom)
+        .style("stroke", "lightgrey")
+        .style("stroke-dasharray", "5, 5")
+        .style("fill", "none");
+
     svgElement
         .append("g")
-        .attr("class", "x")
         .attr("transform", `translate(${marginSide},${height - marginBottom})`)
         .call(xAxis);
 
@@ -33,6 +41,12 @@ export function InitializeTimeline()
 export function SetTimeRange(start, end)
 {
     scaleX.domain([new Date(Date.parse(start)), new Date(Date.parse(end))]);
+
+    svgElement.selectAll("line")
+        .transition()
+        .duration(500)
+        .attr("x1", marginSide - 2 + scaleX(new Date()))
+        .attr("x2", marginSide - 2 + scaleX(new Date()));
 
     svgElement.selectAll("g.x")
         .transition()
@@ -53,7 +67,7 @@ export function SetTimelineEvents(events)
         .data(events, function (e) { return Key(e); })
         .exit()
         .call(exitTrans => exitTrans.transition(trans)
-            .attr("transform", function (e) { return `translate(${marginSide - 2 + scaleX(new Date(e.time))}, ${-2 * eventSize})`; })
+            .attr("transform", function (e) { return `translate(${marginSide - 2 + scaleX(new Date(e.time))}, ${height + 2 * eventSize}))`; })
             .attr("opacity", 0)
             .remove());
 
@@ -69,19 +83,22 @@ export function SetTimelineEvents(events)
                 .attr("opacity", 1))
         .append("circle")
             .attr("r", eventSize)
-            .attr("fill", function (e) { return d3.color(e.color); })
-            .attr("stroke", function (e) { return d3.color(e.color).darker(.5); })
+            .attr("fill", function (e) { return d3.color(IsInPast(e) ? "#ffffff" : e.color); })
+            .attr("stroke", function (e) { return d3.color(IsInPast(e) ? "#ffffff" : e.color).darker(.5); })
             .attr("stroke-thickness", "0.5px")
             .attr("data-id", function (e) { return e.id; })
 
         .on('click', function () {
-            var scrollElement = document.getElementById(this.dataset.id);
+            var data = d3.select(this).data()[0];
+            if (IsInPast(data))
+                return;
+
+            var scrollElement = document.getElementById(data.id);
             if (scrollElement === null) {
-                var listId = d3.select(this).data()[0].listId;
+                var listId = data.listId;
 
                 var listLink = document.querySelector(`.nav-item a[href*="${listId}"`)
                 listLink.click();
-                //window.location.href = `/list/${d3.select(this).data()[0].listId}`;
                 return;
             }
 
@@ -189,3 +206,5 @@ export function SetTimelineEvents(events)
 };
 
 function Key(e) { return e.id + e.bezeichnung + e.time + e.color };
+
+function IsInPast(e) { return new Date(Date.parse(e.time)) < new Date() };
