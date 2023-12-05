@@ -41,9 +41,14 @@ namespace UI.Web
             builder.Services.AddDbContextFactory<ToDoDBContext>(options => options.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning)).UseSqlServer(connectionString).EnableSensitiveDataLogging());
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+                {
+                    options.SignIn.RequireConfirmedAccount = true;
+                    options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
+                })
                 .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
             builder.Services.AddRazorPages(options =>
             {

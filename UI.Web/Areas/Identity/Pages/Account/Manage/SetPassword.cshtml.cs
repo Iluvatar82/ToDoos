@@ -2,15 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.ComponentModel.DataAnnotations;
 
 namespace UI.Web.Areas.Identity.Pages.Account.Manage
 {
+    [AllowAnonymous]
     public class SetPasswordModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -67,6 +67,9 @@ namespace UI.Web.Areas.Identity.Pages.Account.Manage
         public async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null && Request.Query.ContainsKey("email"))
+                user = await _userManager.FindByEmailAsync(Request.Query["email"]);
+                
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
@@ -85,6 +88,10 @@ namespace UI.Web.Areas.Identity.Pages.Account.Manage
                 return Page();
 
             var user = await _userManager.GetUserAsync(User);
+            var passwordSetForInvite = user == null && Request.Query.ContainsKey("email");
+            if (passwordSetForInvite)
+                user = await _userManager.FindByEmailAsync(Request.Query["email"]);
+
             if (user == null)
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
 
@@ -98,9 +105,15 @@ namespace UI.Web.Areas.Identity.Pages.Account.Manage
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your password has been set.";
+            if (passwordSetForInvite && await _userManager.GetAuthenticationTokenAsync(user, "[AspNetUserStore]", "Invite") != null)
+            {
+                await _userManager.RemoveAuthenticationTokenAsync(user, "[AspNetUserStore]", "Invite");
+                string emailVerificationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                await _userManager.ConfirmEmailAsync(user, emailVerificationToken);
+            }
 
-            return RedirectToPage();
+            StatusMessage = "Your password has been set.";
+            return Redirect("~/");
         }
     }
 }

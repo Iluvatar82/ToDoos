@@ -35,5 +35,16 @@ namespace Framework.Services
                     </div></body></html>";
             }
         }
+
+        public string BuildInvitationMailMessage(string url) => $@"
+            <html>
+                <body>
+                    <div>
+                        <span>
+                            Sie wurden in die Applikation todoos.net eingeladen: <br>Bei Interesse bitte <a href=""{url}"">hier anmelden</a> :).
+                        </span>
+                    </div>
+                </body>
+            </html>";
     }
 }
