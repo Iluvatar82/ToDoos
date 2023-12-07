@@ -59,27 +59,27 @@ export function SetTimelineEvents(events)
     const trans = svgElement.transition().duration(250);
 
     svgElement.selectAll("svg g[data-item]")
-        .data(events, function (e) { return Key(e); })
+        .data(PackEvents(events), function (e) { return Key(e); })
         .call(updateTrans => updateTrans.transition(trans)
-            .attr("transform", function (e) { return `translate(${marginSide - 2 + scaleX(new Date(e.time))}, ${height - 50})`; }));
+            .attr("transform", function (e) { return `translate(${e.X},${e.Y})`; }));
 
     svgElement.selectAll("svg g[data-item]")
         .data(events, function (e) { return Key(e); })
         .exit()
         .call(exitTrans => exitTrans.transition(trans)
-            .attr("transform", function (e) { return `translate(${marginSide - 2 + scaleX(new Date(e.time))}, ${height + 2 * eventSize}))`; })
+            .attr("transform", function (e) { return `translate(${e.X}, ${height + 2 * eventSize}))`; })
             .attr("opacity", 0)
             .remove());
 
     svgElement.selectAll("svg g[data-item]")
-        .data(events, function (e) { return Key(e); })
+        .data(PackEvents(events), function (e) { return Key(e); })
         .enter()
         .append("g")
             .attr("data-item", "")
-            .attr("transform", function (e) { return `translate(${marginSide - 2 + scaleX(new Date(e.time))},${height + 2 * eventSize})`; })
+            .attr("transform", function (e) { return `translate(${e.X}, ${height + 2 * eventSize})`; })
             .attr("opacity", 0)
             .call(enterTrans => enterTrans.transition(trans)
-                .attr("transform", function (e) { return `translate(${marginSide - 2 + scaleX(new Date(e.time))},${height - 50})`; })
+                .attr("transform", function (e) { return `translate(${e.X},${e.Y})`; })
                 .attr("opacity", 1))
         .append("circle")
             .attr("r", eventSize)
@@ -208,3 +208,35 @@ export function SetTimelineEvents(events)
 function Key(e) { return e.id + e.bezeichnung + e.time + e.color };
 
 function IsInPast(e) { return new Date(Date.parse(e.time)) < new Date() };
+
+function PackEvents(events) {
+    var placedEvents = new Array();
+
+    for (var i = 0; i < events.length; i++) {
+        events[i].X = scaleX(new Date(events[i].time));
+        events[i].Y = height - 50;
+    }
+
+    var circleSize = 2 * eventSize;
+    for (var i = 0; i < events.length; i++) {
+        var placedEventsInRange = placedEvents.filter(e => e.X < (events[i].X + circleSize) && e.X > (events[i].X - circleSize));
+        if (placedEventsInRange.length == 0)
+            placedEvents.push(events[i]);
+        else {
+            while (placedEvents.some(e => Intersect(events[i], e))) {
+                events[i].Y -= 1;
+            };
+
+            placedEvents.push(events[i]);
+        }
+    }
+
+    return placedEvents;
+}
+
+function Intersect(eventOne, eventTwo) {
+    var squaredLength = Math.pow(eventTwo.X - eventOne.X, 2) + Math.pow(eventTwo.Y - eventOne.Y, 2);
+    var squaredEventSize = Math.pow(eventSize * 2, 2);
+    return squaredLength < squaredEventSize;
+}
+

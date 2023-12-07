@@ -11,7 +11,7 @@
                 <td class="align-middle text-center">
                     @if (notification.Read == null)
                     {
-                        <span class="fa fa-plus opacity-25 read" aria-hidden="true" @onclick=@(async () => await MarkRead(@notification))></span>
+                        <span class="fa fa-plus opacity-25 read p-3" aria-hidden="true" @onclick=@(async () => await MarkRead(@notification))></span>
                     }
                 </td>
 
