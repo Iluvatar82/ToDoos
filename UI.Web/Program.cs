@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging.EventLog;
 using ServiceJobs;
+using System.Drawing;
 using ToDo.Data.Identity;
 using ToDo.Data.ToDoData;
 using UI.Web.Areas.Identity;
@@ -95,6 +96,7 @@ namespace UI.Web
 
             builder.Services.AddSingleton<DBDomainMapper>();
             builder.Services.AddSingleton<EventHandlerService>();
+            builder.Services.AddSingleton<ThemeService>();
 
             builder.Services.AddTransient<EmailBuilderService>();
             builder.Services.AddTransient<EmailService>();
@@ -163,11 +165,9 @@ namespace UI.Web
 
             ConfigureServices.Register(app);
 
-            app.Run();
-
-            Console.WriteLine($"Hosted here: {string.Join(Environment.NewLine, app.Urls)}");
-
             app.Services.GetService<ILoggerFactory>()!.CreateLogger(typeof(Program)).LogInformation("Application started");
+
+            app.Run();
         }
 
         private static void ConfigureHangfireService(IServiceCollection services, string connectionString)

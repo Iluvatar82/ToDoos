@@ -47,7 +47,7 @@
     {
         try
         {
-            EventHandlerService.AddHandler("ListChanged", async (args) => await HandleItem(args));
+            EventHandlerService.AddHandler("ListChanged", "TimeLineListChangedHandler", async (args) => await HandleItem(args));
         }
         catch(Exception ex)
         {

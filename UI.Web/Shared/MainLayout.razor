@@ -1,8 +1,12 @@
 ﻿@using Core.Validation;
 @using Microsoft.AspNetCore.Identity;
 @using UI.Web.Exception;
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 
 @inherits LayoutComponentBase
+
+@inject IJSRuntime JS
+@inject ProtectedLocalStorage BrowserStorage
 
 <PageTitle>ToDo's</PageTitle>
 
@@ -13,7 +17,7 @@
         </CascadingValue>
     </div>
 
-    <main>
+    <main class=@(IsDark ? "bg-dark" : "bg-light")>
         <div class="top-row px-4 auth">
             <LoginDisplay UserId=@(User == null ? null : Guid.Parse(User.Id)) />
         </div>
@@ -74,6 +78,8 @@
 
 @code{
     private ErrorBoundaryWithOutput? myBoundary;
+    private IJSObjectReference? JSScript { get; set; }
+    private bool IsDark { get; set; } = false;
 
     [CascadingParameter]
     public Modal PageModal { get; set; } = new Modal();
@@ -95,6 +101,36 @@
         catch(Exception ex)
         {
             LoggerFactory.CreateLogger<MainLayout>().LogError(ex, ex.Message);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool isFirst)
+    {
+        if (JSScript == null)
+        {
+            var storedThemeValue = await BrowserStorage.GetAsync<bool>("ThemeIsDark");
+            if (!storedThemeValue.Success)
+                await BrowserStorage.SetAsync("ThemeIsDark", IsDark);
+
+            await HandleThemeChange(new object[] { storedThemeValue.Success ? storedThemeValue.Value : IsDark });
+ 
+            JSScript = await JS.InvokeAsync<IJSObjectReference>("import", "./Shared/MainLayout.razor.js");
+            await JSScript.InvokeVoidAsync("AddThemeHandlerAndGetCurrentTheme");
+
+            EventHandlerService.AddHandler("ThemeChanged", "MainLayoutThemeChangedHandler", async (args) => await HandleThemeChange(args));
+        }
+    }
+
+    private async Task HandleThemeChange(object[] arguments)
+    {
+        if (arguments.Length != 1)
+            return;
+
+        if (arguments[0] is bool isDark && isDark != IsDark)
+        {
+            await BrowserStorage.SetAsync("ThemeIsDark", isDark);
+            IsDark = isDark;
+            await InvokeAsync(StateHasChanged);
         }
     }
 

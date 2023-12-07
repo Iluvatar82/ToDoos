@@ -31,12 +31,6 @@
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href=@(NavigationManager.BaseUri + "invite/") Match="NavLinkMatch.All">
-                        <i class="fa-regular fa-envelope pe-3" aria-hidden="true"></i> User Einladen
-                    </NavLink>
-                </div>
-
-                <div class="nav-item px-3">
                     <NavLink class="nav-link" href=@(NavigationManager.BaseUri + "categories/") Match="NavLinkMatch.All">
                         <i class="fa-solid fa-cubes-stacked pe-3" aria-hidden="true"></i> Meine Kategorien
                     </NavLink>
@@ -63,6 +57,12 @@
 
                     <NavLink class="nav-item nav-link nav-sub-item bg-primary bg-opacity-10" href=@(NavigationManager.BaseUri + "list/new")>
                         <i class="fa fa-plus pe-3 ms-1" aria-hidden="true"></i><em> Neue Liste anlegen</em>
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3 position-absolute text-end" style="bottom: 0; right: 0;">
+                    <NavLink class="nav-link" href=@(NavigationManager.BaseUri + "invite/") Match="NavLinkMatch.All">
+                        <i class="fa-regular fa-envelope pe-3" aria-hidden="true"></i><span class="text-uppercase text-decoration-underline fst-italic"> User Einladen</span>
                     </NavLink>
                 </div>
             </Authorized>

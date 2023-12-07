@@ -72,7 +72,7 @@
             <EditForm Model=@Model>
                 <DataAnnotationsValidator />
 
-                <InputTextArea @bind-Value=@Model.Bezeichnung id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await BezeichnungChanged(context); }) @onblur=@(() => BezeichnungChanged(context)) />
+                <InputTextArea @bind-Value=@Model.Bezeichnung id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter" && !key.ShiftKey) await BezeichnungChanged(context); }) @onblur=@(() => BezeichnungChanged(context)) />
                 <ValidationMessage For=@(() => Model.Bezeichnung) />
             </EditForm>
         }

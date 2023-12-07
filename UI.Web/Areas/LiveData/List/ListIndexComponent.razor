@@ -19,8 +19,11 @@
             <TimeLine Items=@ItemsWithSchedules></TimeLine>
         }
 
-        <table class="table table-light small table-hover table-bordered">
+        <table class="table @(IsDark ? "table-dark" : "table-light") small table-hover table-bordered">
             <tbody>
+                @{
+                    var textColorClass = IsDark ? "text-white" : "text-black";
+                }
                 @foreach (var listEntry in MyLists)
                 {
                     <tr>
@@ -29,8 +32,8 @@
                                 <NavLink class="nav-link" href=@(NavigationManager.BaseUri + @listEntry.GetListUrl())>
                                     <div class="d-flex justify-content-between">
                                         <div>
-                                            <span class="fa fa-@listEntry.GetToDoListTypeIcon() text-black" aria-hidden="true"></span>
-                                            <span class="fw-bold text-black ms-2">@listEntry.Name</span>
+                                            <span class="fa fa-@listEntry.GetToDoListTypeIcon() @textColorClass" aria-hidden="true"></span>
+                                            <span class="fw-bold @textColorClass ms-2">@listEntry.Name</span>
                                         </div>
 
                                         <span id="removeListButton" class="text-secondary align-self-center me-2" @onclick:stopPropagation="true" @onclick:preventDefault="true" @onclick=@(async () => await RemoveList(@listEntry))><i class="fa fa-xmark" aria-hidden="true"></i></span>
@@ -47,8 +50,8 @@
                             <div class="d-flex justify-content-between">
                                 <NavLink class="nav-link" href=@(NavigationManager.BaseUri + "list/new")>
                                     <div>
-                                        <span class="fa fa-plus text-black" aria-hidden="true"></span>
-                                        <span class="text-black ms-2"><em>Neue Liste anlegen</em></span>
+                                        <span class="fa fa-plus @textColorClass" aria-hidden="true"></span>
+                                        <span class="@textColorClass ms-2"><em>Neue Liste anlegen</em></span>
                                     </div>
                                 </NavLink>
                             </div>
@@ -64,6 +67,7 @@
 @code {
     private List<ToDoListDomainModel> MyLists { get; set; } = new List<ToDoListDomainModel>();
     private List<ToDoItemDomainModel> ItemsWithSchedules { get; set; } = new List<ToDoItemDomainModel>();
+    private bool IsDark { get; set; }
 
     [CascadingParameter]
     public Modal? PageModal { get; set; }
@@ -83,6 +87,8 @@
 
             var myListIDs = MyLists.Select(l => l.Id);
             ItemsWithSchedules = ModelMapper.MapToList<ToDoItemDomainModel>(await ItemRepository.GetAllItemsCompleteAsync(i => myListIDs.Contains(i.ListId) && i.InactiveSince == null && i.Schedules.Any()));
+            
+            EventHandlerService.AddHandler("ThemeChanged", "ListIndexThemeChangedHandler", async (args) => await HandleThemeChange(args));
         }
         catch (Exception ex)
         {
@@ -90,6 +96,18 @@
         }
 
         await base.OnParametersSetAsync();
+    }
+
+    private async Task HandleThemeChange(object[] arguments)
+    {
+        if (arguments.Length != 1)
+            return;
+
+        if (arguments[0] is bool isDark && isDark != IsDark)
+        {
+            IsDark = isDark;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task RemoveList(ToDoListDomainModel list, bool validated = false)
