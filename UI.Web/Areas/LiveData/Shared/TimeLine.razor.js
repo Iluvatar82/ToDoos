@@ -32,6 +32,7 @@ export function InitializeTimeline()
 
     svgElement
         .append("g")
+        .attr("class", "xaxis")
         .attr("transform", `translate(${marginSide},${height - marginBottom})`)
         .call(xAxis);
 
@@ -48,7 +49,7 @@ export function SetTimeRange(start, end)
         .attr("x1", marginSide - 2 + scaleX(new Date()))
         .attr("x2", marginSide - 2 + scaleX(new Date()));
 
-    svgElement.selectAll("g.x")
+    svgElement.selectAll("g.xaxis")
         .transition()
         .duration(500)
         .call(xAxis);

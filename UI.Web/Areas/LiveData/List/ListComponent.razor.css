@@ -12,6 +12,10 @@ table ::deep tr td.position-relative:not(.fixed-w) {
 	max-width: 0px;
 }
 
+table ::deep tr {
+	font-size: calc(min(var(--bs-body-font-size), 2.77778vw));
+}
+
 table ::deep .active {
 	transition: all .25s ease-in-out;
 	box-shadow: inset 0 0 12px 0px currentColor;
