@@ -12,7 +12,7 @@
     <div class="newItem row bg-opacity-25">
         <div class="d-flex col-8" @attributes=@GetMarginLeft()>
             <div class="col">
-                <input type="text" @bind-value=Model.Bezeichnung id="bezeichnung" class="form-control" />
+                <InputTextArea @bind-Value=Model.Bezeichnung id="bezeichnung" class="form-control" />
                 <ValidationMessage For=@(() => Model.Bezeichnung) />
             </div>
         </div>
