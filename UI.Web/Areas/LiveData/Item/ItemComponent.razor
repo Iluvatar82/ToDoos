@@ -22,7 +22,7 @@
     ondragover="event.preventDefault();" 
     @ondrop=@(_ => ItemDragDropService.HandleDrop(Model, OnDraggedFrom, OnDraggedTo, StateHasChanged))
     @attributes=@ItemStyleService.GetRowAttributes(Model, Hidden, false)>
-    <td class="fixed-w position-relative fade-in-on-hover">
+    <td class="fixed-w position-relative fade-in-on-hover  text-nowrap">
         <div class="moveChild up text-center text-white p-0" @onclick=@(_ => OnOrderChanged.InvokeAsync((Model, -1)))>
             <span class="fa fa-caret-up" aria-hidden="true"></span>
         </div>
@@ -72,7 +72,7 @@
             <EditForm Model=@Model>
                 <DataAnnotationsValidator />
 
-                <input type="text" @bind-value=@Model.Bezeichnung id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await BezeichnungChanged(context); }) @onblur=@(() => BezeichnungChanged(context)) />
+                <InputTextArea @bind-Value=@Model.Bezeichnung id="bezeichnung" class="form-control" @onkeyup=@(async (KeyboardEventArgs key) => { if(key.Code == "Enter") await BezeichnungChanged(context); }) @onblur=@(() => BezeichnungChanged(context)) />
                 <ValidationMessage For=@(() => Model.Bezeichnung) />
             </EditForm>
         }

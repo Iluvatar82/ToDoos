@@ -7,6 +7,11 @@ table ::deep tr td.fixed-w {
 	width: 48px;
 }
 
+table ::deep tr th.position-relative:not(.fixed-w),
+table ::deep tr td.position-relative:not(.fixed-w) {
+	max-width: 0px;
+}
+
 table ::deep .active {
 	transition: all .25s ease-in-out;
 	box-shadow: inset 0 0 12px 0px currentColor;

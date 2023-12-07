@@ -24,6 +24,7 @@ namespace Framework.Services
 
             result = result.Replace("<", "&lt;");
             result = result.Replace(">", "&gt;");
+            result = result.Replace("\n", "<br>");
 
             foreach (Match match in WebLinkRegex.Matches(raw))
             {
