@@ -1,4 +1,5 @@
 ﻿@page "/categories/"
+
 @using System.ComponentModel.DataAnnotations;
 @using Core.Validation
 @using Microsoft.AspNetCore.SignalR.Client
@@ -182,9 +183,9 @@ else
         try
         {
             if (ListId != null)
-                NavigationManager.NavigateTo(NavigationManager.BaseUri + $"administration/categories/new/{ListId}");
+                NavigationManager.NavigateTo(NavigationManager.BaseUri + $"categories/new/{ListId}");
             else
-                NavigationManager.NavigateTo(NavigationManager.BaseUri + "administration/categories/new/categories");
+                NavigationManager.NavigateTo(NavigationManager.BaseUri + "categories/new/categories");
         }
         catch (Exception ex)
         {

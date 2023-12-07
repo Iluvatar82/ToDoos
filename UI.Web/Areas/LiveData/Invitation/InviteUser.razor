@@ -1,0 +1,94 @@
+﻿@page "/invite/"
+
+@using System.ComponentModel.DataAnnotations
+@using Framework.Services.Base
+@using Microsoft.AspNetCore.Identity.UI.Services
+@using Microsoft.AspNetCore.SignalR.Client
+
+@inject UserManager<IdentityUser> UserManager
+@inject IEmailSender EmailSender
+@inject EmailBuilderService MailBuilderService
+
+@inject ToastNotificationService ToastService
+@inject NotificationService NotificationService
+
+<h3>Neuen Benutzer einladen</h3>
+
+<StatusMessage @bind-Model=@StatusMessage />
+
+<EditForm Model=@Model OnValidSubmit=@Submit>
+    <DataAnnotationsValidator />
+
+    <div class="row">
+        <div class="form-floating">
+            <input id="Model.MailAddress" @bind-value=@Model.MailAddress type="email" class="form-control" />
+            <label class="ms-2" for=@Model.MailAddress>Mail Adresse</label>
+            <ValidationMessage For=@(() => Model.MailAddress) />
+        </div>
+    </div>
+
+    <div class="row py-3">
+        <div class="btn-group col-3" role="group">
+            <button type="submit" class="btn btn-outline-primary">Einladen</button>
+        </div>
+    </div>
+</EditForm>
+
+
+@code {
+    [CascadingParameter]
+    public HubConnection? UpdateHubConnection { get; set; }
+
+    [CascadingParameter]
+    public IdentityUser? User { get; set; }
+
+    private InviteModel Model { get; set; } = new InviteModel();
+    private string StatusMessage { get; set; } = string.Empty;
+
+    private async Task Submit(EditContext context)
+    {
+        if (User == null)
+            return;
+
+        var normalizedEmail = UserManager.NormalizeEmail(Model.MailAddress);
+        var userByEmail = await UserManager.FindByEmailAsync(normalizedEmail);
+        if (userByEmail != null)
+        {
+            StatusMessage = $"Fehler: Sie können den User mit der Mail-Adresse \"{Model.MailAddress}\" nicht einladen, weil der User schon existiert.";
+            Model.MailAddress = string.Empty;
+            return;
+        }
+
+        await UserManager.CreateAsync(new IdentityUser(Model.MailAddress)
+            {
+                Email = Model.MailAddress,
+                NormalizedEmail = normalizedEmail
+            });
+
+        var newUser = await UserManager.FindByEmailAsync(Model.MailAddress);
+        var tokenString = Guid.NewGuid().ToString();
+
+        var newInvitation = new InvitationDomainModel()
+            {
+                UserId = Guid.Parse(User.Id),
+                InvitationToken = tokenString,
+                MailAddress = Model.MailAddress
+            };
+
+        await UserRepository.AddAndSaveAsync(ModelMapper.Map(newInvitation));
+
+        var url = AppResources.Application_Url + $"/confirminvitation/{tokenString}";
+        await EmailSender.SendEmailAsync(Model.MailAddress, "Einladungs-Mail: todoos.net", MailBuilderService.BuildInvitationMailMessage(User.Email, url));
+
+        var title = "Einladung versendet";
+        var message = $"Die Einladung für den User <b>{Model.MailAddress}</b> wurde verschickt";
+        StatusMessage = message;
+
+        await ToastService.SendAsync(title, message, Framework.Services.Base.MessageType.Info);
+        await NotificationService.SaveNotifications(title, message, User.Id);
+        if (UpdateHubConnection != null)
+            await UpdateHubConnection.SendAsync("UpdateNotifications", new List<string> { User.Id });
+
+        NavigationManager.NavigateTo(NavigationManager.BaseUri);
+    }
+}

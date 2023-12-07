@@ -1,0 +1,17 @@
+﻿@if (!String.IsNullOrEmpty(Model))
+{
+    var statusMessageClass = ErrorIndicators.Any(i => Model.StartsWith(i)) ? "danger" : "success";
+    <div class="alert alert-@statusMessageClass alert-dismissible" role="alert">
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" @onclick=@(() => ModelChanged.InvokeAsync(string.Empty))></button>
+        @Model
+    </div>
+}
+
+@code{
+    [Parameter]
+    public string Model { get; set; } = string.Empty;
+    [Parameter]
+    public EventCallback<string> ModelChanged { get; set; }
+
+    private List<string> ErrorIndicators = new List<string>{ "Error", "Fehler" };
+}

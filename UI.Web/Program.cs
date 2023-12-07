@@ -74,6 +74,7 @@ namespace UI.Web
                 return result;
             });
 
+            builder.Services.AddTransient<HttpClient>();
 
             builder.Services.AddTransient<CategoryRepository>();
             builder.Services.AddTransient<ItemRepository>();
@@ -83,6 +84,7 @@ namespace UI.Web
             builder.Services.AddTransient<UserRepository>();
             builder.Services.AddTransient<SettingRepository>();
             builder.Services.AddTransient<NotificationRepository>();
+            builder.Services.AddTransient<InvitationRepository>();
 
             builder.Services.AddTransient<IdentityRepository>();
 

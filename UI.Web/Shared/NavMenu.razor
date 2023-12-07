@@ -31,6 +31,12 @@
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
+                    <NavLink class="nav-link" href=@(NavigationManager.BaseUri + "invite/") Match="NavLinkMatch.All">
+                        <i class="fa-regular fa-envelope pe-3" aria-hidden="true"></i> User Einladen
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
                     <NavLink class="nav-link" href=@(NavigationManager.BaseUri + "categories/") Match="NavLinkMatch.All">
                         <i class="fa-solid fa-cubes-stacked pe-3" aria-hidden="true"></i> Meine Kategorien
                     </NavLink>

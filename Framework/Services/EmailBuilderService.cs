@@ -36,12 +36,12 @@ namespace Framework.Services
             }
         }
 
-        public string BuildInvitationMailMessage(string url) => $@"
+        public string BuildInvitationMailMessage(string inviteUserEmail, string url) => $@"
             <html>
                 <body>
                     <div>
                         <span>
-                            Sie wurden in die Applikation todoos.net eingeladen: <br>Bei Interesse bitte <a href=""{url}"">hier anmelden</a> :).
+                            Sie wurden von User <a href=""mailto:{inviteUserEmail}"">{inviteUserEmail}</a> in die Applikation todoos.net eingeladen:<br>Bei Interesse bitte <a href=""{url}"">hier anmelden</a> :).
                         </span>
                     </div>
                 </body>

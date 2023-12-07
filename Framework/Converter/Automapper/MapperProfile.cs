@@ -17,6 +17,9 @@ namespace Framework.Converter.Automapper
             CreateMap<Setting, SettingDomainModel>();
             CreateMap<SettingDomainModel, Setting>();
 
+            CreateMap<Invitation, InvitationDomainModel>();
+            CreateMap<InvitationDomainModel, Invitation>();
+
             CreateMap<Notification, NotificationDomainModel>();
             CreateMap<NotificationDomainModel, Notification>();
 

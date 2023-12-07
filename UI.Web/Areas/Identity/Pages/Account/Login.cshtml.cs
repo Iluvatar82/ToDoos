@@ -3,6 +3,7 @@
 #nullable disable
 
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -10,7 +11,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UI.Web.Areas.Identity.Pages.Account
 {
-    //[IgnoreAntiforgeryToken(Order = 1001)]
+    [IgnoreAntiforgeryToken(Order = 1001)]
+    //[AllowAnonymous]
     public class LoginModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -95,6 +97,13 @@ namespace UI.Web.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             ReturnUrl = returnUrl;
+        }
+
+        public async Task<IActionResult> OnPostInvitationAsync(string email, string password, bool rememberMe)
+        {
+            Input = new InputModel { Email = email, Password = password, RememberMe = rememberMe };
+
+            return await OnPostAsync();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)

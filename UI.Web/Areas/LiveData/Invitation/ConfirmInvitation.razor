@@ -1,0 +1,124 @@
+﻿@page "/confirminvitation/{Token}"
+
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Net.Http;
+
+@inject UserManager<IdentityUser> UserManager
+@inject SignInManager<IdentityUser> SignInManager
+@inject NotificationService NotificationService
+@inject IJSRuntime JS
+
+@attribute [AllowAnonymous]
+
+<h3>Einladung annehmen</h3>
+
+<StatusMessage @bind-Model=@StatusMessage />
+
+<EditForm Model=@Model OnValidSubmit=@Submit>
+    <DataAnnotationsValidator />
+
+    <div class="row">
+        <div class="form-floating">
+            <input id="MailAddress" value=@Model.MailAddress type="email" class="form-control" disabled />
+            <label class="ms-2" for=@Model.MailAddress>Mail Adresse</label>
+            <ValidationMessage For=@(() => Model.MailAddress) />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="form-floating col">
+            <input id="Password" @bind-value=@Model.Password type="password" class="form-control" />
+            <label class="ms-2" for=@Model.Password>Ihr Passwort</label>
+            <ValidationMessage For=@(() => Model.Password) />
+        </div>
+
+        <div class="form-floating col">
+            <input id="ConfirmPassword" @bind-value=@Model.ConfirmPassword type="password" class="form-control" />
+            <label class="ms-2" for=@Model.ConfirmPassword>Passwort wiederholen</label>
+            <ValidationMessage For=@(() => Model.ConfirmPassword) />
+        </div>
+    </div>
+
+    <div class="row py-3">
+        <div class="btn-group col-3" role="group">
+            <button type="submit" class="btn btn-outline-primary">Passwort Setzen und Anmelden</button>
+        </div>
+    </div>
+</EditForm>
+
+
+@code {
+    private string StatusMessage { get; set; } = string.Empty;
+    private InvitationConfirmationModel Model { get; set; } = new InvitationConfirmationModel();
+    private IdentityUser? Inviter { get; set; }
+    private IJSObjectReference? JSScript { get; set; }
+
+    [CascadingParameter]
+    public HubConnection? UpdateHubConnection { get; set; }
+
+    [Parameter]
+    public string Token { get; set; } = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (JSScript == null)
+            JSScript = await JS.InvokeAsync<IJSObjectReference>("import", "./Areas/LiveData/Invitation/ConfirmInvitation.razor.js");
+
+        var invite = (await InvitationRepository.GetAllAsync(i => i.InvitationToken == Token)).FirstOrDefault();
+        if (invite == null)
+        {
+            StatusMessage = "Fehler: Leider wurde die Einladung nicht im System gefunden";
+            return;
+        }
+
+        var inviteModel = (InvitationDomainModel)ModelMapper.Map(invite);
+        Model = new InvitationConfirmationModel
+            {
+                MailAddress = inviteModel.MailAddress,
+                Password = string.Empty,
+                ConfirmPassword = string.Empty
+            };
+
+        Inviter = await UserManager.FindByIdAsync(invite.UserId.ToString());
+    }
+
+    private async Task Submit(EditContext context)
+    {
+        var invitedUser = await UserManager.FindByEmailAsync(Model.MailAddress);
+        if (invitedUser == null)
+        {
+            StatusMessage = $"Fehler: Der User mit der Mail-Adresse {Model.MailAddress} konnte nicht geladen werden.";
+            return;
+        }
+
+        var addPasswordResult = await UserManager.AddPasswordAsync(invitedUser, Model.Password);
+        if (!addPasswordResult.Succeeded)
+        {
+            StatusMessage = string.Join("<br>", addPasswordResult.Errors.Select(e => e.Description));
+            return;
+        }
+
+        string emailVerificationToken = await UserManager.GenerateEmailConfirmationTokenAsync(invitedUser);
+        await UserManager.ConfirmEmailAsync(invitedUser, emailVerificationToken);
+
+        await UserManager.AddToRoleAsync(invitedUser, "User");
+        var invitedUserId = Guid.Parse(invitedUser.Id);
+        await UserRepository.AddAndSaveAsync(ModelMapper.Map(new ToDoListDomainModel { UserId = invitedUserId, Name = "Meine erste Liste" }));
+        await UserRepository.AddAndSaveAsync(ModelMapper.Map(new CategoryDomainModel { Bezeichnung = "Meine Kategorie", RGB_A = "#f8f8f8", Icon = "fa fa-house-chimney-window", UserId = invitedUserId }));
+
+        var title = "Einladung angenommen!";
+        var message = "Gratuliere, Sie haben sich erfolgreich bei \"todoos.net\" angemeldet!";
+        await NotificationService.SaveNotifications(title, message, invitedUserId);
+        await NotificationService.SaveNotifications(title, $"Super, der User mit der Mail-Adresse {invitedUser.Email} hat sich soeben angemeldet!", Guid.Parse(Inviter!.Id));
+
+        if (UpdateHubConnection != null)
+            await UpdateHubConnection.SendAsync("UpdateNotifications", new List<string> { invitedUser.Id, Inviter!.Id });
+
+        StatusMessage = "Das Passwort wurde gesetzt und Sie werden jetzt angemeldet...";
+
+        if (JSScript != null)
+            await JSScript.InvokeVoidAsync("SendLoginRequest", Model.MailAddress, Model.Password, true);
+
+        //NavigationManager.NavigateTo(NavigationManager.BaseUri);
+    }
+}
