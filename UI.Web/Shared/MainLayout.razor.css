@@ -5,26 +5,30 @@
 }
 
 main {
-    flex: 1;
+	flex: 1;
+	background: var(--todoos-bg-color);
 }
 
 .sidebar {
-	background: linear-gradient(90deg, #052767 0%, #003393 100%);
+	background: linear-gradient(90deg, var(--todoos-bg-accent-color) 0%, var(--todoos-bg-color) 95%);
+	color: var(--todoos-text-color);
 }
 
 .top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
-    display: flex;
-    align-items: center;
+	background: var(--todoos-bg-inverted-color);
+	opacity: .5;
+	border-bottom: 1px solid #d6d5d5;
+	justify-content: flex-end;
+	height: 3.5rem;
+	display: flex;
+	align-items: center;
 	z-index: 2;
 }
 
 .top-row ::deep a, .top-row .btn-link {
-    white-space: nowrap;
-    margin-left: 1.5rem;
+	white-space: nowrap;
+	margin-left: 1.5rem;
+	color: var(--todoos-text-color);
 }
 
 .top-row a:first-child {
