@@ -10,11 +10,13 @@
 	--todoos-text-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s)), calc(100% - var(--todoos-bg-color-l)));
 	--todoos-text-inverted-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s)), calc(var(--todoos-bg-color-l)));
 	--todoos-text-accent-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s) + 20%), calc(100% - var(--todoos-bg-color-l) + (50% - var(--todoos-bg-color-l)) / 8.0));
-	--todoos-primary-color: hsl(var(--todoos-bg-color-h), 100%, calc((100% - var(--todoos-bg-color-l)) * 2.5));
+	
+	--todoos-primary-color: hsl(var(--todoos-bg-color-h), 100%, 30%);
 }
 
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	color: var(--todoos-text-color);
 }
 
 h1:focus {
@@ -115,4 +117,9 @@ a, .btn-link {
 	transform: translateX(-50%) translateY(-50%) scale(.5);
 	left: 16px;
 	top: -2px;
+}
+
+.form-control, .form-control:focus {
+	background-color: var(--todoos-bg-accent-color);
+	color: var(--todoos-text-color);
 }

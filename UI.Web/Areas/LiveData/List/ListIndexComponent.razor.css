@@ -6,3 +6,12 @@
 #removeListButton:hover {
 	color: darkred !important;
 }
+
+.themed_table {
+	background: var(--todoos-bg-accent-color);
+	border: 1px solid var(--todoos-bg-hover-color);
+}
+
+.themed_table .nav-link div {
+	color: var(--todoos-text-color);
+}
