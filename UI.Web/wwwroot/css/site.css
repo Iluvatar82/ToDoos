@@ -1,7 +1,7 @@
 :root {
 	transition: all .5s ease-in-out .5s;
-	--todoos-bg-color-h: 223;
-	--todoos-bg-color-s: 15%;
+	--todoos-bg-color-h: 144;
+	--todoos-bg-color-s: 5%;
 	--todoos-bg-color-l: 90%;
 	--todoos-bg-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s)), calc(var(--todoos-bg-color-l)));
 	--todoos-bg-inverted-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s)), calc(100% - var(--todoos-bg-color-l)));
@@ -10,6 +10,7 @@
 	--todoos-text-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s)), calc(100% - var(--todoos-bg-color-l)));
 	--todoos-text-inverted-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s)), calc(var(--todoos-bg-color-l)));
 	--todoos-text-accent-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s) + 20%), calc(100% - var(--todoos-bg-color-l) + (50% - var(--todoos-bg-color-l)) / 8.0));
+	--todoos-primary-color: hsl(var(--todoos-bg-color-h), 100%, calc((100% - var(--todoos-bg-color-l)) * 2.5));
 }
 
 html, body {

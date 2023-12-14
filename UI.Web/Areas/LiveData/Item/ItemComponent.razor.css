@@ -1,7 +1,6 @@
 ﻿tr {
 	transition: all .25s ease-in-out;
 	font-weight: bold;
-	/*touch-action: none;*/
 }
 
 [draggable=true] span.fa-grip-vertical {

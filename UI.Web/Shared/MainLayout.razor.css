@@ -1,7 +1,8 @@
 .page {
-    position: relative;
-    display: flex;
-    flex-direction: column;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
 }
 
 main {
@@ -15,8 +16,7 @@ main {
 }
 
 .top-row {
-	background: var(--todoos-bg-inverted-color);
-	opacity: .5;
+	background: var(--todoos-primary-color);
 	border-bottom: 1px solid #d6d5d5;
 	justify-content: flex-end;
 	height: 3.5rem;
@@ -28,7 +28,7 @@ main {
 .top-row ::deep a, .top-row .btn-link {
 	white-space: nowrap;
 	margin-left: 1.5rem;
-	color: var(--todoos-text-color);
+	color: var(--todoos-text-inverted-color);
 }
 
 .top-row a:first-child {

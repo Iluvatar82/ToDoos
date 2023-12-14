@@ -6,3 +6,7 @@
 .badge {
 	font-size: .6em;
 }
+
+.btn-link {
+	color: var(--todoos-text-inverted-color);
+}
