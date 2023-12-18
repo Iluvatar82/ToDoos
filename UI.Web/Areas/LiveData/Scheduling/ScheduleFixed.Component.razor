@@ -1,31 +1,39 @@
-﻿<td class="align-top py-0 border-0">
-    <div class="form-floating col p-0" b-6yl1ru612t="">
-        <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
-            am
-        </div>
-    </div>
-</td>
+﻿<td class="align-top pt-0 col-12">
+    <table class="table mb-0">
+        <tbody>
+            <tr class="row">
+                <td class="align-top py-0 border-0 col-3 col-lg-1">
+                    <div class="form-floating p-0" b-6yl1ru612t="">
+                        <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
+                            am
+                        </div>
+                    </div>
+                </td>
 
-<td class="align-top py-0 border-0">
-    <div class="form-floating col px-2">
-        <input type="date" class="form-control border-0" @bind-value=date id="date" />
-        <label for="date">Datum</label>
-    </div>
-</td>
+                <td class="align-top py-0 border-0 col-9 col-lg-5">
+                    <div class="form-floating">
+                        <input type="date" class="form-control border-0" @bind-value=date id="date" />
+                        <label for="date">Datum</label>
+                    </div>
+                </td>
 
-<td class="align-top py-0 border-0">
-    <div class="form-floating col p-0" b-6yl1ru612t="">
-        <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
-            um
-        </div>
-    </div>
-</td>
+                <td class="align-top py-0 border-0 col-3 col-lg-1">
+                    <div class="form-floating p-0" b-6yl1ru612t="">
+                        <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
+                            um
+                        </div>
+                    </div>
+                </td>
 
-<td class="align-top py-0 border-0">
-    <div class="form-floating col pe-0">
-        <input type="time" class="form-control border-0" @bind-value=time id="time" />
-        <label for="time">Uhrzeit</label>
-    </div>
+                <td class="align-top py-0 border-0 col-9 col-lg-5">
+                    <div class="form-floating pe-0">
+                        <input type="time" class="form-control border-0" @bind-value=time id="time" />
+                        <label for="time">Uhrzeit</label>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </td>
 
 @code {

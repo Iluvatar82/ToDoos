@@ -1,59 +1,59 @@
 ﻿@using Framework.DomainModels.Common
 @using Framework.DomainModels.Common.Enums;
 
-<td class="align-top py-0 border-0" colspan="4">
+<td class="align-top pt-0 col-12">
     <table class="table mb-0">
         <tbody>
-            <tr>
-                <td class="align-top py-0 border-0">
-                    <div class="form-floating col p-0" b-6yl1ru612t="">
+            <tr class="row">
+                <td class="align-top py-0 border-0 col-3 col-lg-1">
+                    <div class="form-floating p-0" b-6yl1ru612t="">
                         <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
                             von
                         </div>
                     </div>
                 </td>
 
-                <td class="align-top py-0 border-0">
-                    <div class="form-floating col px-2">
+                <td class="align-top py-0 border-0 col-9 col-lg-5">
+                    <div class="form-floating">
                         <input type="date" class="form-control border-0" @bind-value=Start id="start" placeholder="Start" />
                         <label for="start">Start</label>
                     </div>
                 </td>
 
-                <td class="align-top py-0 border-0">
-                    <div class="form-floating col p-0" b-6yl1ru612t="">
+                <td class="align-top py-0 border-0 col-3 col-lg-1">
+                    <div class="form-floating p-0" b-6yl1ru612t="">
                         <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
                             bis
                         </div>
                     </div>
                 </td>
 
-                <td class="align-top py-0 border-0">
-                    <div class="form-floating col pe-0">
+                <td class="align-top py-0 border-0 col-9 col-lg-5">
+                    <div class="form-floating pe-0">
                         <input type="date" class="form-control border-0" @bind-value=End id="end" placeholder="End" />
                         <label for="end">Ende</label>
                     </div>
                 </td>
             </tr>
 
-            <tr>
-                <td class="align-top py-0 border-0">
-                    <div class="form-floating col p-0" b-6yl1ru612t="">
+            <tr class="row mt-1">
+                <td class="align-top py-0 border-0 col-4 col-lg-2">
+                    <div class="form-floating p-0" b-6yl1ru612t="">
                         <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
                             im Intervall von
                         </div>
                     </div>
                 </td>
 
-                <td class="align-top py-0 border-0">
-                    <div class="form-floating col">
+                <td class="align-top py-0 border-0 col-4 col-lg-2">
+                    <div class="form-floating">
                         <input type="number" class="form-control border-0" @bind-value=interval id="interval" placeholder="Interval in Days" />
                         <label for="interval">Interval</label>
                     </div>
                 </td>
 
-                <td class="align-top py-0 border-0">
-                  <div class="form-floating col">
+                <td class="align-top py-0 border-0 col-4 col-lg-2">
+                  <div class="form-floating">
                         <select @bind:get=@((int)unit) @bind:set=@((int newUnit) => unit = (ScheduleTimeUnit)newUnit) class="form-control border-0" id="UnitSelect">
                             <option value="1">Stunden</option>
                             <option value="2">Tage</option>

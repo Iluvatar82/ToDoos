@@ -1,57 +1,57 @@
 ﻿@using System.Globalization;
 @using Framework.DomainModels.Common
 
-<td class="align-top py-0 border-0" colspan="4">
+<td class="align-top pt-0 col-12">
     <table class="table mb-0">
         <tbody>
-            <tr>
-                <td class="align-top py-0 border-0">
-                    <div class="form-floating col p-0" b-6yl1ru612t="">
+            <tr class="row">
+                <td class="align-top py-0 border-0 col-3 col-lg-1">
+                    <div class="form-floating p-0" b-6yl1ru612t="">
                         <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
                             von
                         </div>
                     </div>
                 </td>
 
-                <td class="align-top py-0 border-0">
-                    <div class="form-floating col px-2">
+                <td class="align-top py-0 border-0 col-9 col-lg-5">
+                    <div class="form-floating">
                         <input type="date" class="form-control border-0" @bind-value=Start id="start" placeholder="Start" />
                         <label for="start">Start</label>
                     </div>
                 </td>
 
-                <td class="align-top py-0 border-0">
-                    <div class="form-floating col p-0" b-6yl1ru612t="">
+                <td class="align-top py-0 border-0 col-3 col-lg-1">
+                    <div class="form-floating p-0" b-6yl1ru612t="">
                         <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
                             bis
                         </div>
                     </div>
                 </td>
 
-                <td class="align-top py-0 border-0">
-                    <div class="form-floating col pe-0">
+                <td class="align-top py-0 border-0 col-9 col-lg-5">
+                    <div class="form-floating pe-0">
                         <input type="date" class="form-control border-0" @bind-value=End id="end" placeholder="End" />
                         <label for="end">Ende</label>
                     </div>
                 </td>
              </tr>
 
-             <tr>
-                <td class="align-top py-0 border-0">
-                    <div class="form-floating col p-0" b-6yl1ru612t="">
-                        <div b-6yl1ru612t="" class="form-control border-0 align-items-center d-flex">
-                            an den Wochentagen
-                        </div>
-                    </div>
-                </td>
-            </tr>
+            <tr class="row mt-1">
+@*                 <td class="align-top py-0 border-0 col-6">
+                    <select class="form-control" multiple aria-label="Tage auswählen" style="max-height: 3.5em;">
+                        @for (var dayNumber = 0; dayNumber < 7; dayNumber++)
+                        {
 
-            <tr>
-                @for (var dayNumber = 0; dayNumber < 4; dayNumber++)
+                            <option selected value="" id="checkbox.@GetWochentag(dayNumber).ToLower()" @attributes=@GetCheckboxAttributes(Model.Days[dayNumber])>@GetWochentag(dayNumber)</option>
+                        }
+                    </select>
+                </td> *@
+
+                 @for (var dayNumber = 0; dayNumber < 7; dayNumber++)
                 {
                     var currentNumber = dayNumber;
-                    <td class="align-top py-0 border-0">
-                        <div class="form-check px-3 ms-3 pt-2 col">
+                    <td class="align-top py-0 border-0 col-3">
+                        <div class="form-check px-3 ms-3 pt-2">
                             <input class="form-check-input" type="checkbox" value="" id="checkbox.@GetWochentag(dayNumber).ToLower()" @attributes=@GetCheckboxAttributes(Model.Days[dayNumber]) @oninput=@((args) => CheckboxChanged(args, currentNumber))>
                             <label class="form-check-label" for="checkbox.@GetWochentag(dayNumber).ToLower()">
                                 @GetWochentag(dayNumber)
@@ -59,24 +59,9 @@
                         </div>
                     </td>
                 }
-            </tr>
-
-            <tr>
-                @for (var dayNumber = 4; dayNumber < 7; dayNumber++)
-                {
-                    var currentNumber = dayNumber;
-                    <td class="align-top py-0 border-0">
-                        <div class="form-check px-3 ms-3 pt-2 col">
-                            <input class="form-check-input" type="checkbox" value="" id="checkbox.@GetWochentag(dayNumber).ToLower()" @attributes=@GetCheckboxAttributes(Model.Days[dayNumber]) @oninput=@((args) => CheckboxChanged(args, currentNumber))>
-                            <label class="form-check-label" for="checkbox.@GetWochentag(dayNumber).ToLower()">
-                                @GetWochentag(dayNumber)
-                            </label>
-                        </div>
-                    </td>
-                }
-
-                <td class="align-top py-0 border-0">
-                    <div class="form-floating col pe-0">
+ 
+                <td class="align-top py-0 border-0 col-3">
+                    <div class="form-floating pe-0">
                         <input type="time" class="form-control border-0" @bind-value=time id="time" />
                         <label for="time">Uhrzeit</label>
                     </div>

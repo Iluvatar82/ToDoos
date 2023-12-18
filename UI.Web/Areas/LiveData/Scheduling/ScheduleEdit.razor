@@ -24,7 +24,7 @@
 
 @if (Model.Schedules.Any())
 {
-    <table class="table table-bordered mb-0">
+    <table class="table table-bordered table-hover mb-0">
         <tbody>
             @for (int index = 0; index < Model.Schedules.Count; index++)
             {
@@ -35,17 +35,17 @@
                     InvokeAsync(async () => await RemoveAt(currentIndex, true));
                 }
 
-                <tr>
-                    <td class="align-top py-0" style="border-right-width: 0;">
-                        <div class="form-floating col p-0">
+                <tr class="d-flex flex-wrap">
+                    <td class="align-top py-0 col-3 col-md-12 col-lg-1" style="border-right-width: 0;">
+                        <div class="form-floating p-0">
                             <div class="form-control border-0 align-items-center d-flex">
-                                Typ ist
+                                Typ
                             </div>
                         </div>
                     </td>
 
-                    <td class="align-top py-0 border-0">
-                        <div class="form-floating col py-0 px-2">
+                    <td class="align-top py-0 border-0 col">
+                        <div class="form-floating py-0">
                             <select @bind:get=@((int)schedule.Type) @bind:set=@((int newType) => ChangeTo(currentIndex, newType)) class="form-control border-0" id="TypeSelect">
                                 <option value="0">Fixer Zeitpunkt</option>
                                 <option value="1">Wochentage</option>
@@ -54,6 +54,10 @@
 
                             <label for="TypeSelect">Scheduletyp</label>
                         </div>
+                    </td>
+
+                    <td class="fixed-w fade-in-on-hover">
+                        <span class="px-2 fa fa-xmark text-secondary opacity-25" aria-hidden="true" @onclick=@(() => RemoveAt(currentIndex, true))></span>
                     </td>
 
                     @switch (schedule.Type)
@@ -70,10 +74,6 @@
                             <ScheduleWeekdays_Component @bind-Model=@schedule.ScheduleDefinition.WeekDays @bind-Start=@schedule.Start @bind-End=@schedule.End></ScheduleWeekdays_Component>
                             break;
                     }
-
-                    <td class="fixed-w fade-in-on-hover">
-                        <span class="px-2 fa fa-xmark text-secondary opacity-25" aria-hidden="true" @onclick=@(() => RemoveAt(currentIndex, true))></span>
-                    </td>
                 </tr>
             }
         </tbody>
@@ -93,7 +93,7 @@
 
 @if (Model.Reminders.Any())
 {
-    <table class="table table-bordered mb-0">
+    <table class="table table-bordered table-hover mb-0">
         <tbody>
             @for (int index = 0; index < Model.Reminders.Count; index++)
             {
@@ -104,24 +104,24 @@
                     InvokeAsync(async () => await RemoveAt(currentIndex, false));
                 }
 
-                <tr>
-                    <td class="align-top py-0" style="border-right-width: 0;">
-                        <div class="form-floating col p-0">
+                <tr class="d-flex flex-wrap">
+                    <td class="align-top py-0 col-6 col-md" style="border-right-width: 0;">
+                        <div class="form-floating p-0">
                             <div class="form-control border-0 align-items-center d-flex">
                                 Erinnern
                             </div>
                         </div>
                     </td>
 
-                    <td class="align-top py-0 border-0">
-                        <div class="form-floating col p-0">
+                    <td class="align-top py-0 border-0 col-6 col-md">
+                        <div class="form-floating p-0">
                             <input type="number" class="form-control border-0" @bind:get=@reminder.ReminderDefinition!.Value @bind:set=@((decimal newValue) => SetReminderValue(currentIndex, newValue)) id="value" />
                             <label for="value">Wert</label>
                         </div>
                     </td>
 
-                    <td class="align-top py-0 border-0">
-                        <div class="form-floating col py-0 px-2">
+                    <td class="align-top py-0 border-0 col-6 col-md">
+                        <div class="form-floating py-0 px-2">
                             <select @bind:get=@((int)reminder.ReminderDefinition.Unit) @bind:set=@((int unit) => SetReminderUnit(currentIndex, unit)) class="form-control border-0" id="TypeSelect">
                                 <option value="0">Minuten</option>
                                 <option value="1">Stunden</option>
@@ -132,8 +132,8 @@
                         </div>
                     </td>
 
-                    <td class="align-top py-0 border-right-0 border-0">
-                        <div class="form-floating col p-0">
+                    <td class="align-top py-0 border-right-0 border-0 col-auto col-md">
+                        <div class="form-floating p-0">
                             <div class="form-control border-0 align-items-center d-flex">
                                 vor Schedule
                             </div>
