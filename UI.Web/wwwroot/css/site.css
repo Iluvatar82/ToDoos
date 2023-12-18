@@ -9,7 +9,7 @@
 	--todoos-bg-hover-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s)), calc(var(--todoos-bg-color-l) + (50% - var(--todoos-bg-color-l)) / 4.0));
 	--todoos-text-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s)), calc(100% - var(--todoos-bg-color-l)));
 	--todoos-text-inverted-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s)), calc(var(--todoos-bg-color-l)));
-	--todoos-text-accent-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s) + 20%), calc(100% - var(--todoos-bg-color-l) + (50% - var(--todoos-bg-color-l)) / 8.0));
+	--todoos-text-accent-color: hsl(var(--todoos-bg-color-h), calc(var(--todoos-bg-color-s) + 20%), calc(100% - var(--todoos-bg-color-l) - (50% - var(--todoos-bg-color-l)) / 4.0));
 	
 	--todoos-primary-color: hsl(var(--todoos-bg-color-h), 100%, 30%);
 }
@@ -122,4 +122,8 @@ a, .btn-link {
 .form-control, .form-control:focus {
 	background-color: var(--todoos-bg-accent-color);
 	color: var(--todoos-text-color);
+}
+
+tr.bg-success {
+	color: var(--todoos-text-accent-color);
 }
