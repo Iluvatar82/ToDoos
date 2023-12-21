@@ -12,14 +12,7 @@ namespace UI.Web.Services
 
             var styleString = noBackground ? "" : $"background: {model.Category!.RGB_A};";
             if (model.Done.HasValue)
-            {
-                //    styleString = $"color: {UIColorService.GetDoneTextColor(model.Category!.RGB_A)};";
-                //    return new Dictionary<string, object>
-                //    {
-                //        { "style", styleString }
-                //    };
                 return new Dictionary<string, object> { };
-            }
 
             styleString += $"color: {UIColorService.GetTextColor(model.Category!.RGB_A)};";
             return new Dictionary<string, object>

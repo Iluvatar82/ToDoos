@@ -119,7 +119,7 @@ namespace Framework.Extensions
             else
             {
                 var checkDate = from;
-                if (start.HasValue && start > from)
+                if (start.HasValue)
                     checkDate = start.Value;
 
                 var lastCheckDate = to;
@@ -145,7 +145,9 @@ namespace Framework.Extensions
                     var currentCheckDate = checkDate;
                     while(currentCheckDate <= lastCheckDate)
                     {
-                        result.Add(currentCheckDate);
+                        if (currentCheckDate > from && currentCheckDate < to)
+                            result.Add(currentCheckDate);
+
                         currentCheckDate = timeIntervalFunc(currentCheckDate, (double)schedule.Interval.Interval);
                     }
                 }
