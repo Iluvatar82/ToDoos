@@ -202,9 +202,6 @@
 
                 DefaultReminderTimeInMinutes = reminderValue;
             }
-
-            if (!Model.Schedules.Any() && !Model.Reminders.Any())
-                await CreateNewReminder();
         }
         catch (Exception ex)
         {
