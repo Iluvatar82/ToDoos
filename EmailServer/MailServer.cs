@@ -26,7 +26,7 @@ namespace EmailServer
         static X509Certificate2 CreateCertificate()
         {
             var certificate = File.ReadAllBytes(@"..\EmailServer\Certificate\todoos.net.pfx");
-            return new X509Certificate2(certificate, "Crash1982");
+            return new X509Certificate2(certificate, "*");
         }
 
         public async Task Start()
